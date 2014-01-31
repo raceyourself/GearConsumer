@@ -1,0 +1,30 @@
+{
+  "name": "nodebb-theme-raceyourself",
+  "version": "0.0.13-20",
+  "description": "Race Yourself theme for NodeBB",
+  "main": "theme.less",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/glassfit/nodebb-theme-raceyourself"
+  },
+  "keywords": [
+    "nodebb",
+    "theme",
+    "themes",
+    "bootstrap",
+    "raceyourself"
+  ],
+  "contributors": [
+    "Andrew Rodrigues <andrew@designcreateplay.com> (https://github.com/psychobunny)",
+    "Julian Lam <julian@designcreateplay.com> (https://github.com/julianlam)",
+    "Barış Soner Uşaklı <baris@designcreateplay.com> (https://github.com/barisusakli)"
+  ],
+  "license": "proprietary",
+  "bugs": {
+    "url": "https://github.com/glassfit/nodebb-theme-raceyourself/issues"
+  },
+  "homepage": "https://github.com/glassfit/nodebb-theme-raceyourself",
+  "scripts": {
+  },
+  "author": ""
+}
