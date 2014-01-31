@@ -99,8 +99,8 @@ Strategy.prototype.userProfile = function(accessToken, done) {
       var profile = { provider: 'glassfit' };
       profile.id = json.response.id;
       profile.email = json.response.email;
-      profile.username = json.response.username;
-      profile.displayName = json.response.name;
+      profile.username = json.response.username || json.response.email;
+      profile.displayName = json.response.name || profile.username;
       profile.gender = json.response.gender;
 
       profile._raw = body;
