@@ -1,0 +1,40 @@
+{
+  "name": "nodebb-plugin-sso-glassfit",
+  "version": "0.1.1",
+  "description": "NodeBB Glassfit SSO",
+  "main": "library.js",
+  "private": true,
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/glassfit/nodebb-plugin-sso-glassfit"
+  },
+  "keywords": [
+    "nodebb",
+    "plugin",
+    "glassfit",
+    "sso",
+    "single sign on",
+    "registration"
+  ],
+  "author": {
+    "name": "Janne Husberg",
+    "email": "janne.husberg@raceyourself.com"
+  },
+  "license": "proprietary",
+  "bugs": {
+    "url": "https://github.com/glassfit/nodebb-plugin-sso-glassfit/issues"
+  },
+  "dependencies": {
+    "passport-glassfit": "~0.1.5"
+  },
+  "homepage": "https://github.com/glassfit/nodebb-plugin-sso-glassfit",
+  "devDependencies": {},
+  "scripts": {},
+  "readme": "# NodeBB Glassfit SSO\n\nNodeBB Plugin that allows users to login/register via their Glassfit account\n\n## Installation\n\n    npm install nodebb-plugin-sso-glassfit\n",
+  "readmeFilename": "README.md",
+  "_id": "nodebb-plugin-sso-glassfit@0.1.1",
+  "dist": {
+    "shasum": "be844945608f38a7886f8a788aaa91c0a508fb2a"
+  },
+  "_from": "nodebb-plugin-sso-glassfit"
+}

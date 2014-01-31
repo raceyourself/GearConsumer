@@ -1,0 +1,45 @@
+{
+  "name": "passport-glassfit",
+  "version": "0.1.5",
+  "description": "Glassfit authentication strategy for Passport.",
+  "private": true,
+  "keywords": [
+    "passport",
+    "glassfit",
+    "auth",
+    "authn",
+    "authentication",
+    "identity"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/glassfit/passport-glassfit.git"
+  },
+  "bugs": {
+    "url": "http://github.com/glassfit/passport-glassfit/issues"
+  },
+  "author": {
+    "name": "Janne Husberg",
+    "email": "janne.husberg@raceyourself.com",
+    "url": "http://www.janne.husberg.fi/"
+  },
+  "license": "proprietary",
+  "main": "./lib/passport-glassfit",
+  "dependencies": {
+    "pkginfo": "0.2.x",
+    "passport-oauth": "0.1.x"
+  },
+  "devDependencies": {},
+  "scripts": {},
+  "engines": {
+    "node": ">= 0.4.0"
+  },
+  "homepage": "https://github.com/glassfit/passport-glassfit",
+  "readme": "# Passport-Glassfit\n\n[Passport](http://passportjs.org/) strategy for authenticating with [Glassfit](http://www.raceyourself.com/)\nusing the OAuth 2.0 API.\n\n",
+  "readmeFilename": "README.md",
+  "_id": "passport-glassfit@0.1.5",
+  "dist": {
+    "shasum": "a902a024138e51495c2810e9b28df2a5306c505e"
+  },
+  "_from": "passport-glassfit"
+}
