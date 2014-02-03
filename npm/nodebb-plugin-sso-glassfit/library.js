@@ -38,7 +38,7 @@
 				name: 'glassfit',
 				url: '/auth/glassfit',
 				callbackURL: '/auth/glassfit/callback',
-				icon: 'twitter',
+				icon: 'check',
 				scope: ''
 			});
 		}
