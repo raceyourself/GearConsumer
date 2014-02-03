@@ -26,7 +26,7 @@
 				clientSecret: meta.config['social:glassfit:secret'],
 				callbackURL: nconf.get('url') + '/auth/glassfit/callback'
 			}, function(accessToken, refreshToken, profile, done) {
-				Glassfit.login(profile.id, profile.displayName, profile.email, function(err, user) {
+				Glassfit.login(profile.id, profile.username, profile.email, function(err, user) {
 					if (err) {
 						return done(err);
 					}
