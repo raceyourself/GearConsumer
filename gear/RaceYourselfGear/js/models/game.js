@@ -8,12 +8,16 @@
 define({
     name: 'models/game',
     requires: [
+        'core/event',
         'core/storage'
     ],
-    def: function modelsGame(storage) {
+    def: function modelsGame(req) {
         'use strict';
 
-        var s = storage;
+        var e = req.core.event,
+            s = req.core.storage,
+            locked = true,
+            currentGame;
 
         function getName() {
             return "Heart Rate Zombies";
@@ -31,6 +35,24 @@ define({
             return "Your heart rate determines your speed.";
         }
         
+        function isLocked() {
+            return locked;
+        }
+        
+        function unlock() {
+            locked = false;
+        }
+        
+        function setCurrentGame(game) {
+            if (currentGame != null) e.fire(currentGame+'.detach');
+            currentGame = game;
+            if (currentGame != null) e.fire(currentGame+'.attach');
+        }
+        
+        function getCurrentGame() {
+            return currentGame;
+        }
+        
         /**
          * Initializes module.
          */
@@ -42,7 +64,11 @@ define({
             getName: getName,
             getTitle: getTitle,
             getImage: getImage,
-            getDescription: getDescription
+            getDescription: getDescription,
+            isLocked: isLocked,
+            unlock: unlock,
+            setCurrentGame: setCurrentGame,
+            getCurrentGame: getCurrentGame
         };
     }
 

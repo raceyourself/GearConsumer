@@ -5,14 +5,14 @@
  */
 
 define({
-    name: 'views/page/racegame',
+    name: 'views/page/hrzgame',
     requires: [
         'core/event',
         'views/page/statsleft',
         'views/page/statsright',
         'models/race'
     ],
-    def: function viewsPageRaceGame(req) {
+    def: function viewsPageHeartRateZombiesGame(req) {
         'use strict';
 
         var e = req.core.event,
@@ -23,13 +23,13 @@ define({
             TRACK_LENGTH = 100,
             renderTimeout = false,
             bannerTimeout = false,
-            previousTrack = null,
-            round = 1,
-            streak = 0,
+            wave = 1,
             banner = false,
             countingdown = false,
             runnerImage = null,
-            opponentImage = null,
+            zombieImage = null,
+            zombieDistance = false,
+            zombieInterval = false,            
             visible = false;
 
         function show() {
@@ -91,6 +91,7 @@ define({
         }
         function go() {
             race.getOngoingRace().start();
+            startZombies();
             banner = 'Go!';
             render();
             countingdown = false;
@@ -102,41 +103,55 @@ define({
             render();
         }
         
-        function nextRound() {
+        function nextWave() {
             countingdown = true;
-            round++;
-            banner = 'Round ' + round;
+            wave++;
+            banner = 'Wave ' + wave;
             render();
             clearTimeout(bannerTimeout);
             bannerTimeout = setTimeout(startCountdown, 1500);
         }
         
+        function startZombies() {
+            clearInterval(zombieInterval);
+            zombieDistance = -25;
+            zombieInterval = setInterval(zombieTick, Math.min(350, 750-(wave*50)));
+        }
+        
+        function zombieTick() {
+            zombieDistance++;
+            render();
+        }
+        
+        function stopZombies() {
+            clearInterval(zombieInterval);
+            zombieDistance = false;            
+        }
+        
         function step() {
             var r = race.getOngoingRace();
+            if (r.getDistance() < zombieDistance) {
+                navigator.vibrate([1000, 500, 250, 100]);
+                r.stop();
+                stopZombies();
+                r = race.newRace();
+                
+                banner = 'R.I.P.';
+                render();
+                clearTimeout(bannerTimeout);
+                bannerTimeout = setTimeout(nextWave, 1500);
+                return;
+            }
             if (r.getDistance() >= TRACK_LENGTH) {
                 navigator.vibrate(1000);
                 r.stop();
-                var oldTrack = previousTrack;
-                previousTrack = r.track;
+                stopZombies();
                 r = race.newRace();
                 
-                if (oldTrack !== null) {
-                    if (previousTrack[previousTrack.length-1].time <= oldTrack[oldTrack.length-1].time) {
-                        banner = 'You win!';
-                        streak++;
-                        render();
-                        clearTimeout(bannerTimeout);
-                        bannerTimeout = setTimeout(nextRound, 1500);
-                    } else {
-                        banner = 'You lose';
-                        streak = 0;
-                        render();
-                        clearTimeout(bannerTimeout);
-                        bannerTimeout = setTimeout(nextRound, 1500);
-                    }
-                } else {
-                    nextRound();
-                }
+                banner = 'You won!';
+                render();
+                clearTimeout(bannerTimeout);
+                bannerTimeout = setTimeout(nextWave, 1500);
                 return;
             }
             render();
@@ -150,22 +165,6 @@ define({
             var trackWidth = canvas.width - 0 - runnerImage.width;
             var r = race.getOngoingRace();
 
-            // Calculate stuff before rendering anything
-            var opponentDistance = false;
-            if (previousTrack !== null) {
-                var t = r.getDuration();
-                var distance = 0;
-                for (var i=0;i<previousTrack.length;i++) {
-                    if (previousTrack[i].time < t) {
-                        distance = previousTrack[i].distance;
-                    } else {
-                        renderTimeout = setTimeout(render, previousTrack[i].time - t);
-                        break;
-                    }
-                }
-                opponentDistance = distance;
-            }
-            
             // Banner
             if (banner !== false) {
                 context.font = '75px Samsung Sans';
@@ -175,18 +174,14 @@ define({
                 context.fillText(banner, canvas.width/2, 25);
             }
             
-            if (banner === false && opponentDistance !== false) {
-                var delta = r.getDistance() - opponentDistance;
-                var postfix = false;
-                if (delta > 0) {
-                    delta = ~~delta;
-                    postfix = 'ahead';
-                } else {
-                    delta = ~~-delta;
-                    postfix = 'behind';
-                }
+            if (banner === false && zombieDistance !== false) {
+                var delta = r.getDistance() - zombieDistance;
+                delta = ~~delta;
+                var postfix = 'ahead';
+                // TODO: Relative speed: 'catching up', 'breaking away'
+                
                 var columnCenter = canvas.width/2;
-                if (true && streak > 0) columnCenter = ~~(columnCenter/2);
+                columnCenter = ~~(columnCenter/2);
                 
                 if (true) {
                     context.font = '45px Samsung Sans';
@@ -197,14 +192,14 @@ define({
                     context.font = '25px Samsung Sans';
                     context.fillText(postfix, 0+columnCenter, 25+45);
                 }
-                if (streak > 0) {
+                if (true) {
                     context.font = '25px Samsung Sans';
                     context.fillStyle = '#fff';
                     context.textBaseline = "top";
                     context.textAlign = "center";
-                    context.fillText('streak', canvas.width-columnCenter, 25);
+                    context.fillText('Heart Rate', canvas.width-columnCenter, 25);
                     context.font = '45px Samsung Sans';
-                    context.fillText(''+streak, canvas.width-columnCenter, 25+25);
+                    context.fillText('F', canvas.width-columnCenter, 25+25);
                 }
             }
             
@@ -224,9 +219,16 @@ define({
             context.textAlign = "right";
             context.fillText(''+TRACK_LENGTH, canvas.width - 10, canvas.height-25);
             
-            // Opponent
-            if (opponentDistance !== false) {
-                context.drawImage(opponentImage, 0 + (opponentDistance * trackWidth / TRACK_LENGTH), canvas.height - opponentImage.height - 30);    
+            // Zombies
+            if (zombieDistance !== false) {
+                for (var i=0;i<wave;i++) {
+                    var x_offset = (i*(zombieImage.width/2))+(i%2)*10;
+                    var y_offset = (-1+(i+1)%2) * 5;
+                    if (i%2==1) context.globalAlpha = 0.5;
+                    else context.globalAlpha = 1;
+                    context.drawImage(zombieImage, 0 + (zombieDistance * trackWidth / TRACK_LENGTH) - x_offset, canvas.height - zombieImage.height - 30 + y_offset);    
+                }
+                context.globalAlpha = 1;
             }
             
             // Self
@@ -251,7 +253,7 @@ define({
             page.removeEventListener('pageshow', onPageShow);
             page.removeEventListener('pagehide', onPageHide);
         }
-        
+                
         function bindEvents() {
         }
 
@@ -266,18 +268,18 @@ define({
                 runnerImage = this;
             }
             image = new Image();
-            image.src = 'images/runner-other.png';
+            image.src = 'images/zombie.png';
             image.onload = function() {
-                opponentImage = this;
+                zombieImage = this;
             }
             
             bindEvents();
         }
 
         e.listeners({
-            'racegame.show': show,
-            'racegame.attach': attachGame,
-            'racegame.detach': detachGame
+            'hrzgame.show': show,
+            'hrzgame.attach': attachGame,
+            'hrzgame.detach': detachGame
         });
 
         return {

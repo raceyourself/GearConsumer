@@ -80,6 +80,17 @@ img {
 .locked-game {
 }
 
+.locked-img {
+	display: none;
+}
+
+.locked-game .unlocked-img {
+	display: none;
+}
+.locked-game .locked-img {
+	display: inline;
+}
+
 #lockedgame-content {
 	font-size: 20px;
 }

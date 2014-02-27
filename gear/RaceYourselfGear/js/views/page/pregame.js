@@ -9,13 +9,16 @@ define({
     requires: [
         'core/event',
         'views/page/racegame',
-        'models/settings'
+        'views/page/hrzgame',
+        'models/settings',
+        'models/game'
     ],
     def: function viewsPagePregame(req) {
         'use strict';
 
         var e = req.core.event,
             page = null,
+            game = req.models.game,
             timeout,
             gps_lock = false;
 
@@ -24,11 +27,12 @@ define({
         }
 
         function onPageShow() {
-            e.listen('tizen.back', onBack);
-            if (gps_lock) return onGpsLock(); // Short-circuit
-            
             var waitingEl = document.getElementById('pregame-waiting-gps'),
-                lockedEl = document.getElementById('pregame-locked-gps');            
+                lockedEl = document.getElementById('pregame-locked-gps');
+        
+            e.listen('tizen.back', onBack);
+
+            if (gps_lock) return onGpsLock(); // Short-circuit
             
             lockedEl.classList.toggle('hidden', true);
             waitingEl.classList.toggle('hidden', false);
@@ -53,9 +57,17 @@ define({
             lockedEl.classList.toggle('hidden', false);            
         }
         
+        function onRace(ev) {
+            e.fire(game.getCurrentGame()+'.show');
+            ev.preventDefault();
+        }
+        
         function bindEvents() {
+            var raceBtnEl = document.getElementById('pregame-race-btn');
+            
             page.addEventListener('pageshow', onPageShow);
             page.addEventListener('pagehide', onPageHide);
+            raceBtnEl.addEventListener('click', onRace);
         }
 
         function init() {

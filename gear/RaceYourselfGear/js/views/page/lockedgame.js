@@ -38,9 +38,17 @@ define({
             history.back();
         }
         
+        function onPurchaseGameClick() {
+            game.unlock();
+            console.warn('Game unlocked')
+        }
+        
         function bindEvents() {
+            var purchaseEl = document.getElementById('purchasegame');
+            
             page.addEventListener('pageshow', onPageShow);
             page.addEventListener('pagehide', onPageHide);
+            purchaseEl.addEventListener('click', onPurchaseGameClick);
         }
 
         function init() {

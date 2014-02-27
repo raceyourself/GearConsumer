@@ -11,13 +11,15 @@ define({
         'models/application',
         'views/page/pregame',
         'views/page/lockedgame',
-        'models/settings'
+        'models/settings',
+        'models/game'
     ],
     def: function viewsPageGames(req) {
         'use strict';
 
         var e = req.core.event,
             app = req.models.application,
+            game = req.models.game,
             page = null;
 
         function show() {
@@ -30,11 +32,10 @@ define({
             var ryBtnEl = document.getElementById('ry-game-btn'),
                 zombieBtnEl = document.getElementById('hrz-game-btn');
             
-            zombieBtnEl.classList.toggle('locked-game', true);
+            zombieBtnEl.classList.toggle('locked-game', game.isLocked());
         }
         
         function onPageHide() {
-            console.log('games hide');
             e.die('tizen.back', onBack);            
         }
         
@@ -45,11 +46,14 @@ define({
 
         
         function onRaceYourselfGameBtnClick() {
+            game.setCurrentGame('racegame');
             e.fire('pregame.show');
         }
 
         function onHeartRateZombiesGameBtnClick() {
-            e.fire('lockedgame.show');
+            game.setCurrentGame('hrzgame');
+            if (game.isLocked()) e.fire('lockedgame.show');
+            else e.fire('pregame.show');
         }
 
         function bindEvents() {

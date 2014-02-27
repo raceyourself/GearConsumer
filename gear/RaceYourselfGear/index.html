@@ -51,11 +51,12 @@
         <section class="ui-content">
             <ul id="games-list">
 		            <a href="#" id="ry-game-btn" class="menu-item">
-	            	<img src="images/game-ry.png" />
+	            		<img src="images/game-ry.png" class="unlocked-img" />
 		                <span class="title">Race Yourself</span>
 		            </a>
 		            <a href="#" id="hrz-game-btn" class="menu-item">
-	            	<img src="images/game-hrz-locked.png" />
+	            		<img src="images/game-hrz.png" class="unlocked-img" />
+	            		<img src="images/game-hrz-locked.png" class="locked-img" />
 		                <span class="title">Escape Zombies</span>
 		            </a>
         </section>    	
@@ -70,7 +71,7 @@
 	        </div>
         </section>    	
         <div class="footer footer-gray">
-        	<p class="text-center"><a href="#games">Purchase</a></p>
+        	<p class="text-center"><a href="#games" id="purchasegame">Purchase</a></p>
         </div>
     </div>
     
@@ -88,7 +89,7 @@
 		        	<div class="center gps-screen">
 	    				<img src="images/gps-lock.png" />
 	    				<p>GPS locked!</p>
-		           		<a href="#race-game" class="race-btn">
+		           		<a href="#" class="race-btn" id="pregame-race-btn">
 			        		Start Race
 			        	</a>
 	        		</div>

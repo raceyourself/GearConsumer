@@ -17,6 +17,7 @@ define({
 
         var e = req.core.event,
             race = req.models.race,
+            game = req.models.game,
             Timer = req.models.timer.Timer,
             page = null,
             timer = null,
@@ -50,7 +51,7 @@ define({
         }
         
         function flingRight() {
-            e.fire('racegame.show');
+            e.fire(game.getCurrentGame()+'.show');
         }
         
         function tick() {
