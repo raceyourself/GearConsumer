@@ -100,7 +100,14 @@ define({
                     return {
                         getRequestedAppControl: noop,
                         close: noop,
-                        hide: noop
+                        hide: noop,
+                        exit: function() {
+                            console.error('Mock "closing" application..');
+                            gear.ui.changePage('#closing');
+                            setTimeout(function() {
+                                window.location.reload(true);
+                            }, 1000);
+                        }
                     };
                 }
             };

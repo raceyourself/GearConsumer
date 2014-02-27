@@ -16,6 +16,7 @@ define({
 
         var e = req.core.event,
             page = null,
+            timeout,
             gps_lock = false;
 
         function show() {
@@ -23,6 +24,7 @@ define({
         }
 
         function onPageShow() {
+            e.listen('tizen.back', onBack);
             if (gps_lock) return onGpsLock(); // Short-circuit
             
             var waitingEl = document.getElementById('pregame-waiting-gps'),
@@ -31,7 +33,16 @@ define({
             lockedEl.classList.toggle('hidden', true);
             waitingEl.classList.toggle('hidden', false);
             
-            setTimeout(onGpsLock, 1000);
+            timeout = setTimeout(onGpsLock, 1000);
+        }
+        
+        function onPageHide() {
+            e.die('tizen.back', onBack);            
+            clearTimeout(timeout);
+        }
+        
+        function onBack() {
+            gear.ui.changePage('#games');
         }
         
         function onGpsLock() {
@@ -44,6 +55,7 @@ define({
         
         function bindEvents() {
             page.addEventListener('pageshow', onPageShow);
+            page.addEventListener('pagehide', onPageHide);
         }
 
         function init() {

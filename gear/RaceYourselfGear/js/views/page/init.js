@@ -21,19 +21,9 @@ define({
             fling_limit = {};
 
         function onHardwareKeysTap(ev) {
-            var keyName = ev.keyName,
-                page = document.getElementsByClassName('ui-page-active')[0],
-                pageid = page ? page.id : '';
+            var keyName = ev.keyName;
             if (keyName === 'back') {
-                if (pageid === 'main' || pageid === 'ajax-loader') {
-                    app.closeApplication();
-                } else if (pageid === 'delete') {
-                    gear.ui.changePage('#details', {fromHashChange: true});
-                } else if (pageid === 'settings') {
-                    gear.ui.changePage('#main');
-                } else {
-                    history.back();
-                }
+                e.fire('tizen.back');
             }
         }
         
@@ -42,15 +32,28 @@ define({
         }
 
         function onTouchMove(ev) {        
+            ev.preventDefault();
         }
 
         function onTouchEnd(ev) {        
         	var dx = ev.changedTouches.item(0).pageX - touch_start.screenX;
         	var dy = ev.changedTouches.item(0).pageY - touch_start.screenY;
-        	if (dx >= fling_limit.x) e.fire('fling.right');
-        	if (-dx >= fling_limit.x) e.fire('fling.left');
-        	if (dy >= fling_limit.y) e.fire('fling.down');
-        	if (-dy >= fling_limit.y) e.fire('fling.up');
+        	if (dx >= fling_limit.x) {
+                console.log('DEBUG: fling.right')
+        	    e.fire('fling.right');
+        	}
+        	if (-dx >= fling_limit.x) {
+                console.log('DEBUG: fling.left')
+        	    e.fire('fling.left');
+        	}
+        	if (dy >= fling_limit.y) {
+                console.log('DEBUG: tizen.back')
+        	    e.fire('tizen.back');
+        	}
+        	if (-dy >= fling_limit.y) {
+        	    console.log('DEBUG: fling.up')
+        	    e.fire('fling.up');
+        	}
         	
         	touch_start = null;
         }
@@ -61,7 +64,6 @@ define({
         
         function onError(msg, url, line) {
             gear.ui.changePage('#error-page');
-            app.closeApplication();
         }
 
         function bindEvents() {

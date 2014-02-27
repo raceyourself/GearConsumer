@@ -12,29 +12,36 @@
 </head>
 <body>
 
-    <div class="ui-page ui-page-active" id="main">
+    <div class="ui-page ui-page-active flick-left flick-right" id="main">
         <section class="ui-content">
-        	<div class="center-container unselectable">
-	        	<div class="center">
+        	<div class="unselectable splash">
 	        		<img src="images/splash.png" />
-	        		<p>Gear edition</p>
-	        	</div>
 			</div>
+	        <div class="footer">
+	        	<p class="text-center">Gear edition</p>
+	        </div>
         </section>
     </div>
 
     <div class="ui-page" id="mode">
-        <header class="ui-header" data-position="fixed">
-            <h2 class="ui-title">Mode of transport</h2>
-        </header>
-        <section class="ui-content">
-            <a href="#" id="runner-mode-btn" class="tail">
-                <span class="title">Runner</span>
-            </a>
-            <a href="#" id="cyclist-mode-btn" class="tail">
-                <span class="title">Cyclist</span>
-            </a>
-        </section>    	
+    	<div class="navborder">
+	        <header class="ui-header" data-position="fixed">
+	            <h2 class="ui-title">Mode of transport</h2>
+	        </header>
+	        <section class="ui-content">
+	            <a href="#" id="runner-mode-btn" class="menu-item">
+		            	<img src="images/menu-runner.png" />
+		                <span class="title">Runner</span>
+	            </a>
+	            <a href="#" id="cyclist-mode-btn" class="menu-item">
+		            	<img src="images/menu-cyclist.png" />
+		                <span class="title">Cyclist</span>
+	            </a>
+	        </section>    	
+		    <div class="footer footer-gray">
+		    	<p class="text-center">Settings</p>
+		    </div>
+	    </div>
     </div>
     
     <div class="ui-page" id="games">
@@ -42,18 +49,15 @@
             <h2 class="ui-title">Games</h2>
         </header>
         <section class="ui-content">
-            <ul class="ui-listview listview scrollable" id="games-list">
-            	<li>
-		            <a href="#" id="ry-game-btn" class="game-btn">
+            <ul id="games-list">
+		            <a href="#" id="ry-game-btn" class="menu-item">
+	            	<img src="images/game-ry.png" />
 		                <span class="title">Race Yourself</span>
 		            </a>
-	            </li>
-            	<li>
-		            <a href="#" id="hrz-game-btn" class="game-btn">
-		                <span class="title">Heart Rate Zombies</span>
+		            <a href="#" id="hrz-game-btn" class="menu-item">
+	            	<img src="images/game-hrz-locked.png" />
+		                <span class="title">Escape Zombies</span>
 		            </a>
-            	</li>
-            </ul>
         </section>    	
     </div>
     
@@ -61,18 +65,20 @@
         <header class="ui-header" data-position="fixed">
             <h2 id="lockedgame-title" class="ui-title"></h2>
         </header>
-        <section class="ui-content">
-        	<p id="lockedgame-content">
-        	</p>
-        	To unlock please go to the store. 
+        <section class="ui-content" style="padding-bottom: 70px">
+	        <div id="lockedgame-content" class="text-center">
+	        </div>
         </section>    	
+        <div class="footer footer-gray">
+        	<p class="text-center"><a href="#games">Purchase</a></p>
+        </div>
     </div>
     
     <div class="ui-page" id="pregame">
         	<div id="pregame-waiting-gps" class="fill hidden">
 	        	<div class="center-container">
 		        	<div class="center gps-screen">		        	
-		        		<img src="images/gps-waiting.gif" />
+		        		<img src="images/gps-waiting.png" />
         				<p>Waiting on GPS lock from phone</p>
 	        		</div>
 	        	</div>
@@ -80,7 +86,8 @@
         	<div id="pregame-locked-gps" class="fill hidden">
             	<div class="center-container">
 		        	<div class="center gps-screen">
-	    				<img src="images/gps-lock.gif" />
+	    				<img src="images/gps-lock.png" />
+	    				<p>GPS locked!</p>
 		           		<a href="#race-game" class="race-btn">
 			        		Start Race
 			        	</a>
@@ -89,13 +96,13 @@
         	</div>
     </div>
     
-    <div class="ui-page" id="race-game">
+    <div class="ui-page flick-left flick-right" id="race-game">
 	  	<canvas id="race-canvas">
 	       	Canvas not supported
 	    </canvas>
     </div>
     
-    <div class="ui-page" id="stats-left">
+    <div class="ui-page flick-right" id="stats-left">
         <section class="ui-content">
         	<div class="stat">
         		<div class="stat-label">Distance:</div>
@@ -109,7 +116,7 @@
         </section>
     </div>
     
-    <div class="ui-page" id="stats-right">
+    <div class="ui-page flick-left" id="stats-right">
         <section class="ui-content">
         	<div class="stat">
         		<div class="stat-label">Pace:</div>
@@ -272,6 +279,10 @@
     
     <div class="ui-page" id="error-page">
     	<p>Something bad happened</p>
+    </div>
+
+    <div class="ui-page" id="closing">
+    	<p>Closing application</p>
     </div>
 
     <script src="./lib/gear-ui/js/gear.ui.js"></script>

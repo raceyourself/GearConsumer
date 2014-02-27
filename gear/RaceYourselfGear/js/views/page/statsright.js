@@ -54,7 +54,10 @@ define({
         }
         
         function tick() {
-            paceEl.innerHTML = ongoing.getPace().toFixed(2);
+            var pace = ongoing.getPace();
+            if (isFinite(pace)) pace = pace.toFixed(2);
+            else pace = '&infin;'
+            paceEl.innerHTML = pace;
             stepsEl.innerHTML = ongoing.getSteps();
         }
         

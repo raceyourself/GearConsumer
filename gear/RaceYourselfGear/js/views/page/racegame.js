@@ -20,8 +20,9 @@ define({
             page = null,
             canvas,
             context,
-            TRACK_LENGTH = 10,
+            TRACK_LENGTH = 100,
             renderTimeout = false,
+            bannerTimeout = false,
             previousTrack = null,
             round = 1,
             streak = 0,
@@ -39,9 +40,10 @@ define({
             visible = true;
             e.listen('fling.left', flingLeft);
             e.listen('fling.right', flingRight);
+            e.listen('tizen.back', onBack);
             
             var r = race.getOngoingRace();
-            if (r == null || !r.isRunning()) {
+            if (r === null || r.hasStopped()) {
                 r = race.newRace();
                 e.listen('pedometer.step', step);
                 startCountdown();
@@ -55,32 +57,45 @@ define({
         
         function onPageHide() {
             visible = false;
-            clearTimeout(render);
+            clearTimeout(renderTimeout);
             e.die('fling.left', flingLeft);
             e.die('fling.right', flingRight);
+            e.die('tizen.back', onBack);
         }        
+        
+        function onBack() {
+            var r = race.getOngoingRace();
+            if (r !== null) r.stop();
+            clearTimeout(renderTimeout);
+            clearTimeout(bannerTimeout)
+            gear.ui.changePage('#games');
+        }
         
         function startCountdown() {
             countingdown = true;
-            setTimeout(ready, 1000);
+            clearTimeout(bannerTimeout);
+            bannerTimeout = setTimeout(ready, 1000);
         }
         
         function ready() {
             banner = 'Ready';
             render();
-            setTimeout(set, 1000);
+            clearTimeout(bannerTimeout);
+            bannerTimeout = setTimeout(set, 1000);
         }
         function set() {
             banner = 'Set';
             render();
-            setTimeout(go, 1000);
+            clearTimeout(bannerTimeout);
+            bannerTimeout = setTimeout(go, 1000);
         }
         function go() {
             race.getOngoingRace().start();
             banner = 'Go!';
             render();
             countingdown = false;
-            setTimeout(clearbanner, 1000);
+            clearTimeout(bannerTimeout);
+            bannerTimeout = setTimeout(clearbanner, 1000);
         }
         function clearbanner() {
             banner = false;
@@ -92,7 +107,8 @@ define({
             round++;
             banner = 'Round ' + round;
             render();
-            setTimeout(startCountdown, 1500);
+            clearTimeout(bannerTimeout);
+            bannerTimeout = setTimeout(startCountdown, 1500);
         }
         
         function step() {
@@ -109,12 +125,14 @@ define({
                         banner = 'You win!';
                         streak++;
                         render();
-                        setTimeout(nextRound, 1500);
+                        clearTimeout(bannerTimeout);
+                        bannerTimeout = setTimeout(nextRound, 1500);
                     } else {
                         banner = 'You lose';
                         streak = 0;
                         render();
-                        setTimeout(nextRound, 1500);
+                        clearTimeout(bannerTimeout);
+                        bannerTimeout = setTimeout(nextRound, 1500);
                     }
                 } else {
                     nextRound();
@@ -141,7 +159,7 @@ define({
                     if (previousTrack[i].time < t) {
                         distance = previousTrack[i].distance;
                     } else {
-                        setTimeout(render, previousTrack[i].time - t);
+                        renderTimeout = setTimeout(render, previousTrack[i].time - t);
                         break;
                     }
                 }

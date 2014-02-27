@@ -8,6 +8,7 @@ define({
     name: 'views/page/main',
     requires: [
         'core/event',
+        'models/application',
         'views/page/mode',
         'views/page/games'
     ],
@@ -15,6 +16,7 @@ define({
         'use strict';
 
         var e = req.core.event,
+            app = req.models.application,
             page = null;
 
         function show() {
@@ -22,21 +24,27 @@ define({
         }
         
         function onPageShow() {
-            e.listen('fling.up', flingUp);
+            e.listen('fling.right', flingRight);
             e.listen('fling.left', flingLeft);
+            e.listen('tizen.back', onBack);
         }
 
         function onPageHide() {
-            e.die('fling.up', flingUp);
+            e.die('fling.right', flingRight);
             e.die('fling.left', flingLeft);
+            e.die('tizen.back', onBack);
         }
         
-        function flingUp() {
+        function flingRight() {
             e.fire('mode.show');
         }
         
         function flingLeft() {
             e.fire('games.show');
+        }
+        
+        function onBack() {
+            app.closeApplication();
         }
 
         function bindEvents() {

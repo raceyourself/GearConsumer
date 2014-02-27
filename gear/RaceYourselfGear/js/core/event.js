@@ -73,7 +73,8 @@ define({
                 window.removeEventListener(eventName, handler);
 
                 // find it in the array and clear the reference
-                handlerIndex = listeners[eventName].indexOf(handler);
+                handlerIndex = -1;
+                if (listeners[eventName]) listeners[eventName].indexOf(handler);
                 if (handlerIndex !== -1) {
                     listeners[eventName].splice(handlerIndex, 1);
                 }

@@ -40,7 +40,7 @@ define({
          * Constructor
          */
         function Race() {
-            this.startDate = Date.now();
+            this.startDate = null;
             this.duration = null,
             this.initialDistance = null;
             this.distance = 0; // meters
@@ -48,7 +48,8 @@ define({
             this.initialSteps = null;
             this.steps = 0;
             this.track = [];
-            this.running = true;
+            this.running = false;
+            this.stopped = false;
         }
         Race.prototype = {
             start: function start() {
@@ -65,6 +66,8 @@ define({
                     this.initiaDistance = ld.distance;
                     this.initialStesp = ld.totalStep();
                 }
+                this.startDate = Date.now();
+                this.running = true;
             },
             
             stop: function stop() {
@@ -76,10 +79,15 @@ define({
                 }
                 this.duration = this.getDuration();
                 this.running = false;
+                this.stopped = true;
             },
             
             isRunning: function isRunning() {
                 return this.running;
+            },
+            
+            hasStopped: function hasStopped() {
+                return this.stopped;
             },
             
             getDistance: function getDistance() {

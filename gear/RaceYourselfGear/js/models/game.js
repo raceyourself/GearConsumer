@@ -23,6 +23,10 @@ define({
             return "Escape Zombies";
         }
         
+        function getImage() {
+            return "images/heartratemonitor.png";
+        }
+        
         function getDescription() {
             return "Your heart rate determines your speed.";
         }
@@ -37,6 +41,7 @@ define({
             init: init,
             getName: getName,
             getTitle: getTitle,
+            getImage: getImage,
             getDescription: getDescription
         };
     }

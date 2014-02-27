@@ -94,9 +94,9 @@ define({
             function randomizeStatus() {
                 var randomIndex, previousStatus = pedometerInfo.stepStatus;
 
-                // 'NOT_MOVING' should be more common than only 10%
+                // 'RUNNING' should be more common than only 10%
                 if (Math.random() < 0.3) {
-                    pedometerInfo.stepStatus = PedometerStepStatus.NOT_MOVING;
+                    pedometerInfo.stepStatus = PedometerStepStatus.RUNNING;
                 } else {
                     randomIndex = Math.floor(Math.random() * statuses.length);
 

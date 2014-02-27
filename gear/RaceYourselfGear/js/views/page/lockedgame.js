@@ -22,15 +22,25 @@ define({
         }
 
         function onPageShow() {
+            e.listen('tizen.back', onBack);
             var headerEl = document.getElementById('lockedgame-title'),
                 contentEl = document.getElementById('lockedgame-content');
             
             headerEl.innerHTML = game.getTitle();
-            contentEl.innerHTML = game.getDescription();
+            contentEl.innerHTML = '<img src="' + game.getImage() + '"/><br/>' + game.getDescription();
+        }
+        
+        function onPageHide() {
+            e.die('tizen.back', onBack);
+        }
+        
+        function onBack() {
+            history.back();
         }
         
         function bindEvents() {
             page.addEventListener('pageshow', onPageShow);
+            page.addEventListener('pagehide', onPageHide);
         }
 
         function init() {
