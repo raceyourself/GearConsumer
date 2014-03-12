@@ -1,6 +1,21 @@
+/*
+  * Copyright (c) 2013 Samsung Electronics Co., Ltd
+  *
+  * Licensed under the Flora License, Version 1.1 (the "License");
+  * you may not use this file except in compliance with the License.
+  * You may obtain a copy of the License at
+  *
+  *     http://floralicense.org/license/
+  *
+  * Unless required by applicable law or agreed to in writing, software
+  * distributed under the License is distributed on an "AS IS" BASIS,
+  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  * See the License for the specific language governing permissions and
+  * limitations under the License.
+  */
+
 ;(function(window, undefined) {
 	
-
 /*!
  * jQuery JavaScript Library v2.0.2
  * http://jquery.com/
@@ -9688,16 +9703,36 @@ $.each( { show: "fadeIn", hide: "fadeOut" }, function( method, defaultEffect ) {
 })( jQuery );
 
 
-(function( $, window, undefined ) {
+function ensureNS( name ) {
+	var obj = window;
 
-	$.micro = $.micro || {};
+	name = name.split( "." );
+	$.each(name, function( idx, name ) {
+		if( typeof obj[name] === "undefined" ) {
+			obj[name] = {};
+		}
 
-	$.extend($.micro, {
+		obj = obj[name];
 	});
 
-	$.micro.defaults = $.micro.defaults || {};
+	return obj;
+}
 
-	$.extend($.micro.defaults, {
+var namespace = "gear.ui",
+
+	ns = ensureNS( namespace );
+
+/*
+* Copyright (c) 2010 - 2014 Samsung Electronics Co., Ltd.
+* License : MIT License V2
+*/
+
+
+(function( $, ns, window, undefined ) {
+
+	ns.defaults = ns.defaults || {};
+
+	$.extend(ns.defaults, {
 		autoInitializePage: true,
 		
 		// transition
@@ -9706,14 +9741,19 @@ $.each( { show: "fadeIn", hide: "fadeOut" }, function( method, defaultEffect ) {
 
 	});
 
-})( jQuery, this );
+})( jQuery, ns, this );
 
 
+/*
+* Copyright (c) 2010 - 2014 Samsung Electronics Co., Ltd.
+* License : MIT License V2
+*/
 
-(function( $, undefined ) {
+
+(function( $, ns, undefined ) {
 		var path;
 
-		$.micro.path = path = {
+		ns.path = path = {
 			// This scary looking regular expression parses an absolute URL or its relative
 			// variants (protocol, site, document, query, and hash), into the various
 			// components (protocol, host, path, query, fragment, etc that make up the
@@ -9894,9 +9934,9 @@ $.each( { show: "fadeIn", hide: "fadeOut" }, function( method, defaultEffect ) {
 				return u.hrefNoHash + s + ( s.charAt( s.length - 1 ) !== "?" ? "&" : "" ) + p;
 			},
 
-			convertUrlToDataUrl: function( absUrl ) {
+			convertUrlToDataUrl: function( absUrl, allowEmbeddedOnlyBaseDoc ) {
 				var u = path.parseUrl( absUrl );
-				if ( path.isEmbedded( u ) ) {
+				if ( path.isEmbedded( u, allowEmbeddedOnlyBaseDoc ) ) {
 					// remove otherwise the Data Url won't match the id of the embedded Page.
 					return u.hash
 						.replace( /^#/, "" )
@@ -9940,91 +9980,20 @@ $.each( { show: "fadeIn", hide: "fadeOut" }, function( method, defaultEffect ) {
 				return ( /^#[^#]+$/ ).test( hash );
 			},
 
-			//check whether a url is referencing the same domain, or an external domain or different protocol
-			//could be mailto, etc
-			isExternal: function( url ) {
-				var u = path.parseUrl( url );
-				return u.protocol && u.domain !== this.documentUrl.domain ? true : false;
-			},
-
 			hasProtocol: function( url ) {
 				return ( /^(:?\w+:)/ ).test( url );
 			},
 
-			isEmbedded: function( url ) {
+			isEmbedded: function( url, allowEmbeddedOnlyBaseDoc ) {
 				var u = path.parseUrl( url );
 
 				if ( u.protocol !== "" ) {
-					return ( !this.isPath(u.hash) && u.hash && ( u.hrefNoHash === this.parseLocation().hrefNoHash ) );
+					return u.hash &&
+								( allowEmbeddedOnlyBaseDoc ?
+										u.hrefNoHash === path.documentUrl.hrefNoHash :
+										u.hrefNoHash === path.parseLocation().hrefNoHash );
 				}
 				return ( /^#/ ).test( u.href );
-			},
-
-			squash: function( url, resolutionUrl ) {
-				var href, cleanedUrl, search, stateIndex,
-					isPath = this.isPath( url ),
-					uri = this.parseUrl( url ),
-					preservedHash = uri.hash,
-					uiState = "";
-
-				// produce a url against which we can resole the provided path
-				resolutionUrl = resolutionUrl || (path.isPath(url) ? path.getLocation() : path.getDocumentUrl());
-
-				// If the url is anything but a simple string, remove any preceding hash
-				// eg #foo/bar -> foo/bar
-				//    #foo -> #foo
-				cleanedUrl = isPath ? path.stripHash( url ) : url;
-
-				// If the url is a full url with a hash check if the parsed hash is a path
-				// if it is, strip the #, and use it otherwise continue without change
-				cleanedUrl = path.isPath( uri.hash ) ? path.stripHash( uri.hash ) : cleanedUrl;
-
-				// Split the UI State keys off the href
-				stateIndex = cleanedUrl.indexOf( this.uiStateKey );
-
-				// store the ui state keys for use
-				if ( stateIndex > -1 ) {
-					uiState = cleanedUrl.slice( stateIndex );
-					cleanedUrl = cleanedUrl.slice( 0, stateIndex );
-				}
-
-				// make the cleanedUrl absolute relative to the resolution url
-				href = path.makeUrlAbsolute( cleanedUrl, resolutionUrl );
-
-				// grab the search from the resolved url since parsing from
-				// the passed url may not yield the correct result
-				search = this.parseUrl( href ).search;
-
-				// TODO all this crap is terrible, clean it up
-				if ( isPath ) {
-					// reject the hash if it's a path or it's just a dialog key
-					if ( path.isPath( preservedHash ) || preservedHash.replace("#", "").indexOf( this.uiStateKey ) === 0) {
-						preservedHash = "";
-					}
-
-					// Append the UI State keys where it exists and it's been removed
-					// from the url
-					if ( uiState && preservedHash.indexOf( this.uiStateKey ) === -1) {
-						preservedHash += uiState;
-					}
-
-					// make sure that pound is on the front of the hash
-					if ( preservedHash.indexOf( "#" ) === -1 && preservedHash !== "" ) {
-						preservedHash = "#" + preservedHash;
-					}
-
-					// reconstruct each of the pieces with the new search string and hash
-					href = path.parseUrl( href );
-					href = href.protocol + "//" + href.host + href.pathname + search + preservedHash;
-				} else {
-					href += href.indexOf( "#" ) > -1 ? uiState : "#" + uiState;
-				}
-
-				return href;
-			},
-
-			isPreservableHash: function( hash ) {
-				return hash.replace( "#", "" ).indexOf( this.uiStateKey ) === 0;
 			},
 
 			// Escape weird characters in the hash if it is to be used as a selector
@@ -10046,7 +10015,7 @@ $.each( { show: "fadeIn", hide: "fadeOut" }, function( method, defaultEffect ) {
 					samePath = u.hrefNoHash === this.documentUrl.hrefNoHash,
 
 					// Get the first page element.
-					fp = $.micro.firstPage,
+					fp = ns.firstPage,
 
 					// Get the id of the first page element if it has one.
 					fpId = fp && fp[0] ? fp[0].id : undefined;
@@ -10070,27 +10039,38 @@ $.each( { show: "fadeIn", hide: "fadeOut" }, function( method, defaultEffect ) {
 			return asParsedObject ? $.extend( {}, path.documentBase ) : path.documentBase.href;
 		};
 
-})( jQuery );
+})( jQuery, ns );
 
 
+/*
+* Copyright (c) 2010 - 2014 Samsung Electronics Co., Ltd.
+* License : MIT License V2
+*/
 
-(function( $, window, undefined ) {
 
-	$.micro.selectors = {
+(function( $, ns, window, undefined ) {
+
+	ns.selectors = {
 		page: ".ui-page",
+		activePage: ".ui-page-active",
 		content: ".ui-content",
 		header: ".ui-header",
 		footer: ".ui-footer",
 		popup: ".ui-popup"
 	};
 
-})( jQuery, this );
+})( jQuery, ns, this );
 
 
+/*
+* Copyright (c) 2010 - 2014 Samsung Electronics Co., Ltd.
+* License : MIT License V2
+*/
 
-(function( $, window, undefined ) {
 
-	$.extend($.micro, {
+(function( $, ns, window, undefined ) {
+
+	$.extend(ns, {
 
 		$window: $(window),
 		$document: $(window.document),
@@ -10126,35 +10106,366 @@ $.each( { show: "fadeIn", hide: "fadeOut" }, function( method, defaultEffect ) {
 
 	});
 
-})( jQuery, this );
+})( jQuery, ns, this );
 
 
+/*
+* Copyright (c) 2010 - 2014 Samsung Electronics Co., Ltd.
+* License : MIT License V2
+*/
 
-(function( $, undefined ) {
 
-	$.micro.navigator = $.micro.navigator || {};
-	$.micro.navigator.rule = $.micro.navigator.rule || {};
+(function( $, ns, undefined ) {
 
-	$.micro.navigator.rule.page = {
+	var $window = ns.$window,
+		$document = ns.$document,
+		historyUid = 0,
+		historyActiveIndex = 0,
+		historyVolatileMode = false;
 
-		filter: $.micro.selectors.page,
+	function findClosestLink( ele )	{
+		while ( ele ) {
+			if ( ( typeof ele.nodeName === "string" ) && ele.nodeName.toLowerCase() === "a" ) {
+				break;
+			}
+			ele = ele.parentNode;
+		}
+		return ele;
+	}
+
+	function linkClickHandler( event ) {
+		var link = findClosestLink( event.target ),
+			$link = $( link ),
+			href, useDefaultUrlHandling, options;
+
+		if ( !link || event.which > 1 ) {
+			return;
+		}
+
+		href = $link.attr("href");
+		useDefaultUrlHandling = $link.is( "[rel='external']" ) || $link.is( "[target]" );
+		if(useDefaultUrlHandling) {
+			return;
+		}
+
+		options = ns.getData($link);
+
+		event.preventDefault();
+		ns.navigator.open(href, options);
+	}
+
+	function popStateHandler( event ) {
+		var state = event.originalEvent.state,
+			prevState = ns.navigator.history.activeState,
+			rules = ns.navigator.rule,
+			options, to, url, isContinue = true, reverse, transition;
+
+		if (!state) {
+			return;
+		}
+
+		to = state.url;
+		reverse = ns.navigator.history.getDirection( state ) === "back";
+		transition = !reverse ? state.transition : prevState && prevState.transition || "none";
+
+		options = $.extend({}, state, {
+			reverse: reverse,
+			transition: transition,
+			fromHashChange: true
+		});
+
+		url = ns.path.getLocation();
+		$.each(rules, function(name, rule) {
+			if ( rule.onHashChange(url, options) ) {
+				isContinue = false;
+			}
+		});
+
+		ns.navigator.history.setActive(state);
+
+		if ( isContinue ) {
+			ns.navigator.open(to, options);
+		}
+
+	}
+
+	ns.navigator = ns.navigator || {};
+	ns.navigator.rule = ns.navigator.rule || {};
+
+	ns.navigator.defaults = {
+		fromHashChange: false,
+		volatileRecord: false,
+		reverse: false,
+		showLoadMsg: true,
+		loadMsgDelay: 0
+	};
+
+	ns.changePage = function( to, options) {
+		ns.navigator.open( to, options );
+	};
+
+	ns.openPopup = function( to, options) {
+		ns.navigator.open( to, $.extend({}, {rel: "popup"}, options) );
+	};
+
+	ns.closePopup = function() {
+		ns.back();
+	};
+
+	ns.back = function() {
+		ns.navigator.history.back();
+	};
+
+	$.extend( ns.navigator, {
+
+		register: function( container ) {
+			this.container = container;
+
+			this.linkClickHandler = $.proxy( linkClickHandler, this );
+			this.popStateHandler = $.proxy( popStateHandler, this );
+
+			$document.bind({
+				"click": this.linkClickHandler,
+			});
+
+			$window.bind({
+				"popstate": this.popStateHandler
+			});
+
+		},
+
+		destroy: function () {
+			$document.unbind({
+				"click": this.linkClickHandler,
+			});
+
+			$window.unbind({
+				"popstate": this.popStateHandler
+			});
+		},
+
+		open: function ( to, options ) {
+			var rel = options && options.rel || "page",
+				rule = ns.navigator.rule[rel],
+				deferred, filter, settings;
+
+			if(rule) {
+
+				settings = $.extend( {
+						rel: rel
+				}, ns.navigator.defaults, rule.option(), options );
+
+				filter = rule.filter;
+
+				deferred = $.Deferred();
+				deferred.done( function( options, content ) {
+					rule.open( content, options );
+				});
+				deferred.fail(function( options ) {
+					rule.onOpenFailed( options );
+					ns.fireEvent(ns.pageContainer, "changefailed", options);
+				});
+
+				if ( $.type(to) === "string" ) {
+
+					if ( !to.replace( /[#|\s]/g, "" ) ) {
+						return;
+					}
+
+					this._loadUrl(to, settings, rule, deferred);
+
+				} else {
+					if( $(to).filter(filter).length ) {
+						deferred.resolve( settings, to );
+					} else {
+						deferred.reject( settings );
+					}
+				}
+
+			} else {
+				throw new Error("Not defined navigator rule ["+ rel +"]");
+			}
+
+		},
+
+		_loadUrl: function( url, options, rule, deferred) {
+			var absUrl = ns.path.makeUrlAbsolute( url, ns.path.parseLocation() ),
+				content, detail;
+
+			content = rule.find( absUrl );
+
+			if ( ( !content || content.length === 0 ) &&
+					ns.path.isEmbedded( absUrl ) ) {
+				deferred.reject( detail );
+				return;
+			}
+
+			// If the content we are interested in is already in the DOM,
+			// and the caller did not indicate that we should force a
+			// reload of the file, we are done. Resolve the deferrred so that
+			// users can bind to .done on the promise
+			if ( content && content.length ) {
+				detail = $.extend({absUrl: absUrl}, options);
+				deferred.resolve( detail, content );
+				return;
+			}
+
+			if ( options.showLoadMsg ) {
+				this._showLoading( options.loadMsgDelay );
+			}
+
+			// Load the new content.
+			$.ajax({
+				url: absUrl,
+				type: options.type,
+				data: options.data,
+				contentType: options.contentType,
+				dataType: "html",
+				success: this._loadSuccess( absUrl, options, rule, deferred ),
+				error: this._loadError( absUrl, options, deferred )
+			});
+		},
+
+		_loadError: function( absUrl, settings, deferred ) {
+			return $.proxy(function(/* xhr, textStatus, errorThrown */) {
+				var detail = $.extend({url: absUrl}, settings);
+
+				// Remove loading message.
+				if ( settings.showLoadMsg ) {
+					this._showError();
+				}
+
+				ns.fireEvent(this.container, "loadfailed", detail);
+				deferred.reject( detail );
+
+			}, this);
+		},
+
+		// TODO it would be nice to split this up more but everything appears to be "one off"
+		//      or require ordering such that other bits are sprinkled in between parts that
+		//      could be abstracted out as a group
+		_loadSuccess: function( absUrl, settings, rule, deferred ) {
+			var detail = $.extend({url: absUrl}, settings);
+
+			return $.proxy(function( html/*, textStatus, xhr */) {
+				var content;
+
+				content = rule.parse( html, absUrl );
+
+				// Remove loading message.
+				if ( settings.showLoadMsg ) {
+					this._hideLoading();
+				}
+
+				if( $(content).length ) {
+					deferred.resolve( detail, content );
+				} else {
+					deferred.reject( detail );
+				}
+
+			}, this);
+		},
+
+		_showLoading: function( delay ) {
+			this.container.pagecontainer("showLoading", delay);
+		},
+
+		_showError: function() {
+
+		},
+
+		_hideLoading: function() {
+
+		}
+	});
+
+	ns.navigator.history = {
+		activeState : null,
+
+		replace: function(state, pageTitle, url) {
+			var newState = $.extend({}, state, {
+				uid: historyVolatileMode ? historyActiveIndex : ++historyUid
+			});
+
+			$window[0].history[ historyVolatileMode ? "replaceState" : "pushState" ](newState, pageTitle, url);
+
+			this.setActive(newState);
+		},
+
+		back: function() {
+			$window[0].history.back();
+		},
+
+		setActive: function( state ) {
+			if ( state ) {
+				this.activeState = state;
+				historyActiveIndex = state.uid;
+
+				if(state.volatileRecord) {
+					this.enableVolatileRecord();
+					return;
+				}
+			}
+
+			this.disableVolatileMode();
+		},
+
+		getDirection: function( state ) {
+			var direction;
+
+			if ( state ) {
+				direction = state.uid < historyActiveIndex ? "back" : "forward";
+				return direction;
+			}
+
+			return "back";
+		},
+
+		enableVolatileRecord: function() {
+			historyVolatileMode = true;
+		},
+
+		disableVolatileMode: function() {
+			historyVolatileMode = false;
+		},
+	};
+
+})( jQuery, ns );
+
+
+/*
+* Copyright (c) 2010 - 2014 Samsung Electronics Co., Ltd.
+* License : MIT License V2
+*/
+
+
+(function( $, ns, undefined ) {
+
+	var baseElement;
+
+	ns.navigator = ns.navigator || {};
+	ns.navigator.rule = ns.navigator.rule || {};
+
+	ns.navigator.rule.page = {
+
+		filter: ns.selectors.page,
 
 		option: function() {
 			return {
-				transition: $.micro.defaults.pageTransition
+				transition: ns.defaults.pageTransition
 			};
 		},
 
 		open: function( to, options ) {
 			var $toPage = $(to),
-				pageTitle = $.micro.$document[0].title,
+				pageTitle = ns.$document[0].title,
 				url, state = {};
 
-			if ( $toPage[0] === $.micro.$firstPage[0] && !options.dataUrl ) {
-				options.dataUrl = $.micro.path.documentUrl.hrefNoHash;
+			if ( $toPage[0] === ns.firstPage[0] && !options.dataUrl ) {
+				url = ns.path.documentUrl.hrefNoHash;
+			} else {
+				url = $toPage.data( "url" );
 			}
-
-			url = options.dataUrl && $.micro.path.convertUrlToDataUrl(options.dataUrl) || $toPage.data( "url" );
 
 			pageTitle = $toPage.data( "title" ) || ($toPage.children( ".ui-header" ).find( ".ui-title" ).text()) || pageTitle;
 			if( !$toPage.data( "title" ) ) {
@@ -10163,34 +10474,138 @@ $.each( { show: "fadeIn", hide: "fadeOut" }, function( method, defaultEffect ) {
 
 			if ( url && !options.fromHashChange ) {
 
-				if ( !$.micro.path.isPath( url ) && url.indexOf( "#" ) < 0 ) {
-					url = "#" + url;
+				if ( !ns.path.isPath( url ) && url.indexOf( "#" ) < 0 ) {
+					url = ns.path.makeUrlAbsolute( "#" + url, ns.path.documentUrl.hrefNoHash );
 				}
 
 				state = $.extend({}, options, {
 					url: url
 				});
 
-				$.micro.navigator.history.replace( state, pageTitle, url );
+				ns.navigator.history.replace( state, pageTitle, url );
 			}
 
-			//set page title
-			$.micro.$document[0].title = pageTitle;
+			// write base element
+			this._setBase( ns.path.parseLocation().hrefNoSearch );
 
-			$.micro.pageContainer.pagecontainer("change", $toPage, options);
+			//set page title
+			ns.$document[0].title = pageTitle;
+
+			ns.pageContainer.pagecontainer("change", $toPage, options);
+		},
+
+		onOpenFailed: function(/* options */) {
+			this._setBase( ns.path.parseLocation().hrefNoSearch );
 		},
 
 		onHashChange: function(/* url, state */) {
 			return false;
+		},
+
+		find: function( absUrl ) {
+			var dataUrl = this._createDataUrl( absUrl ),
+				initialContent = ns.firstPage,
+				pageContainer = ns.pageContainer,
+				page;
+
+			if ( /#/.test( absUrl ) && ns.path.isPath(dataUrl) ) {
+				return;
+			}
+
+			// Check to see if the page already exists in the DOM.
+			// NOTE do _not_ use the :jqmData pseudo selector because parenthesis
+			//      are a valid url char and it breaks on the first occurence
+			page = pageContainer
+						.children( this.filter )
+						.filter( "[data-url='" + dataUrl + "']" );
+
+			// If we failed to find the page, check to see if the url is a
+			// reference to an embedded page. If so, it may have been dynamically
+			// injected by a developer, in which case it would be lacking a
+			// data-url attribute and in need of enhancement.
+			if ( page.length === 0 && dataUrl && !ns.path.isPath( dataUrl ) ) {
+				page = pageContainer
+					.children( this.filter )
+					.filter( ns.path.hashToSelector("#" + dataUrl) )
+					.attr( "data-url", dataUrl )
+					.data( "url", dataUrl );
+			}
+
+			// If we failed to find a page in the DOM, check the URL to see if it
+			// refers to the first page in the application. Also check to make sure
+			// our cached-first-page is actually in the DOM. Some user deployed
+			// apps are pruning the first page from the DOM for various reasons.
+			// We check for this case here because we don't want a first-page with
+			// an id falling through to the non-existent embedded page error case.
+			if ( page.length === 0 &&
+				ns.path.isFirstPageUrl( dataUrl ) &&
+				initialContent &&
+				initialContent.parent().length ) {
+				page = $( initialContent );
+			}
+
+			return page;
+		},
+
+		parse: function( html, absUrl ) {
+			var dataUrl = this._createDataUrl( absUrl ),
+				page, all = $( "<div></div>" );
+
+			// write base element
+			this._setBase(dataUrl);
+
+			//workaround to allow scripts to execute when included in page divs
+			all.get( 0 ).innerHTML = html;
+
+			page = all.find( this.filter ).first();
+
+			// TODO tagging a page with external to make sure that embedded pages aren't
+			// removed by the various page handling code is bad. Having page handling code
+			// in many places is bad. Solutions post 1.0
+			page.attr( "data-url", dataUrl )
+				.attr( "data-external", true )
+				.data( "url", dataUrl );
+
+			return page;
+		},
+
+		_createDataUrl: function( absoluteUrl ) {
+			return ns.path.convertUrlToDataUrl( absoluteUrl, true );
+		},
+
+		_getBaseElement: function() {
+			if ( !baseElement ) {
+				baseElement = $( "head" ).children( "base" );
+				baseElement = baseElement.length ? baseElement :
+					$( "<base>", { href: ns.path.documentBase.hrefNoHash } ).prependTo( $( "head" ) );
+			}
+			return baseElement;
+		},
+
+		_setBase: function( url ) {
+			var base = this._getBaseElement(),
+				baseHref = base.attr("href");
+
+			if ( ns.path.isPath( url ) ) {
+				url = ns.path.makeUrlAbsolute( url, ns.path.documentBase );
+				if ( ns.path.parseUrl(baseHref).hrefNoSearch !== ns.path.parseUrl(url).hrefNoSearch ) {
+					base.attr( "href", url );
+				}
+			}
 		}
 
 	};
 
-})( jQuery );
+})( jQuery, ns );
 
 
+/*
+* Copyright (c) 2010 - 2014 Samsung Electronics Co., Ltd.
+* License : MIT License V2
+*/
 
-(function( $, undefined ) {
+
+(function( $, ns, undefined ) {
 
 var EventType = {
 
@@ -10207,13 +10622,13 @@ var EventType = {
 	BEFORE_HIDE: "popupbeforehide"
 };
 
-$.widget( "micro.popup", {
+$.widget( "ui.popup", {
 
 	options: {
 	},
 
 	_create: function() {
-		$.micro.fireEvent(this.element, EventType.BEFORE_CREATE);
+		ns.fireEvent(this.element, EventType.BEFORE_CREATE);
 
 		this._initLayout();
 
@@ -10224,7 +10639,9 @@ $.widget( "micro.popup", {
 			}, this )
 		});
 
-		$.micro.fireEvent(this.element, EventType.CREATE);
+		this.closePopup = this.close.bind(this);
+
+		ns.fireEvent(this.element, EventType.CREATE);
 	},
 
 	_destroy: function() {
@@ -10280,22 +10697,44 @@ $.widget( "micro.popup", {
 	},
 
 	open: function( options ) {
-		var toptions = $.extend({}, options, {ext: " in ui-pre-in "});
+		var toptions = $.extend({}, options, {ext: " in ui-pre-in "}),
+			container = document.createElement("div");
 
-		$.micro.fireEvent(this.element, EventType.BEFORE_SHOW);
+		container.classList.add("ui-popup-background");
+		container.appendChild(this.element[0].parentElement.replaceChild(container, this.element[0]));
+
+		if ( this.element.hasClass("ui-popup-toast") ) {
+			container.addEventListener("click", this.closePopup, false);
+		}
+		this.background = container;
+
+		ns.fireEvent(this.element, EventType.BEFORE_SHOW);
 		this._transition( toptions ).done( $.proxy( function() {
 			this._setActive(true);
-			$.micro.fireEvent(this.element, EventType.SHOW);
+			ns.fireEvent(this.element, EventType.SHOW);
 		}, this));
 	},
 
 	close: function( options ) {
-		var toptions = $.extend({}, options, {ext: " out reverse "});
+		var toptions = $.extend({}, options, {ext: " out reverse "}),
+			container = this.background,
+			parent = container.parentElement;
 
-		$.micro.fireEvent(this.element, EventType.BEFORE_HIDE);
+		if ( this.element.hasClass("ui-popup-toast") ) {
+			container.removeEventListener("click", this.closePopup, false);
+		}
+
+		parent = container.parentElement;
+		if ( parent ) {
+			parent.appendChild(this.element[0]);
+			parent.removeChild(container);
+		}
+		container = null;
+
+		ns.fireEvent(this.element, EventType.BEFORE_HIDE);
 		this._transition( toptions ).done( $.proxy( function() {
 			this._setActive(false);
-			$.micro.fireEvent(this.element, EventType.HIDE);
+			ns.fireEvent(this.element, EventType.HIDE);
 		}, this));
 	},
 
@@ -10311,12 +10750,12 @@ $.widget( "micro.popup", {
 
 		if(transition !== "none") {
 			$element.one("animationend webkitAnimationEnd", function() {
-				$.micro.pageContainer.removeClass( "ui-viewport-transitioning" );
+				ns.pageContainer.removeClass( "ui-viewport-transitioning" );
 				$element.removeClass( transitionClass );
 				deferred.resolve();
 			});
 
-			$.micro.pageContainer.addClass( "ui-viewport-transitioning" );
+			ns.pageContainer.addClass( "ui-viewport-transitioning" );
 			$element.addClass( transitionClass );
 		} else {
 			window.setTimeout(function() {
@@ -10328,25 +10767,30 @@ $.widget( "micro.popup", {
 	}
 });
 
-})( jQuery );
+})( jQuery, ns );
 
 
+/*
+* Copyright (c) 2010 - 2014 Samsung Electronics Co., Ltd.
+* License : MIT License V2
+*/
 
-(function( $, undefined ) {
 
-	$.micro.navigator = $.micro.navigator || {};
-	$.micro.navigator.rule = $.micro.navigator.rule || {};
+(function( $, ns, undefined ) {
+
+	ns.navigator = ns.navigator || {};
+	ns.navigator.rule = ns.navigator.rule || {};
 
 	var popupHashKey = "popup=true",
 		popupHashKeyReg = /([&|\?]popup=true)/,
-		$document = $.micro.$document;
+		$document = ns.$document;
 
-	$.micro.navigator.rule.popup = {
-		filter: $.micro.selectors.popup,
+	ns.navigator.rule.popup = {
+		filter: ns.selectors.popup,
 
 		option: function() {
 			return {
-				transition: $.micro.defaults.popupTransition,
+				transition: ns.defaults.popupTransition,
 				container: undefined,
 				volatileRecord: true
 			};
@@ -10354,15 +10798,15 @@ $.widget( "micro.popup", {
 
 		open: function( to, options ) {
 			var $to = $(to),
-				documentUrl = $.micro.path.getLocation().replace( popupHashKeyReg, "" ),
-				activePage = $.micro.pageContainer.pagecontainer("getActivePage"),
+				documentUrl = ns.path.getLocation().replace( popupHashKeyReg, "" ),
+				activePage = ns.pageContainer.pagecontainer("getActivePage"),
 				url, popupKey, $container;
 
 			popupKey = popupHashKey;
 
 			if ( !options.fromHashChange ) {
-				url = $.micro.path.addHashSearchParams( documentUrl, popupKey );
-				$.micro.navigator.history.replace( options, "", url );
+				url = ns.path.addHashSearchParams( documentUrl, popupKey );
+				ns.navigator.history.replace( options, "", url );
 			}
 
 			if( $(to).is( "[data-external=true]" ) ) {
@@ -10386,8 +10830,11 @@ $.widget( "micro.popup", {
 
 		},
 
+		onOpenFailed: function(/* options */) {
+		},
+
 		onHashChange: function(/* url, state */) {
-			var activePopup = $.micro.pageContainer.find( ".ui-popup-active" );
+			var activePopup = ns.pageContainer.find( ".ui-popup-active" );
 
 			if (activePopup.length) {
 				this._closeActivePopup(activePopup);
@@ -10397,24 +10844,68 @@ $.widget( "micro.popup", {
 			return false;
 		},
 
+		find: function( absUrl ) {
+
+			var dataUrl = this._createDataUrl( absUrl ),
+				activePage = ns.pageContainer.pagecontainer("getActivePage"),
+				popup;
+
+			popup = activePage.find( this.filter )
+				.filter( "[data-url='" + dataUrl + "']" );
+
+			if ( popup.length === 0 && dataUrl && !ns.path.isPath( dataUrl ) ) {
+				popup = activePage.find( this.filter )
+					.filter( ns.path.hashToSelector("#" + dataUrl) )
+					.attr( "data-url", dataUrl )
+					.data( "url", dataUrl );
+			}
+
+			return popup;
+		},
+
+		parse: function( html, absUrl ) {
+			var dataUrl = this._createDataUrl( absUrl ),
+				popup, all = $( "<div></div>" );
+
+			//workaround to allow scripts to execute when included in page divs
+			all.get( 0 ).innerHTML = html;
+
+			popup = all.find( this.filter ).first();
+
+			popup.attr( "data-url", dataUrl )
+				.attr( "data-external", true )
+				.data( "url", dataUrl );
+
+			return popup;
+		},
+
+		_createDataUrl: function( absoluteUrl ) {
+			return ns.path.convertUrlToDataUrl( absoluteUrl );
+		},
+
 		_closeActivePopup: function(activePopup) {
 			activePopup = activePopup ||
-				$.micro.pageContainer.find( ".ui-popup-active" );
+				ns.pageContainer.find( ".ui-popup-active" );
 			if(activePopup.length) {
 				activePopup.popup().popup("close");
 			}
 		},
 
 		_hasActivePopup: function() {
-			return $.micro.pageContainer.find( ".ui-popup-active" ).length > 0;
+			return ns.pageContainer.find( ".ui-popup-active" ).length > 0;
 		}
 	};
 
-})( jQuery );
+})( jQuery, ns );
 
 
+/*
+* Copyright (c) 2010 - 2014 Samsung Electronics Co., Ltd.
+* License : MIT License V2
+*/
 
-(function( $, undefined ) {
+
+(function( $, ns, undefined ) {
 
 var EventType = {
 
@@ -10432,13 +10923,13 @@ var EventType = {
 
 };
 
-$.widget( "micro.page", {
+$.widget( "ui.page", {
 
 	options: {
 	},
 
 	_create: function() {
-		$.micro.fireEvent(this.element, EventType.BEFORE_CREATE);
+		ns.fireEvent(this.element, EventType.BEFORE_CREATE);
 
 		this._initLayout();
 
@@ -10446,7 +10937,7 @@ $.widget( "micro.page", {
 			"resize": $.proxy( this._initLayout, this )
 		});
 
-		$.micro.fireEvent(this.element, EventType.CREATE);
+		ns.fireEvent(this.element, EventType.CREATE);
 	},
 
 	_destroy: function() {
@@ -10464,7 +10955,7 @@ $.widget( "micro.page", {
 			element = this.element[0],
 			screenWidth = window.innerWidth,
 			screenHeight = window.innerHeight,
-			uiSelector = $.micro.selectors,
+			uiSelector = ns.selectors,
 			contentSelector = uiSelector.content.substr(1),
 			headerSelector = uiSelector.header.substr(1),
 			footerSelector = uiSelector.footer.substr(1),
@@ -10504,422 +10995,47 @@ $.widget( "micro.page", {
 	},
 
 	setActive: function(active) {
-		this.element[0].classList.toggle("ui-page-active", active);
+		if ( active ) {
+			this.element[0].classList.add("ui-page-active");
+		} else {
+			this.element[0].classList.remove("ui-page-active");
+		}
 	},
 
 	onBeforeShow: function() {
-		$.micro.fireEvent(this.element, EventType.BEFORE_SHOW);
+		ns.fireEvent(this.element, EventType.BEFORE_SHOW);
 	},
 
 	onBeforeHide: function() {
-		$.micro.fireEvent(this.element, EventType.BEFORE_HIDE);
+		ns.fireEvent(this.element, EventType.BEFORE_HIDE);
 	},
 
 	onShow: function() {
-		$.micro.fireEvent(this.element, EventType.SHOW);
+		ns.fireEvent(this.element, EventType.SHOW);
 	},
 
 	onHide: function() {
-		$.micro.fireEvent(this.element, EventType.HIDE);
+		ns.fireEvent(this.element, EventType.HIDE);
 	}
 
 });
 
-})( jQuery );
+})( jQuery, ns );
 
 
+/*
+* Copyright (c) 2010 - 2014 Samsung Electronics Co., Ltd.
+* License : MIT License V2
+*/
 
-(function( $, undefined ) {
 
-	var $window = $.micro.$window,
-		$document = $.micro.$document,
-		historyUid = 0,
-		historyActiveIndex = 0,
-		historyVolatileMode = false;
-
-	function findClosestLink( ele )	{
-		while ( ele ) {
-			if ( ( typeof ele.nodeName === "string" ) && ele.nodeName.toLowerCase() === "a" ) {
-				break;
-			}
-			ele = ele.parentNode;
-		}
-		return ele;
-	}
-
-	function linkClickHandler( event ) {
-		var link = findClosestLink( event.target ),
-			$link = $( link ),
-			href, useDefaultUrlHandling, options;
-
-		if ( !link || event.which > 1 ) {
-			return;
-		}
-
-		href = $link.attr("href");
-		useDefaultUrlHandling = $link.is( "[rel='external']" ) || $link.is( "[target]" );
-		if(useDefaultUrlHandling) {
-			return;
-		}
-
-		options = $.micro.getData($link);
-
-		event.preventDefault();
-		$.micro.navigator.open(href, options);
-	}
-
-	function popStateHandler( event ) {
-		var state = event.originalEvent.state,
-			prevState = $.micro.navigator.history.activeState,
-			rules = $.micro.navigator.rule,
-			options, to, url, isContinue = true, reverse, transition;
-
-		if (!state) {
-			return;
-		}
-
-		to = state.url;
-		reverse = $.micro.navigator.history.getDirection( state ) === "back";
-		transition = !reverse ? state.transition : prevState && prevState.transition || "none";
-
-		options = $.extend({}, state, {
-			reverse: reverse,
-			transition: transition,
-			fromHashChange: true
-		});
-
-		url = $.micro.path.getLocation();
-		$.each(rules, function(name, rule) {
-			if ( rule.onHashChange(url, options) ) {
-				isContinue = false;
-			}
-		});
-
-		$.micro.navigator.history.setActive(state);
-
-		if ( isContinue ) {
-			$.micro.navigator.open(to, options);
-		}
-
-	}
-
-	$.micro.navigator = $.micro.navigator || {};
-	$.micro.navigator.rule = $.micro.navigator.rule || {};
-
-	$.micro.navigator.defaults = {
-		fromHashChange: false,
-		volatileRecord: false,
-		reverse: false,
-		showLoadMsg: true,
-		loadMsgDelay: 0
-	};
-
-	$.micro.changePage = function( to, options) {
-		$.micro.navigator.open( to, options );
-	};
-
-	$.micro.openPopup = function( to, options) {
-		$.micro.navigator.open( to, $.extend({}, {rel: "popup"}, options) );
-	};
-
-	$.micro.closePopup = function() {
-		$.micro.back();
-	};
-
-	$.micro.back = function() {
-		$.micro.navigator.history.back();
-	};
-
-	$.extend( $.micro.navigator, {
-
-		register: function( container, firstPage ) {
-			this.container = container;
-			$.micro.$firstPage = $(firstPage);
-
-			this.linkClickHandler = $.proxy( linkClickHandler, this );
-			this.popStateHandler = $.proxy( popStateHandler, this );
-
-			$document.bind({
-				"click": this.linkClickHandler,
-			});
-
-			$window.bind({
-				"popstate": this.popStateHandler
-			});
-
-			$.micro.navigator.history.enableVolatileRecord();
-			this.open( $.micro.$firstPage, { transition: undefined } );
-		},
-
-		destroy: function () {
-			$document.unbind({
-				"click": this.linkClickHandler,
-			});
-
-			$window.unbind({
-				"popstate": this.popStateHandler
-			});
-		},
-
-		open: function ( to, options ) {
-			var rel = options && options.rel || "page",
-				rule = $.micro.navigator.rule[rel],
-				deferred, filter, settings;
-
-			if(rule) {
-
-				settings = $.extend( {
-						rel: rel
-				}, $.micro.navigator.defaults, rule.option(), options );
-
-				filter = rule.filter;
-
-				deferred = $.Deferred();
-				deferred.done( function( options, content ) {
-					rule.open( content, options );
-				});
-				deferred.fail(function( options ) {
-					$.micro.fireEvent($.micro.pageContainer, "changefailed", options);
-				});
-
-				if ( $.type(to) === "string" ) {
-
-					if(!to.replace(/[#|\s]/g, "")) {
-						return;
-					}
-
-					this._loadUrl(to, settings, filter, deferred);
-
-				} else {
-					if( $(to).filter(filter).length ) {
-						deferred.resolve( settings, to );
-					} else {
-						deferred.reject( settings );
-					}
-				}
-
-			} else {
-				throw new Error("Not defined navigator rule ["+ rel +"]");
-			}
-
-		},
-
-		_loadUrl: function( url, options, filter, deferred) {
-			var absUrl = $.micro.path.makeUrlAbsolute( url, $.micro.path.getLocation() ),
-				content, detail;
-
-			content = this._find( absUrl, filter );
-			// If the content we are interested in is already in the DOM,
-			// and the caller did not indicate that we should force a
-			// reload of the file, we are done. Resolve the deferrred so that
-			// users can bind to .done on the promise
-			if ( content.length ) {
-				detail = $.extend({absUrl: absUrl}, options);
-				deferred.resolve( detail, content );
-				return;
-			}
-
-			if ( options.showLoadMsg ) {
-				this._showLoading( options.loadMsgDelay );
-			}
-
-			// Load the new content.
-			$.ajax({
-				url: absUrl,
-				type: options.type,
-				data: options.data,
-				contentType: options.contentType,
-				dataType: "html",
-				success: this._loadSuccess( absUrl, options, filter, deferred ),
-				error: this._loadError( absUrl, options, deferred )
-			});
-		},
-
-		_loadError: function( absUrl, settings, deferred ) {
-			return $.proxy(function(/* xhr, textStatus, errorThrown */) {
-				var detail = $.extend({url: absUrl}, settings);
-
-				// Remove loading message.
-				if ( settings.showLoadMsg ) {
-					this._showError();
-				}
-
-				$.micro.fireEvent(this.container, "loadfailed", detail);
-				deferred.reject( detail );
-
-			}, this);
-		},
-
-		// TODO it would be nice to split this up more but everything appears to be "one off"
-		//      or require ordering such that other bits are sprinkled in between parts that
-		//      could be abstracted out as a group
-		_loadSuccess: function( absUrl, settings, filter, deferred ) {
-			var dataUrl = this._createDataUrl( absUrl ),
-				detail = $.extend({url: absUrl}, settings);
-
-			return $.proxy(function( html/*, textStatus, xhr */) {
-				var content;
-
-				content = this._parse( html, dataUrl, filter );
-
-				// Remove loading message.
-				if ( settings.showLoadMsg ) {
-					this._hideLoading();
-				}
-
-				if( $(content).length ) {
-					deferred.resolve( detail, content );
-				} else {
-					deferred.reject( detail );
-				}
-
-			}, this);
-		},
-
-		_parse: function( html, dataUrl, filter ) {
-			// TODO consider allowing customization of this method. It's very JQM specific
-			var page, all = $( "<div></div>" );
-
-			//workaround to allow scripts to execute when included in page divs
-			all.get( 0 ).innerHTML = html;
-
-			page = all.find( filter ).first();
-
-			// TODO tagging a page with external to make sure that embedded pages aren't
-			// removed by the various page handling code is bad. Having page handling code
-			// in many places is bad. Solutions post 1.0
-			page.attr( "data-url", dataUrl )
-				.attr( "data-external", true )
-				.data( "url", dataUrl );
-
-			return page;
-		},
-
-		_find: function( absUrl, filter ) {
-			// TODO consider supporting a custom callback
-			var dataUrl = this._createDataUrl( absUrl ),
-				page, initialContent = this._getInitialContent();
-
-			// Check to see if the page already exists in the DOM.
-			// NOTE do _not_ use the :jqmData pseudo selector because parenthesis
-			//      are a valid url char and it breaks on the first occurence
-			page = this.container
-				.find( filter )
-				.filter( "[data-url='" + dataUrl + "']" );
-
-			// If we failed to find the page, check to see if the url is a
-			// reference to an embedded page. If so, it may have been dynamically
-			// injected by a developer, in which case it would be lacking a
-			// data-url attribute and in need of enhancement.
-			if ( page.length === 0 && dataUrl && !$.micro.path.isPath( dataUrl ) ) {
-				page = this.container
-					.find( filter )
-					.filter( $.micro.path.hashToSelector("#" + dataUrl) )
-					.attr( "data-url", dataUrl )
-					.data( "url", dataUrl );
-			}
-
-			// If we failed to find a page in the DOM, check the URL to see if it
-			// refers to the first page in the application. Also check to make sure
-			// our cached-first-page is actually in the DOM. Some user deployed
-			// apps are pruning the first page from the DOM for various reasons.
-			// We check for this case here because we don't want a first-page with
-			// an id falling through to the non-existent embedded page error case.
-			if ( page.length === 0 &&
-				$.micro.path.isFirstPageUrl( dataUrl ) &&
-				initialContent &&
-				initialContent.parent().length ) {
-				page = $( initialContent ).filter( filter );
-			}
-
-			return page;
-		},
-
-		_createDataUrl: function( absoluteUrl ) {
-			return $.micro.path.convertUrlToDataUrl( absoluteUrl );
-		},
-
-		// TODO the first page should be a property set during _create using the logic
-		//      that currently resides in init
-		_getInitialContent: function() {
-			return $.micro.firstPage;
-		},
-
-		_showLoading: function( delay ) {
-			this.container.pagecontainer("showLoading", delay);
-		},
-
-		_showError: function() {
-
-		},
-
-		_hideLoading: function() {
-
-		}
-	});
-
-	$.micro.navigator.history = {
-		activeState : null,
-
-		replace: function(state, pageTitle, url) {
-			var newState = $.extend({}, state, {
-				uid: historyVolatileMode ? historyActiveIndex : ++historyUid
-			});
-
-			$window[0].history[ historyVolatileMode ? "replaceState" : "pushState" ](newState, pageTitle, url);
-
-			this.setActive(newState);
-		},
-
-		back: function() {
-			$window[0].history.back();
-		},
-
-		setActive: function( state ) {
-			if ( state ) {
-				this.activeState = state;
-				historyActiveIndex = state.uid;
-
-				if(state.volatileRecord) {
-					this.enableVolatileRecord();
-					return;
-				}
-			}
-
-			this.disableVolatileMode();
-		},
-
-		getDirection: function( state ) {
-			var direction;
-
-			if ( state ) {
-				direction = state.uid < historyActiveIndex ? "back" : "forward";
-				return direction;
-			}
-
-			return "back";
-		},
-
-		enableVolatileRecord: function() {
-			historyVolatileMode = true;
-		},
-
-		disableVolatileMode: function() {
-			historyVolatileMode = false;
-		},
-	};
-
-})( jQuery );
-
-
-
-(function( $, undefined ) {
+(function( $, ns, undefined ) {
 
 var EventType = {
 		PAGE_CHANGE: "pagechange",
 	};
 
-$.widget( "micro.pagecontainer", {
+$.widget( "ui.pagecontainer", {
 
 	options: {
 	},
@@ -10935,7 +11051,13 @@ $.widget( "micro.pagecontainer", {
 	},
 
 	_include: function( page ) {
-		$(page).prependTo( this.element ).page();
+		var $page = $( page );
+		if ( $page.parent().filter( this.element ).length === 0 ) {
+			$page.prependTo( this.element );
+		}
+		if ( typeof $page.data( "page" ) !== "undefied" ) {
+			$page.page();
+		}
 	},
 
 	change: function (toPage, options ) {
@@ -10960,10 +11082,10 @@ $.widget( "micro.pagecontainer", {
 			this._setActivePage(toPage);
 			if ( fromPage ) {
 				fromPage.page("onHide");
-				this._removeExternalPage();
+				this._removeExternalPage( fromPage, options );
 			}
 			toPage.page("onShow");
-			$.micro.fireEvent(this.element, EventType.PAGE_CHANGE);
+			ns.fireEvent(this.element, EventType.PAGE_CHANGE);
 		}, this ) );
 
 	},
@@ -11005,9 +11127,20 @@ $.widget( "micro.pagecontainer", {
 	},
 
 	_setActivePage: function(page) {
-		if ( this.activePage ) {
-			this.activePage.page("setActive", false);
-		}
+		var activeClass = ns.selectors.activePage.substr(1),
+			pages = $( ns.selectors.activePage )
+				.not( page );
+
+		$.each( pages, function(idx, page) {
+			var $page = $(page);
+
+			if ( typeof $page.data( "page" ) !== "undefied" ) {
+				$page.page("setActive", false);
+			} else {
+				$page.removeClass(activeClass);
+			}
+		});
+
 		this.activePage = page;
 		this.activePage.page("setActive", true);
 	},
@@ -11019,26 +11152,31 @@ $.widget( "micro.pagecontainer", {
 	showLoading: function(/* delay */) {
 	},
 
-	_removeExternalPage: function() {
-		this.element
-			.find( $.micro.selectors.page )
-			.filter( "[data-external=true]" )
-			.not(this.getActivePage())
-			.remove();
+	_removeExternalPage: function( fromPage, options ) {
+		var $fromPage = $(fromPage);
+		if ( options.reverse && $fromPage.is( "[data-external=true]" ) ) {
+			$fromPage.remove();
+		}
 	}
 });
 
-})( jQuery );
+})( jQuery, ns );
 
 
-( function ( window, $, ns, undefined ) {
+/*
+* Copyright (c) 2010 - 2014 Samsung Electronics Co., Ltd.
+* License : MIT License V2
+*/
+
+
+( function ( ns, window, undefined ) {
 
 /*
  * IndexScrollbar
  *
  * Shows an index scrollbar, and triggers 'select' event.
  */
-function IndexScrollbar (element) {
+function IndexScrollbar (element, options) {
 	// Support calling without 'new' keyword
 	if(ns === this) {
 		return new IndexScrollbar(element);
@@ -11049,7 +11187,29 @@ function IndexScrollbar (element) {
 	}
 
 	this.element = element;
+	this.indicator = null;
 	this.index = null;
+	this.isShowIndicator = false;
+	this.touchAreaOffsetLeft = 0;
+	this.indexElements = null;
+	this.selectEventTriggerTimeoutId = null;
+	this.ulMarginTop = 0;
+
+	this.indexCellInfomations = {
+		indices: [],
+		mergedIndices: [],
+		indexLookupTable: [],
+
+		clear: function() {
+			this.indices.length = 0;
+			this.mergedIndices.length = 0;
+			this.indexLookupTable.length = 0;
+		}
+	};
+
+	this.eventHandlers = {};
+
+	this._setOptions(options);
 
 	// Skip init when the widget is already extended
 	if(!this._isExtended()) {
@@ -11066,21 +11226,29 @@ IndexScrollbar.prototype = {
 	widgetClass: "ui-indexscrollbar",
 
 	options: {
+		moreChar: "*",
+		indicatorClass: "ui-indexscrollbar-indicator",
+		selectedClass: "ui-state-selected",
 		delimeter: ",",
-		index: [ "A", "B", "C", "D", "E", "F", "G", "H",
-		         "I", "J", "K", "L", "M", "N", "O", "P", "Q",
-		         "R", "S", "T", "U", "V", "W", "X", "Y", "Z", "1"]
+		index: [
+			"A", "B", "C", "D", "E", "F", "G", "H",
+			"I", "J", "K", "L", "M", "N", "O", "P", "Q",
+			"R", "S", "T", "U", "V", "W", "X", "Y", "Z", "1"
+		],
+		maxIndexLen: 0,
+		indexHeight: 36,
+		keepSelectEventDelay: 50,
+		container: null
 	},
 
 	_create: function () {
+		this._createIndicator();
+
 		// Read index, and add supplement elements
-		this._draw(this._getIndex());
+		this._updateLayout();
 
-		// Bind an click event handler:
-		this._bindClickToTriggerSelectEvent();
-
-		//   Set selected class to the listitem
-		//   Trigger a custom event: indexscrollbar.select
+		// Bind event handler:
+		this._bindEvent();
 
 		// Mark as extended
 		this._extended(true);
@@ -11090,80 +11258,307 @@ IndexScrollbar.prototype = {
 
 	},
 
-	_isValidElement: function (el) {
-		return el.classList.contains(this.widgetClass);
-	},
+	_setOptions: function (options) {
+		var name;
 
-	_isExtended: function () {
-		return !!this._data("extended");
-	},
-
-	_extended: function (flag) {
-		this._data("extended", flag);
-		return this;
-	},
-
-	_getIndex: function () {
-		var el = this.element,
-			options = this.options,
-			indices = el.getAttribute("data-index");
-		if(indices) {
-			indices = indices.split(options.delimeter);	// Delimeter
-		} else {
-			indices = options.indices;
+		for ( name in options ) {
+			if ( options.hasOwnProperty(name) && !!options[name] ) {
+				this.options[name] = options[name];
+			}
 		}
-		return indices;
+	},
+
+	_setLayoutValues: function () {
+		var container = this._getContainer(),
+			positionStyle = window.getComputedStyle(container).position,
+			containerOffsetTop = container.offsetTop,
+			containerOffsetLeft = container.offsetLeft;
+
+		if ( this.indicator ) {
+			this.indicator.style.width = container.offsetWidth + "px";
+			this.indicator.style.height = container.offsetHeight + "px";
+		}
+
+		if ( positionStyle !== "absolute" && positionStyle !== "relative" ) {
+			this.element.style.top = containerOffsetTop + "px";
+			this.indicator.style.top = containerOffsetTop + "px";
+			this.indicator.style.left = containerOffsetLeft + "px";
+		}
+	},
+
+	_setMaxIndexLen: function() {
+		var maxIndexLen = this.options.maxIndexLen,
+			container = this._getContainer(),
+			containerHeight = container.offsetHeight;
+		if(maxIndexLen <= 0) {
+			maxIndexLen = Math.floor( containerHeight / this.options.indexHeight );
+		}
+		if(maxIndexLen > 0 && maxIndexLen%2 === 0) {
+			maxIndexLen -= 1;	// Ensure odd number
+		}
+		this.options.maxIndexLen = maxIndexLen;
+	},
+
+	_updateLayout: function() {
+		this._setLayoutValues();
+		this._setMaxIndexLen();
+		this._updateIndexCellInfomation();
+		this._draw();
+		this._updateIndexCellRectInfomation();
+
+		this.touchAreaOffsetLeft = this.element.offsetLeft - 10;
+	},
+
+	_updateIndexCellInfomation: function() {
+		var maxIndexLen = this.options.maxIndexLen,
+			indices = this._getIndex(),
+			showIndexSize = Math.min( indices.length, maxIndexLen ),
+			indexSize = indices.length,
+			totalLeft = indexSize - maxIndexLen,
+			leftPerItem = window.parseInt(totalLeft / (window.parseInt(showIndexSize/2))),
+			left = totalLeft % (window.parseInt(showIndexSize/2)),
+			indexItemSizeArr = [],
+			mergedIndices = [],
+			i, len, pos=0;
+
+		for ( i=0, len=showIndexSize; i < len; i++ ) {
+			indexItemSizeArr[i] = 1;
+			if ( i % 2 ) {
+				indexItemSizeArr[i] += leftPerItem + ( left-- > 0 ? 1 : 0);
+			}
+		}
+
+		for ( i=0, len=showIndexSize; i < len; i++) {
+			pos += indexItemSizeArr[i];
+
+			mergedIndices.push({
+				start: pos - 1,
+				length: indexItemSizeArr[i]
+			});
+		}
+
+		this.indexCellInfomations.indices = indices;
+		this.indexCellInfomations.mergedIndices = mergedIndices;
+	},
+
+	_updateIndexCellRectInfomation: function() {
+		var el = this.element,
+			mergedIndices = this.indexCellInfomations.mergedIndices,
+			containerOffset = this._getOffset(this._getContainer()).top,
+			indexLookupTable = [];
+
+		[].forEach.call(el.querySelectorAll("li"), function(node, idx) {
+			var m = mergedIndices[idx],
+				i = m.start,
+				len = i + m.length,
+				top = containerOffset + node.offsetTop,
+				height = node.offsetHeight / m.length;
+
+			for ( ; i < len; i++ ) {
+				indexLookupTable.push({
+					cellIndex: idx,
+					top: top,
+					range: height
+				});
+
+				top += height;
+			}
+
+		});
+
+		this.indexCellInfomations.indexLookupTable = indexLookupTable;
+		this.indexElements = el.children[0].children;
 	},
 
 	/**	Draw additinoal sub-elements
 	 *	@param {array} indices	List of index string
 	 */
-	_draw: function (indices) {
+	_draw: function () {
 		var el = this.element,
-			ul, li, frag,
-			i;
+			container = this._getContainer(),
+			moreChar = this.options.moreChar,
+			indices = this.indexCellInfomations.indices,
+			mergedIndices = this.indexCellInfomations.mergedIndices,
+			indexSize = mergedIndices.length,
+			containerHeight = container.offsetHeight,
+			indexHeight = this.options.indexHeight,
+			leftHeight = containerHeight - indexHeight * indexSize,
+			addHeightOffset = leftHeight,
+			indexCellHeight, text, ul, li, frag, i, m;
 
 		frag = document.createDocumentFragment();
 		ul = document.createElement("ul");
 		frag.appendChild(ul);
-		for(i=0; i<indices.length; i++) {
+		for(i=0; i < indexSize; i++) {
+			m = mergedIndices[i];
+			text = m.length === 1 ? indices[m.start] : moreChar;
+			indexCellHeight = i < addHeightOffset ? indexHeight + 1 : indexHeight;
+
 			li = document.createElement("li");
-			li.innerText = indices[i];
+			li.innerText = text;
+			li.style.height = indexCellHeight + "px";
+			li.style.lineHeight = indexCellHeight + "px";
 			ul.appendChild(li);
 		}
+
+		// Set ul's margin-top
+		this.ulMarginTop = Math.floor((parseInt(containerHeight, 10) - indexSize * indexHeight)/2);
+		ul.style.marginTop = this.ulMarginTop + "px";
+
 		el.appendChild(frag);
 
 		return this;
 	},
 
-	_clear: function () {
-		var el = this.element;
-		while(el.firstChild) {
-			el.removeChild(el.firstChild);
+	_createIndicator: function() {
+		var indicator = document.createElement("DIV"),
+			container = this._getContainer();
+
+		indicator.className = this.options.indicatorClass;
+		indicator.innerHTML = "<span></span>";
+		container.insertBefore(indicator, this.element);
+
+		this.indicator = indicator;
+	},
+
+	_removeIndicator: function() {
+		this.indicator.parentNode.removeChild(this.indicator);
+	},
+
+	_changeIndicator: function( idx/*, cellElement */) {
+		var selectedClass = this.options.selectedClass,
+			cellInfomations = this.indexCellInfomations,
+			cellElement, val;
+
+		if ( !this.indicator || idx === this.index ) {
+			return false;
+		}
+
+		// TODO currently touch event target is not correct. it's browser bugs.
+		// if the bug is fixed, this logic that find cellelem have to be removed.
+		cellElement = this.indexElements[cellInfomations.indexLookupTable[idx].cellIndex];
+		this._clearSelected();
+		cellElement.classList.add(selectedClass);
+
+		val = cellInfomations.indices[idx];
+		this.indicator.firstChild.innerHTML = val;
+
+		this.index = idx;
+
+		if ( this.selectEventTriggerTimeoutId ) {
+			window.clearTimeout(this.selectEventTriggerTimeoutId);
+		}
+		this.selectEventTriggerTimeoutId = window.setTimeout(function() {
+			this._trigger(this.element, "select", {index: val});
+			this.selectEventTriggerTimeoutId = null;
+		}.bind(this), this.options.keepSelectEventDelay);
+
+	},
+
+	_clearSelected: function() {
+		var el = this.element,
+			selectedClass = this.options.selectedClass,
+			selectedElement = el.querySelectorAll("."+selectedClass);
+
+		[].forEach.call(selectedElement, function(node/*, idx */) {
+			node.classList.remove(selectedClass);
+		});
+	},
+
+	_showIndicator: function() {
+		if ( this.isShowIndicator || !this.indicator ) {
+			return false;
+		}
+
+		this.indicator.style.display = "block";
+		this.isShowIndicator = true;
+	},
+
+	_hideIndicator: function() {
+		if ( !this.isShowIndicator || !this.indicator ) {
+			return false;
+		}
+
+		this._clearSelected();
+		this.indicator.style.display = "none";
+		this.isShowIndicator = false;
+		this.index = null;
+	},
+
+	_onTouchStartHandler: function( ev ) {
+		var pos = this._getPositionFromEvent( ev ),
+			idx = this._findIndexByPosition( pos.y );
+
+		if ( idx < 0 ) {
+			idx = 0;
+		}
+
+		this._changeIndicator(idx, ev.target);
+		this._showIndicator();
+	},
+
+	_onTouchEndHandler: function(/* ev */) {
+		this._hideIndicator();
+	},
+
+	_onTouchMoveHandler: function( ev ) {
+		var pos, idx;
+
+		if ( !this.isShowIndicator ) {
+			return;
+		}
+
+		pos = this._getPositionFromEvent( ev );
+		idx = this._findIndexByPosition( pos.y );
+
+		if ( idx > -1 && pos.x > this.touchAreaOffsetLeft ) {
+			this._changeIndicator(idx, ev.target);
+		}
+
+		ev.preventDefault();
+		ev.stopPropagation();
+	},
+
+	_bindEvent: function() {
+		this._bindResizeEvent();
+		this._bindEventToTriggerSelectEvent();
+	},
+
+	_unbindEvent: function() {
+		this._unbindResizeEvent();
+		this._unbindEventToTriggerSelectEvent();
+	},
+
+	_bindResizeEvent: function() {
+		this.eventHandlers.onresize = function(/* ev */) {
+			this.refresh();
+		}.bind(this);
+
+		window.addEventListener( "resize", this.eventHandlers.onresize );
+	},
+
+	_unbindResizeEvent: function() {
+		if ( this.eventHandlers.onresize ) {
+			window.removeEventListener( "resize", this.eventHandlers.onresize );
 		}
 	},
 
-	_bindClickToTriggerSelectEvent: function() {
-		var self = this,
-			el = this.element,
-			callback = function(ev) {
-				var target = ev.target,
-					idx = "";
-				if("li" === target.tagName.toLowerCase()) {
-					idx = target.innerText;
-					self._trigger(el, "select", {index: idx});
-				}
-			};
-		el.addEventListener("click", callback);
-		this._data("clickCallback", callback);
-		return this;
+	_bindEventToTriggerSelectEvent: function() {
+		this.eventHandlers.touchStart = this._onTouchStartHandler.bind(this);
+		this.eventHandlers.touchEnd = this._onTouchEndHandler.bind(this);
+		this.eventHandlers.touchMove = this._onTouchMoveHandler.bind(this);
+
+		this.element.addEventListener("touchstart", this.eventHandlers.touchStart);
+		this.element.addEventListener("touchmove", this.eventHandlers.touchMove);
+		document.addEventListener("touchend", this.eventHandlers.touchEnd);
+		document.addEventListener("touchcancel", this.eventHandlers.touchEnd);
 	},
 
-	_unbindClick: function() {
-		var el = this.element,
-			callback = this._data("clickCallback");
-		el.removeEventListener("click", callback);
-		return this;
+	_unbindEventToTriggerSelectEvent: function() {
+		this.element.removeEventListener("touchstart", this.eventHandlers.touchStart);
+		this.element.removeEventListener("touchmove", this.eventHandlers.touchMove);
+		document.removeEventListener("touchend", this.eventHandlers.touchEnd);
+		document.removeEventListener("touchcancel", this.eventHandlers.touchEnd);
 	},
 
 	/**
@@ -11216,6 +11611,79 @@ IndexScrollbar.prototype = {
 		}
 	},
 
+	_isValidElement: function (el) {
+		return el.classList.contains(this.widgetClass);
+	},
+
+	_isExtended: function () {
+		return !!this._data("extended");
+	},
+
+	_extended: function (flag) {
+		this._data("extended", flag);
+		return this;
+	},
+
+	_getIndex: function () {
+		var el = this.element,
+			options = this.options,
+			indices = el.getAttribute("data-index");
+		if(indices) {
+			indices = indices.split(options.delimeter);	// Delimeter
+		} else {
+			indices = options.indices;
+		}
+		return indices;
+	},
+
+	_findIndexByPosition: function( posY ) {
+		var rectTable = this.indexCellInfomations.indexLookupTable,
+			i, len, info, range;
+
+		for ( i=0, len=rectTable.length; i < len; i++) {
+			info = rectTable[i];
+			range = posY - info.top;
+			if ( range >= 0 && range < info.range ) {
+				return i;
+			}
+		}
+
+		return -1;
+	},
+
+	_getOffset: function( el ) {
+		var left=0, top=0 ;
+		do {
+			top += el.offsetTop;
+			left += el.offsetLeft;
+		} while (el = el.offsetParent);
+
+		return {
+			top: top,
+			left: left
+		};
+	},
+
+	_getContainer: function() {
+		return this.options.container || this.element.parentNode;
+	},
+
+	_getPositionFromEvent: function( ev ) {
+		return ev.type.search(/^touch/) !== -1 ?
+				{x: ev.touches[0].clientX, y: ev.touches[0].clientY} :
+				{x: ev.clientX, y: ev.clientY};
+	},
+
+	_clear: function () {
+		this.indexCellInfomations.clear();
+		this.indexElements = null;
+
+		var el = this.element;
+		while(el.firstChild) {
+			el.removeChild(el.firstChild);
+		}
+	},
+
 	addEventListener: function (type, listener) {
 		this.element.addEventListener(type, listener);
 	},
@@ -11226,33 +11694,164 @@ IndexScrollbar.prototype = {
 
 	refresh: function () {
 		if( this._isExtended() ) {
-			this._unbindClick();
+			this._unbindEvent();
+			this._hideIndicator();
 			this._clear();
 			this._extended( false );
 		}
 
-		this._draw(this._getIndex());
-		this._bindClickToTriggerSelectEvent();
+		this._updateLayout();
 		this._extended( true );
 	},
+
+	destroy: function() {
+		this._unbindEvent();
+		this._removeIndicator();
+		this._clear();
+		this._extended( false );
+
+		this.element = null;
+		this.indicator = null;
+		this.index = null;
+		this.isShowIndicator = false;
+		this.indexCellInfomations = null;
+		this.eventHandlers = null;
+	}
 };
 // Export indexscrollbar to the namespace
 ns.IndexScrollbar = IndexScrollbar;
 
-} ( window, jQuery, $.micro ) );
+} ( ns, window ) );
 
 
-(function( $, window, undefined ) {
+(function() {
+	/* anchorHighlightController.js
+	To prevent perfomance regression when scrolling,
+	do not apply hover class in anchor.
+	Instead, this code checks scrolling for time threshold and
+	decide how to handle the color.
+	When scrolling with anchor, it checks flag and decide to highlight anchor.
+	While it helps to improve scroll performance,
+	it lowers responsiveness of the element for 50msec.
+	*/
+	var startX,
+	startY,
+	didScroll,
+	target,
+	touchLength,
+	addActiveClassTimerID,
+	options = {
+		scrollThreshold: 5,
+		addActiveClassDelay: 50,	// wait before adding activeClass
+		keepActiveClassDelay: 100	// stay activeClass after touchend
+	},
+	activeClass = {
+		"A": "ui-a-active"
+	};
+
+	function touchstartHandler( e ) {
+		touchLength = e.touches.length;
+
+		if( touchLength !== 1 ) {
+			return;
+		} else {
+			didScroll = false;
+			startX = e.touches[0].clientX;
+			startY = e.touches[0].clientY;
+			target = e.target;
+
+			document.addEventListener( "touchmove", touchmoveHandler );
+			addActiveClassTimerID = setTimeout( addActiveClass, options.addActiveClassDelay );
+		}
+	}
+
+	function touchmoveHandler( e ) {
+		didScroll = didScroll ||
+		( Math.abs( e.touches[0].clientX - startX ) > options.scrollThreshold || Math.abs( e.touches[0].clientY - startY ) > options.scrollThreshold );
+
+		if( didScroll ) {
+			removeTouchMove();
+			removeActiveClass();
+		}
+	}
+
+	function removeTouchMove() {
+		document.removeEventListener( "touchmove", touchmoveHandler );
+	}
+
+	function detectATarget (target) {
+		while (target && target.tagName !== "A") {
+			target = target.parentNode;
+		}
+		return target;
+	}
+
+	function addActiveClass() {
+		target = detectATarget(target);
+		if(!didScroll && target && target.tagName === "A") {
+			target.classList.add(activeClass.A);
+		}
+	}
+
+	function removeActiveClass() {
+		var activeA = getActiveElements(),
+			i;
+		for( i=0; i<activeA.length; i++ ) {
+			activeA[i].classList.remove( activeClass.A );
+		}
+	}
+
+	function getActiveElements() {
+		return document.getElementsByClassName( activeClass.A );
+	}
+
+	function touchendHandler() {
+		if( touchLength !== 1 ) {
+			return;
+		} else {
+			clearTimeout( addActiveClassTimerID );
+			addActiveClassTimerID = null;
+			if ( !didScroll ) {
+				setTimeout( removeActiveClass, options.keepActiveClassDelay );
+			}
+			didScroll = false;
+		}
+	}
+
+	function eventBinding() {
+		document.addEventListener( "touchstart", touchstartHandler );
+		document.addEventListener( "touchend", touchendHandler );
+		window.addEventListener( "pagehide", removeActiveClass );
+	}
+
+	window.addEventListener( "DOMContentLoaded", eventBinding );
+
+}());
+
+/*
+* Copyright (c) 2010 - 2014 Samsung Electronics Co., Ltd.
+* License : MIT License V2
+*/
+
+
+(function( $, ns, window, undefined ) {
 
 	// trigger mobileinit event - useful hook for configuring $.mobile settings before they're used
-	$.micro.$document.trigger( "mobileinit" );
+	ns.$document.trigger( "mobileinit" );
 
-	$.extend( $.micro, {
+	$.extend( ns, {
 		initializePage: function() {
-			var $pages = $( $.micro.selectors.page );
+			var $pages = $( ns.selectors.activePage ),
+				hash = ns.path.stripQueryParams(location.hash);
 
 			// define first page in dom case one backs out to the directory root (not always the first page visited, but defined as fallback)
-			$.micro.firstPage = $pages.first();
+			if( !$pages.length ) {
+				$pages = $( ns.selectors.page );
+			}
+			ns.firstPage = $pages.first();
+
+			// define page container
+			ns.pageContainer = ns.firstPage.parent().pagecontainer();
 
 			// set data-url attrs
 			$pages.each(function() {
@@ -11264,34 +11863,33 @@ ns.IndexScrollbar = IndexScrollbar;
 				}
 			});
 
-			// define page container
-			$.micro.pageContainer = $.micro.firstPage.parent().pagecontainer();
+			ns.navigator.register(ns.pageContainer);
+			ns.navigator.history.enableVolatileRecord();
 
-			// alert listeners that the pagecontainer has been determined for binding
-			// to events triggered on it
-			$.micro.$window.trigger( "pagecontainercreate" );
-
-			$.micro.navigator.register($.micro.pageContainer, $.micro.firstPage);
+			if ( $( hash ).is( ns.selectors.page ) ) {
+				ns.changePage( $( hash ) );
+			} else {
+				ns.changePage( ns.firstPage );
+			}
 		}
 	});
 
 	$(function() {
 		window.scrollTo( 0, 1 );
 
-		if ( $.micro.defaults.autoInitializePage ) {
-			$.micro.initializePage();
+		if ( ns.defaults.autoInitializePage ) {
+			ns.initializePage();
 		}
 	});
 
-})( jQuery, this );
+})( jQuery, ns, this );
 
 
+/*
+* Copyright (c) 2010 - 2014 Samsung Electronics Co., Ltd.
+* License : MIT License V2
+*/
 
-
-window.gear = {
-	ui: $.micro
-};
 
 $.noConflict(true);
-
 })(this);

@@ -1,3 +1,19 @@
+/*
+  * Copyright (c) 2013 Samsung Electronics Co., Ltd
+  *
+  * Licensed under the Flora License, Version 1.1 (the "License");
+  * you may not use this file except in compliance with the License.
+  * You may obtain a copy of the License at
+  *
+  *     http://floralicense.org/license/
+  *
+  * Unless required by applicable law or agreed to in writing, software
+  * distributed under the License is distributed on an "AS IS" BASIS,
+  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  * See the License for the specific language governing permissions and
+  * limitations under the License.
+  */
+
 /***************************************************************************
                   Body
 ***************************************************************************/
@@ -26,6 +42,9 @@
 ***************************************************************************/
 /***************************************************************************
                   index scrollbar (vertical)
+***************************************************************************/
+/***************************************************************************
+                  Listview
 ***************************************************************************/
 /*! normalize.css v1.0.0 | MIT License | git.io/normalize */
 /* ==========================================================================
@@ -105,7 +124,7 @@ button,
 input,
 select,
 textarea {
-  font-family: sans-serif;
+  font-family: Tizen, Samsung Sans, Helvetica;
 }
 /*
  * Addresses margins handled incorrectly in IE 6/7.
@@ -435,6 +454,9 @@ table {
 /******************************
   z-index order collection
  ******************************/
+html {
+  font-size: 15px;
+}
 /***************************************************************************
                    Common Style
 ***************************************************************************/
@@ -457,8 +479,7 @@ input {
   -moz-box-sizing: border-box;
   box-sizing: border-box;
 }
-a,
-a:hover {
+a {
   text-decoration: none !important;
   color: #fafafa;
 }
@@ -480,9 +501,9 @@ img {
 ***************************************************************************/
 body {
   height: 100%;
-  font-size: 30px;
-  font-family: Samsung Sans, Helvetica;
-  background: #080808;
+  font-size: 2rem;
+  font-family: Tizen, Samsung Sans, Helvetica;
+  background: #000000;
   color: #fafafa;
 }
 .ui-page {
@@ -493,7 +514,7 @@ body {
   position: absolute;
   top: 0;
   left: 0;
-  background: #080808;
+  background: #000000;
   -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
   /* overrides webkit link color */
 }
@@ -520,26 +541,32 @@ body {
 .ui-header {
   position: relative;
   width: 100%;
-  height: 52px;
-  line-height: 52px;
-  background-color: #080808;
+  height: 3.46666667rem;
+  line-height: 3.46666667rem;
+  background-color: #1e1e1e;
 }
 .ui-header .ui-title {
   color: #ff9000;
-  font-size: 24px;
+  font-size: 2rem;
   white-space: nowrap;
   margin: 0px;
-  padding-left: 16px;
-  padding-right: 16px;
+  padding-left: 1.06666667rem;
+  padding-right: 1.06666667rem;
 }
 .ui-header .ui-title.ui-icon {
-  padding-left: 60px;
-  background-position: 16px 9px;
-  background-size: 34px 34px;
+  padding-left: 4rem;
+  background-position: 1.06666667rem 0.6rem;
+  background-size: 2.26666667rem 2.26666667rem;
   background-repeat: no-repeat;
 }
+.ui-header .ui-title-text-fadeout {
+  -webkit-mask-image: -webkit-linear-gradient(left, #000000 80%, rgba(0, 0, 0, 0) 95%);
+}
 .ui-header.ui-has-more .ui-title {
-  padding-right: 68px;
+  padding-right: 4.53333333rem;
+}
+.ui-header.ui-has-more .ui-title-text-fadeout {
+  -webkit-mask-image: -webkit-linear-gradient(left, #000000 65%, rgba(0, 0, 0, 0) 80%);
 }
 .ui-header button.ui-more,
 .ui-header input.ui-more {
@@ -548,19 +575,19 @@ body {
 }
 .ui-header .ui-more-disable {
   cursor: default;
-  background-color: #080808;
+  background-color: #000000;
 }
 .ui-header .ui-more {
   display: block;
   position: absolute;
   top: 0px;
   right: 0px;
-  width: 68px;
+  width: 4.53333333rem;
   height: 100%;
   overflow: hidden;
   text-indent: -1000em;
   background-position: center center;
-  background-color: #080808;
+  background-color: #000000;
   cursor: pointer;
 }
 .ui-header .ui-more:active {
@@ -571,7 +598,7 @@ body {
 }
 .ui-header .ui-more.ui-icon-detail[disabled="disabled"] {
   cursor: default;
-  background-color: #080808;
+  background-color: #000000;
   background-image: url("images/Actionbar/tw_ic_menu_detail_disable_holo_dark.png");
 }
 .ui-header .ui-more.ui-icon-overflow {
@@ -579,7 +606,7 @@ body {
 }
 .ui-header .ui-more.ui-icon-overflow[disabled="disabled"] {
   cursor: default;
-  background-color: #080808;
+  background-color: #000000;
   background-image: url("images/Actionbar/tw_ic_menu_moreoverflow_disable_holo_dark.png");
 }
 .ui-header .ui-more.ui-icon-selectall {
@@ -587,12 +614,12 @@ body {
 }
 .ui-header .ui-more.ui-icon-selectall[disabled="disabled"] {
   cursor: default;
-  background-color: #080808;
+  background-color: #000000;
   background-image: url("images/Actionbar/tw_ic_menu_selectall_disable_holo_dark.png");
 }
 .ui-footer {
   width: 100%;
-  height: 76px;
+  height: 5.06666667rem;
   position: absolute;
   bottom: 0;
   left: 0;
@@ -619,7 +646,7 @@ body {
   float: left;
 }
 .ui-page .ui-grid-col-3 > * {
-  width: 33.333333333333336%;
+  width: 33.33333333%;
 }
 .ui-grid-row > * {
   display: block;
@@ -640,26 +667,26 @@ body {
 }
 progress {
   position: relative;
-  padding-left: 16px;
-  padding-right: 16px;
-  margin-top: 14px;
-  margin-bottom: 14px;
+  padding-left: 1.06666667rem;
+  padding-right: 1.06666667rem;
+  margin-top: 0.93333333rem;
+  margin-bottom: 0.93333333rem;
   color: #ffffff;
   width: 100%;
-  height: 6px;
+  height: 0.4rem;
   -webkit-appearance: none;
   border: none;
 }
 progress::-webkit-progress-bar {
   position: relative;
   background-color: #111111;
-  border-radius: 2px;
+  border-radius: 0.13333333rem;
   overflow: hidden;
 }
 progress::-webkit-progress-value {
   background-color: #ff8600;
-  height: 6px;
-  border-radius: 2px;
+  height: 0.4rem;
+  border-radius: 0.13333333rem;
   overflow: hidden;
 }
 progress.ui-progress-indeterminate::-webkit-progress-value {
@@ -668,18 +695,18 @@ progress.ui-progress-indeterminate::-webkit-progress-value {
 .ui-progress-proportion {
   display: inline-block;
   float: left;
-  font-size: 20px;
-  padding-left: 16px;
-  padding-right: 16px;
-  margin-top: -10px;
+  font-size: 1.33333333rem;
+  padding-left: 1.06666667rem;
+  padding-right: 1.06666667rem;
+  margin-top: -0.66666667rem;
 }
 .ui-progress-ratio {
   display: inline-block;
   float: right;
-  font-size: 20px;
-  padding-left: 16px;
-  padding-right: 16px;
-  margin-top: -10px;
+  font-size: 1.33333333rem;
+  padding-left: 1.06666667rem;
+  padding-right: 1.06666667rem;
+  margin-top: -0.66666667rem;
 }
 /*
  * toggle switch
@@ -693,14 +720,13 @@ progress.ui-progress-indeterminate::-webkit-progress-value {
 .ui-switch-text {
   margin: 70 auto 34;
   padding: 0 30;
-  font-size: 34px;
+  font-size: 2.26666667rem;
   text-align: center;
 }
 .ui-toggleswitch {
-  width: 120px;
-  height: 60px;
-  border-radius: 30px;
-  background-color: #ff9000;
+  width: 8rem;
+  height: 4rem;
+  border-radius: 2rem;
 }
 .ui-switch-input {
   display: none;
@@ -710,50 +736,51 @@ progress.ui-progress-indeterminate::-webkit-progress-value {
   height: 100%;
 }
 .ui-switch-activation {
-  width: 120px;
-  height: 60px;
-  border-radius: 30px;
+  display: inline-block;
+  width: 8rem;
+  height: 4rem;
+  border-radius: 2rem;
   background-color: #262626;
   margin: 0 auto;
 }
 .ui-switch-activation .ui-switch-handler {
   position: relative;
-  width: 60px;
-  height: 60px;
-  border-radius: 30px;
-  border: 2px solid #262626;
+  width: 4rem;
+  height: 4rem;
+  border-radius: 2rem;
+  border: 0.13333333rem solid #262626;
   background-color: #ffffff;
   left: 0%;
 }
 .ui-switch-activation:active {
-  width: 120px;
-  height: 60px;
-  border-radius: 30px;
+  width: 8rem;
+  height: 4rem;
+  border-radius: 2rem;
   background-color: #404040;
   margin: 0 auto;
 }
 .ui-switch-activation:active .ui-switch-handler:active {
   position: relative;
-  width: 60px;
-  height: 60px;
-  border-radius: 30px;
-  border: 2px solid #404040;
+  width: 4rem;
+  height: 4rem;
+  border-radius: 2rem;
+  border: 0.13333333rem solid #404040;
   background-color: #ffffff;
   left: 0%;
 }
 .ui-switch-activation:disable {
-  width: 120px;
-  height: 60px;
-  border-radius: 30px;
+  width: 8rem;
+  height: 4rem;
+  border-radius: 2rem;
   background-color: #1a1a1a;
   margin: 0 auto;
 }
 .ui-switch-activation:disable .ui-switch-handler:disable {
   position: relative;
-  width: 60px;
-  height: 60px;
-  border-radius: 30px;
-  border: 2px solid #1a1a1a;
+  width: 4rem;
+  height: 4rem;
+  border-radius: 2rem;
+  border: 0.13333333rem solid #1a1a1a;
   background-color: #ffffff;
   left: 0%;
 }
@@ -761,50 +788,50 @@ progress.ui-progress-indeterminate::-webkit-progress-value {
   display: none;
 }
 .ui-switch-input:checked ~  .ui-switch-activation {
-  width: 120px;
-  height: 60px;
-  border-radius: 30px;
+  width: 8rem;
+  height: 4rem;
+  border-radius: 2rem;
   background-color: #ff9000;
   margin: 0 auto;
 }
 .ui-switch-input:checked ~  .ui-switch-activation .ui-switch-handler {
   position: relative;
-  width: 60px;
-  height: 60px;
-  border-radius: 30px;
-  border: 2px solid #ff9000;
+  width: 4rem;
+  height: 4rem;
+  border-radius: 2rem;
+  border: 0.13333333rem solid #ff9000;
   background-color: #ffffff;
   left: 100%;
 }
 .ui-switch-input:checked ~  .ui-switch-activation:active {
-  width: 120px;
-  height: 60px;
-  border-radius: 30px;
+  width: 8rem;
+  height: 4rem;
+  border-radius: 2rem;
   background-color: #ffa633;
   margin: 0 auto;
 }
 .ui-switch-input:checked ~  .ui-switch-activation:active .ui-switch-handler:active {
   position: relative;
-  width: 60px;
-  height: 60px;
-  border-radius: 30px;
-  border: 2px solid #ffa633;
+  width: 4rem;
+  height: 4rem;
+  border-radius: 2rem;
+  border: 0.13333333rem solid #ffa633;
   background-color: #ffffff;
   left: 100%;
 }
 .ui-switch-input:checked ~  .ui-switch-activation:disable {
-  width: 120px;
-  height: 60px;
-  border-radius: 30px;
+  width: 8rem;
+  height: 4rem;
+  border-radius: 2rem;
   background-color: #4c2b00;
   margin: 0 auto;
 }
 .ui-switch-input:checked ~  .ui-switch-activation:disable .ui-switch-handler:disable {
   position: relative;
-  width: 60px;
-  height: 60px;
-  border-radius: 30px;
-  border: 2px solid #4c2b00;
+  width: 4rem;
+  height: 4rem;
+  border-radius: 2rem;
+  border: 0.13333333rem solid #4c2b00;
   background-color: #ffffff;
   left: 100%;
 }
@@ -819,27 +846,27 @@ progress.ui-progress-indeterminate::-webkit-progress-value {
 .ui-processing {
   background-image: url("images/Progress/tw_widget_popup_activity.png");
   -webkit-animation: rotating 1s linear infinite;
-  width: 80px;
-  height: 80px;
+  width: 5.33333333rem;
+  height: 5.33333333rem;
   margin: 0 auto;
-  margin-top: 34px;
-  margin-bottom: 14px;
+  margin-top: 2.26666667rem;
+  margin-bottom: 0.93333333rem;
 }
 .ui-processing-text {
   margin: 0 auto;
   text-align: center;
-  width: 168px;
-  font-size: 24px;
+  width: 11.2rem;
+  font-size: 1.6rem;
 }
 .ui-btn {
   display: block;
-  padding-top: 24px;
-  padding-right: 10px;
-  padding-bottom: 24px;
-  padding-left: 10px;
+  padding-top: 1.6rem;
+  padding-right: 0.66666667rem;
+  padding-bottom: 1.6rem;
+  padding-left: 0.66666667rem;
   margin: 0px;
-  font-size: 24px;
-  line-height: 28px;
+  font-size: 2.13333333rem;
+  line-height: 1.86666667rem;
   text-align: center;
   white-space: nowrap;
   cursor: pointer;
@@ -864,19 +891,19 @@ a.ui-btn.ui-state-disabled,
   cursor: default;
 }
 .ui-btn.ui-multiline {
-  padding-top: 10px;
-  padding-bottom: 10px;
+  padding-top: 0.66666667rem;
+  padding-bottom: 0.66666667rem;
 }
 .ui-btn.ui-inline {
   display: inline-block;
 }
 .ui-btn.ui-btn-icon {
   background-position: center center;
-  height: 76px;
+  height: 5.06666667rem;
   text-indent: -1000em;
   overflow: hidden;
   background-repeat: no-repeat;
-  background-size: 60px 60px;
+  background-size: 4rem 4rem;
 }
 .ui-default {
   color: #ffffff;
@@ -967,19 +994,19 @@ input.ui-btn.ui-inline {
   width: auto;
 }
 .ui-grid-col-1 > .ui-btn {
-  border-right: solid 1px #080808;
+  border-right: solid 1px #000000;
 }
 .ui-grid-col-1 > .ui-btn:last-child {
   border-right: 0px none;
 }
 .ui-grid-col-2 > .ui-btn {
-  border-right: solid 1px #080808;
+  border-right: solid 1px #000000;
 }
 .ui-grid-col-2 > .ui-btn:last-child {
   border-right: 0px none;
 }
 .ui-grid-col-3 > .ui-btn {
-  border-right: solid 1px #080808;
+  border-right: solid 1px #000000;
 }
 .ui-grid-col-3 > .ui-btn:last-child {
   border-right: 0px none;
@@ -999,37 +1026,37 @@ Normal Popup
   position: absolute;
   top: -10000em;
   left: -10000em;
-  margin: 13px 13px 13px 13px;
+  margin: 0.86666667rem 0.86666667rem 0.86666667rem 0.86666667rem;
   background-color: #222222;
   border: 3px solid #333333;
   visibility: hidden;
 }
 .ui-popup .ui-popup-header {
   width: 100%;
-  min-height: 51px;
-  font-size: 24px;
+  min-height: 3.4rem;
+  font-size: 1.6rem;
   text-align: left;
   color: #ff9000;
-  padding: 9px 16px 9px 16px;
+  padding: 0.6rem 1.06666667rem 0.6rem 1.06666667rem;
   border-bottom: 2px solid #333333;
 }
 .ui-popup .ui-popup-content {
   width: 100%;
-  font-size: 30px;
+  font-size: 2rem;
   text-align: left;
   color: #fafafa;
-  padding: 9px 16px 9px 16px;
+  padding: 0.6rem 1.06666667rem 0.6rem 1.06666667rem;
 }
 .ui-popup .ui-popup-content .ui-listview {
-  margin: -9px -16px -9px -16px;
+  margin: -0.6rem -1.06666667rem -0.6rem -1.06666667rem;
 }
 .ui-popup .ui-popup-footer {
   width: 100%;
-  height: 63px;
+  height: 4.2rem;
 }
 .ui-popup .ui-popup-footer .ui-btn {
-  padding-top: 18px;
-  padding-bottom: 17px;
+  padding-top: 1.2rem;
+  padding-bottom: 1.13333333rem;
 }
 .ui-popup.ui-popup-active {
   visibility: visible;
@@ -1047,52 +1074,52 @@ device option popup
 .ui-popup-device.ui-popup .ui-listview li {
   width: 100%;
   height: 33.3%;
-  font-size: 30px;
+  font-size: 2rem;
   padding: 0;
 }
 .ui-popup-device.ui-popup .ui-listview .ui-half-list {
   width: 50%;
-  height: 96px;
+  height: 6.4rem;
   float: left;
 }
 .ui-popup-device.ui-popup .ui-listview .ui-popup-left-option {
   width: 100%;
   height: 100%;
   float: left;
-  padding-top: 10px;
+  padding-top: 0.66666667rem;
   border-right: 1px solid popup_border;
 }
 .ui-popup-device.ui-popup .ui-listview .ui-popup-right-option {
   width: 100%;
   height: 100%;
   float: left;
-  padding-top: 10px;
+  padding-top: 0.66666667rem;
   border-left: 1px solid #333333;
 }
 .ui-popup-device.ui-popup .ui-listview .ui-text-sound,
 .ui-popup-device.ui-popup .ui-listview .ui-text-brightness {
   text-align: center;
-  font-size: 20px;
+  font-size: 1.33333333rem;
 }
 .ui-popup-device.ui-popup .ui-listview .ui-icon-sound {
   background: url(images/Popup/tw_device_options_sound.png);
-  width: 50px;
-  height: 50px;
-  margin-left: 44px;
+  width: 3.33333333rem;
+  height: 3.33333333rem;
+  margin-left: 2.93333333rem;
 }
 .ui-popup-device.ui-popup .ui-listview .ui-icon-brightness {
   background: url(images/Popup/tw_device_options_brightness_on.png);
-  width: 50px;
-  height: 50px;
-  margin-left: 44px;
+  width: 3.33333333rem;
+  height: 3.33333333rem;
+  margin-left: 2.93333333rem;
 }
 .ui-popup-device.ui-popup .ui-popup-full-option {
   width: 100%;
   height: 100%;
-  padding-left: 10px;
-  padding-right: 10px;
-  padding-top: 12px;
-  padding-bottom: 12px;
+  padding-left: 0.66666667rem;
+  padding-right: 0.66666667rem;
+  padding-top: 0.8rem;
+  padding-bottom: 0.8rem;
   border-bottom: 1px solid #333333;
 }
 .ui-popup-device.ui-popup .ui-popup-full-option .ui-popup-left-option {
@@ -1109,53 +1136,53 @@ device option popup
 }
 .ui-popup-device.ui-popup .ui-popup-full-option .ui-icon-power-off {
   background: url(images/Popup/tw_ic_lock_power_off.png);
-  width: 52px;
-  height: 52px;
+  width: 3.46666667rem;
+  height: 3.46666667rem;
   float: left;
-  margin-top: 10px;
+  margin-top: 0.66666667rem;
 }
 .ui-popup-device.ui-popup .ui-popup-full-option .ui-icon-restart {
   background: url(images/Popup/tw_ic_lock_restart.png);
-  width: 52px;
-  height: 52px;
+  width: 3.46666667rem;
+  height: 3.46666667rem;
   float: left;
-  margin-top: 10px;
+  margin-top: 0.66666667rem;
 }
 .ui-popup-device.ui-popup .ui-popup-full-option .ui-text-power-off,
 .ui-popup-device.ui-popup .ui-popup-full-option .ui-text-restart {
-  width: 200px;
-  margin-top: 17px;
+  width: 13.33333333rem;
+  margin-top: 1.13333333rem;
   text-align: left;
-  font-size: 34px;
-  margin-left: 10px;
+  font-size: 2.26666667rem;
+  margin-left: 0.66666667rem;
   float: left;
 }
 .ui-popup-device.ui-popup .ui-popup-full-option .ui-text-sound,
 .ui-popup-device.ui-popup .ui-popup-full-option .ui-text-brightness {
   text-align: center;
-  font-size: 20px;
+  font-size: 1.33333333rem;
 }
 .ui-popup-device.ui-popup .ui-popup-full-option .ui-icon-sound {
   background: url(images/Popup/tw_device_options_sound.png);
-  width: 50px;
-  height: 50px;
-  margin-left: 44px;
+  width: 3.33333333rem;
+  height: 3.33333333rem;
+  margin-left: 2.93333333rem;
 }
 .ui-popup-device.ui-popup .ui-popup-full-option .ui-icon-brightness {
   background: url(images/Popup/tw_device_options_brightness_on.png);
-  width: 50px;
-  height: 50px;
-  margin-left: 44px;
+  width: 3.33333333rem;
+  height: 3.33333333rem;
+  margin-left: 2.93333333rem;
 }
 /****************************************
 Popup Toast
 ****************************************/
 .ui-popup-toast {
   width: 90%;
-  margin-left: 16px;
-  margin-right: 16px;
-  margin-bottom: 16px;
-  font-size: 24px;
+  margin-left: 1.06666667rem;
+  margin-right: 1.06666667rem;
+  margin-bottom: 1.06666667rem;
+  font-size: 1.6rem;
   background-color: #222222;
   border: 3px solid #333333;
   position: absolute;
@@ -1167,17 +1194,25 @@ Popup Toast
   top: auto;
 }
 .ui-popup-toast .ui-popup-content {
-  padding: 10px 16px 10px 16px;
+  padding: 0.66666667rem 1.06666667rem 0.66666667rem 1.06666667rem;
+}
+.ui-popup-background {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
 }
 /************************
 Listview
 *************************/
 .ui-listview li {
-  font-size: 34px;
+  font-size: 2.53333333rem;
+  line-height: 2.53333333rem;
   width: 100%;
-  min-height: 90px;
-  padding: 25px 16px;
-  border-bottom: 1px solid #333333;
+  min-height: 6rem;
+  padding: 1.6rem 1.06666667rem 1.66666667rem;
+  border-bottom: 1px solid #404040;
 }
 .ui-listview li label.ui-popup-radio-label,
 .ui-listview li label.ui-popup-checkbox-label {
@@ -1186,26 +1221,26 @@ Listview
   float: left;
 }
 .ui-listview li input[type="radio"] {
-  margin-top: -4px;
+  margin-top: -0.26666667rem;
   float: right;
 }
 .ui-listview li input[type="checkbox"] {
-  margin-top: -4px;
+  margin-top: -0.26666667rem;
   float: right;
 }
 .ui-listview li > a {
   display: block;
   width: 100%;
   height: 100%;
-  margin: -25px -16px;
-  padding: 25px 16px;
+  margin: -1.66666667rem -1.06666667rem;
+  padding: 1.66666667rem 1.06666667rem;
   -o-box-sizing: content-box;
   -ms-box-sizing: content-box;
   -moz-box-sizing: content-box;
   -webkit-box-sizing: content-box;
   box-sizing: content-box;
 }
-.ui-listview li > a:active {
+.ui-listview li > .ui-a-active {
   background-color: #635d59;
 }
 /* Transitions originally inspired by those from jQtouch, nice work, folks */
@@ -1397,31 +1432,55 @@ Listview
 }
 .ui-indexscrollbar {
   display: block;
-  position: absolute;
+  position: fixed;
   right: 0;
   top: 0;
   height: 100%;
-  background-color: #2c2c2c;
-  overflow-y: scroll;
+  background-color: #222222;
   z-index: 10;
 }
 .ui-indexscrollbar ul {
-  display: inline-block;
-  width: 40px;
-  height: 101%;
+  width: 2.66666667rem;
   top: 0;
 }
 .ui-indexscrollbar ul li {
-  color: #585858;
+  color: #595959;
   display: block;
   width: 100%;
-  height: 36px;
+  text-align: center;
+  font-size: 1.46666667rem;
+  height: 2.4rem;
 }
-.ui-indexscrollbar ul li.selected {
-  background-color: #ff9000;
+.ui-indexscrollbar ul li.ui-state-selected {
+  background-color: #f99107;
   color: #ffffff;
 }
 .ui-indexscrollbar ul.ui-indexscrollbar-2nd {
   height: auto;
   top: 0;
+}
+.ui-indexscrollbar + .ui-listview li {
+  padding-right: 2.66666667rem;
+}
+.ui-indexscrollbar-indicator {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 9;
+  display: none;
+}
+.ui-indexscrollbar-indicator span {
+  width: 8rem;
+  height: 6.4rem;
+  position: absolute;
+  display: block;
+  top: 50%;
+  left: 50%;
+  margin-left: -4rem;
+  margin-top: -3.2rem;
+  line-height: 6.4rem;
+  font-size: 4.66666667rem;
+  text-align: center;
+  background-color: #58493a;
+  color: #ffffff;
 }

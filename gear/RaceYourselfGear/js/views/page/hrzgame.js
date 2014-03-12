@@ -30,7 +30,9 @@ define({
             zombieImage = null,
             zombieDistance = false,
             zombieInterval = false,            
-            visible = false;
+            visible = false,
+            changer,
+            sectionChanger;
 
         function show() {
             gear.ui.changePage('#race-game');
@@ -38,9 +40,11 @@ define({
 
         function onPageShow() {
             visible = true;
-            e.listen('fling.left', flingLeft);
-            e.listen('fling.right', flingRight);
             e.listen('tizen.back', onBack);
+            sectionChanger = new SectionChanger(changer, {
+                circular: false,
+                orientation: "horizontal"
+            });
             
             var r = race.getOngoingRace();
             if (r === null || r.hasStopped()) {
@@ -58,8 +62,7 @@ define({
         function onPageHide() {
             visible = false;
             clearTimeout(renderTimeout);
-            e.die('fling.left', flingLeft);
-            e.die('fling.right', flingRight);
+            sectionChanger.destroy();
             e.die('tizen.back', onBack);
         }        
         
@@ -237,14 +240,6 @@ define({
             context.save();            
         }
         
-        function flingLeft() {
-            e.fire('statsright.show');
-        }
-        
-        function flingRight() {
-            e.fire('statsleft.show');
-        }
-        
         function attachGame() {
             page.addEventListener('pageshow', onPageShow);
             page.addEventListener('pagehide', onPageHide);
@@ -259,6 +254,7 @@ define({
 
         function init() {
             page = document.getElementById('race-game');
+            changer = document.getElementById("race-game-sectionchanger");
             canvas = document.getElementById('race-canvas');
             context = canvas.getContext('2d');
             

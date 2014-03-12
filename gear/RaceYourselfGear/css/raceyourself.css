@@ -157,3 +157,9 @@ img {
 .flick-down {
 	border-bottom: 5px solid #3f3f3f;
 }
+
+#race-game .ui-content {
+	padding: 0 0;
+	margin: 0 0;
+}
+}

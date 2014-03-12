@@ -26,13 +26,11 @@ define({
             stepsEl;
 
         function show() {
-            gear.ui.changePage('#stats-right');
         }
 
         function onPageShow() {
             e.listen('race.new', reloadRace);
             e.listen('pedometer.step', tick);
-            e.listen('fling.right', flingRight);
             
             ongoing = race.getOngoingRace();
             tick();
@@ -42,7 +40,6 @@ define({
         function onPageHide() {
             e.die('race.new', reloadRace);
             e.die('pedometer.step', tick);
-            e.die('fling.right', flingRight);
             timer.reset();
         }
         
@@ -50,11 +47,8 @@ define({
             ongoing = race.getOngoingRace();            
         }
         
-        function flingRight() {
-            e.fire(game.getCurrentGame()+'.show');
-        }
-        
         function tick() {
+            if (!ongoing) return;
             var pace = ongoing.getPace();
             if (isFinite(pace)) pace = pace.toFixed(2);
             else pace = '&infin;'
@@ -68,7 +62,7 @@ define({
         }
 
         function init() {
-            page = document.getElementById('stats-right');
+            page = document.getElementById('race-game');
             paceEl = document.getElementById('pace-stat');
             stepsEl = document.getElementById('steps-stat');
             timer = new Timer(1000, 'views.page.statsright.tick');

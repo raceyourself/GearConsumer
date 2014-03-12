@@ -41,7 +41,7 @@ define({
          */
         function Race() {
             this.startDate = null;
-            this.duration = null,
+            this.duration = null;
             this.initialDistance = null;
             this.distance = 0; // meters
             this.speed = 0; // km/h

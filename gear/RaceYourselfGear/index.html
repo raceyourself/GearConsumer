@@ -7,6 +7,7 @@
     <title>Race Yourself</title>
     <link rel="stylesheet" href="themes/black.min.css" />
     <link rel="stylesheet" href="lib/gear-ui/themes/black/gear.ui.css" />
+    <link rel="stylesheet" href="css/gear-extras/sectionchanger.css" />
     <link rel="stylesheet" type="text/css" href="css/style.css"/>
     <link rel="stylesheet" href="css/raceyourself.css" />
 </head>
@@ -98,38 +99,39 @@
     </div>
     
     <div class="ui-page flick-left flick-right" id="race-game">
-	  	<canvas id="race-canvas">
-	       	Canvas not supported
-	    </canvas>
-    </div>
-    
-    <div class="ui-page flick-right" id="stats-left">
-        <section class="ui-content">
-        	<div class="stat">
-        		<div class="stat-label">Distance:</div>
-        		<span id="distance-stat" class="stat-value"></span>
-        		<span id="distance-units">m</span>
-        	</div>
-        	<div class="stat">
-        		<div class="stat-label">Duration:</div>
-	        	<span id="duration-stat" class="stat-value"></span>
-	        </div>
-        </section>
-    </div>
-    
-    <div class="ui-page flick-left" id="stats-right">
-        <section class="ui-content">
-        	<div class="stat">
-        		<div class="stat-label">Pace:</div>
-	        	<span id="pace-stat" class="stat-value"></span>
-	        	<span id="pace-units">min/km</span>
-	        </div>
-        	<div class="stat">
-        		<div class="stat-label">Steps:</div>
-	        	<span id="steps-stat" class="stat-value"></span>
-	        	<span id="steps-units"></span>
-	        </div>
-        </section>
+		<div id="race-game-sectionchanger" class="ui-content">
+			<!-- section changer has only one child. -->
+			<div>
+				<section id="stats-left">
+		        	<div class="stat">
+		        		<div class="stat-label">Distance:</div>
+		        		<span id="distance-stat" class="stat-value"></span>
+		        		<span id="distance-units">m</span>
+		        	</div>
+		        	<div class="stat">
+		        		<div class="stat-label">Duration:</div>
+			        	<span id="duration-stat" class="stat-value"></span>
+			        </div>
+				</section>
+				<section class="section-active">
+				  	<canvas id="race-canvas">
+				       	Canvas not supported
+				    </canvas>
+				</section>
+				<section id="stats-right">
+		        	<div class="stat">
+		        		<div class="stat-label">Pace:</div>
+			        	<span id="pace-stat" class="stat-value"></span>
+			        	<span id="pace-units">min/km</span>
+			        </div>
+		        	<div class="stat">
+		        		<div class="stat-label">Steps:</div>
+			        	<span id="steps-stat" class="stat-value"></span>
+			        	<span id="steps-units"></span>
+			        </div>
+				</section>
+		    </div>
+	    </div>
     </div>
     
     <div class="ui-page" id="history">
@@ -287,6 +289,8 @@
     </div>
 
     <script src="./lib/gear-ui/js/gear.ui.js"></script>
+    <script src="./js/gear-extras/scroller.js"></script>
+    <script src="./js/gear-extras/sectionchanger.js"></script>
     <script src="./js/core/core.js"></script>
     <script src="./js/app.js"></script>
 
