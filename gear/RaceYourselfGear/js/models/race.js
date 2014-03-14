@@ -99,6 +99,10 @@ define({
                 return Date.now() - this.startDate;
             },
             
+            getSpeed: function getSpeed() {            
+                return this.speed;
+            },
+            
             getPace: function getPace() {
                 return 1/(this.speed/60); // km/h -> min/km
             },
@@ -107,7 +111,7 @@ define({
                 return this.steps;
             }
             
-        }
+        };
         
         function onPedometerInfoChange(param) {
             if (ongoingRace == null || !ongoingRace.isRunning()) return;

@@ -7,5 +7,5 @@
     <name>RaceYourselfGear</name>
     <tizen:privilege name="http://tizen.org/privilege/application.launch"/>
     <tizen:privilege name="http://tizen.org/privilege/context"/>
-    <tizen:setting hwkey-event="enable"/>
+    <tizen:setting background-support="enable" encryption="enable" hwkey-event="enable"/>
 </widget>

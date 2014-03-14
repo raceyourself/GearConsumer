@@ -39,19 +39,15 @@ define({
         	var dx = ev.changedTouches.item(0).pageX - touch_start.screenX;
         	var dy = ev.changedTouches.item(0).pageY - touch_start.screenY;
         	if (dx >= fling_limit.x) {
-                console.log('DEBUG: fling.right')
         	    e.fire('fling.right');
         	}
         	if (-dx >= fling_limit.x) {
-                console.log('DEBUG: fling.left')
         	    e.fire('fling.left');
         	}
         	if (dy >= fling_limit.y) {
-                console.log('DEBUG: tizen.back')
         	    e.fire('tizen.back');
         	}
         	if (-dy >= fling_limit.y) {
-        	    console.log('DEBUG: fling.up')
         	    e.fire('fling.up');
         	}
         	
