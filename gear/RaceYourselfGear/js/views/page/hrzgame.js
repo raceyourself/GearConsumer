@@ -40,6 +40,7 @@ define({
             zombies = [],
             zombieDistance = false,
             zombieInterval = false,
+            zombieSpeed = 0,
             zombieMoan = null,
             zombieGrowl = null,
             visible = false,
@@ -47,7 +48,12 @@ define({
             sectionChanger,
             fpsInterval = false,
             frames = 0,
-            fps = 0;
+            fps = 0,
+            hr = 100,
+            maxHeartRate = 150,
+            minHeartRate = 120,
+            hrInterval = 5000,
+            playerDistance = 70;
 
         function show() {
             gear.ui.changePage('#race-game');
@@ -65,6 +71,7 @@ define({
             if (r === null || r.hasStopped()) {
                 r = race.newRace();
                 e.listen('pedometer.step', step);
+                e.listen('hrm.change', onHeartRateChange);
                 startCountdown();
             }
             
@@ -80,11 +87,14 @@ define({
             animate();
             
             requestRender();
+            
+            hrInterval = setInterval(randomHR, hrInterval);
         }
         
         function onPageHide() {
             visible = false;
             clearInterval(fpsInterval);
+            clearInterval(randomHR);
             sectionChanger.destroy();
             e.die('tizen.back', onBack);
         }        
@@ -95,6 +105,7 @@ define({
                 r.stop();
                 lastRender = null;                
                 e.die('pedometer.step', step);
+                e.die('hrm.change', onHeartRateChange);
             }
             if (!!raf) cancelAnimationFrame(raf);
             clearInterval(zombieInterval);
@@ -107,6 +118,7 @@ define({
             clearTimeout(bannerTimeout);
             bannerTimeout = setTimeout(ready, 1000);
         }
+        
         
         function ready() {
             banner = 'Ready';
@@ -153,7 +165,10 @@ define({
         }
         
         function zombieTick() {
-            zombieDistance++;
+        	if(hr < minHeartRate)
+        	{
+            	zombieDistance++;
+        	}
             requestRender();
             step();
         }
@@ -161,6 +176,25 @@ define({
         function stopZombies() {
             clearInterval(zombieInterval);
             zombieDistance = false;            
+        }
+        
+        function onHeartRateChange(hrmInfo) {
+        	//set heartRate
+        	handleHRChanged();
+        }
+
+		function setMinMaxHeartRate() {
+			//to be eventually based on age and user-defined goals. Just use values for 30yo aerobic exercise for now.
+		}
+        
+        //test function to provide random heart rate
+        function randomHR() {
+        	hr = Math.floor( 50 + 150 * (Math.random()) );
+        	handleHRChanged();
+        }
+        
+        function handleHRChanged() {
+        	//move zombies closer if too high
         }
         
         function step() {
@@ -267,7 +301,7 @@ define({
                     context.textAlign = "center";
                     context.fillText('Heart Rate', canvas.width-columnCenter, 25);
                     context.font = '45px Samsung Sans';
-                    context.fillText('F', canvas.width-columnCenter, 25+25);
+                    context.fillText(hr+'bpm', canvas.width-columnCenter, 25+25);
                 }
             }
             
@@ -301,7 +335,7 @@ define({
             }
             
             // Self
-            runner.sprite.draw(context, 0 + (r.getDistance() * trackWidth / TRACK_LENGTH), canvas.height - runner.sprite.height - 30, dt);
+            runner.sprite.draw(context, 0 + (playerDistance * trackWidth / TRACK_LENGTH), canvas.height - runner.sprite.height - 30, dt);
             
             /// DEBUG
             // fps
