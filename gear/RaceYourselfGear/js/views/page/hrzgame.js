@@ -53,8 +53,7 @@ define({
             maxHeartRate = 150,
             minHeartRate = 120,
             hrInterval = 5000,
-            playerDistance = 70,
-            zombieCatchupSpeed = 0.1,
+            zombieCatchupSpeed = 0.05,
             zombieOffset = -25,
             screenWidthDistance = 100,	//'real-world' distance covered by the screen's width
             screenLeftDistance = 0;		//'real-world' position of left of screen
@@ -331,10 +330,30 @@ define({
             context.font = '25px Samsung Sans';
             context.fillStyle = '#fff';
             context.textBaseline = "top";
-            context.textAlign = "left";
-            context.fillText(''+ Math.floor(screenLeftDistance), 10, canvas.height-25);
-            context.textAlign = "right";
-            context.fillText(''+ Math.floor(screenWidthDistance + screenLeftDistance), canvas.width - 10, canvas.height-25);
+//            context.textAlign = "left";
+//            context.fillText(''+ Math.floor(screenLeftDistance), 10, canvas.height-25);
+//            context.textAlign = "right";
+//            context.fillText(''+ Math.floor(screenWidthDistance + screenLeftDistance), canvas.width - 10, canvas.height-25);
+  			context.textAlign = "center";          
+			
+			//draw distance markers for screen range
+			var distMarkerSpacing = 10;
+			var distMarkerIndex = Math.floor(screenLeftDistance/distMarkerSpacing);
+			while (distMarkerIndex * distMarkerSpacing <= (screenLeftDistance + 2*screenWidthDistance) )
+			{
+				var dist = distMarkerIndex * distMarkerSpacing
+				if(dist == 0)
+				{
+					context.fillText('START', distanceToTrackPos(0), canvas.height-25);
+				}
+				else
+				{
+					context.fillText('' + dist, distanceToTrackPos(dist), canvas.height-25);
+				}
+				
+				distMarkerIndex++;
+			}
+			
             
             var scale = 10/screenWidthDistance;
             
