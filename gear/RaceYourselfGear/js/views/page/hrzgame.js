@@ -53,7 +53,12 @@ define({
             maxHeartRate = 150,
             minHeartRate = 120,
             hrInterval = 5000,
-            playerDistance = 70;
+            playerDistance = 70,
+            zombieCatchupSpeed = 0.1,
+            zombieOffset = -25,
+            screenWidthDistance = 100,	//'real-world' distance covered by the screen's width
+            screenLeftDistance = 0;		//'real-world' position of left of screen
+            
 
         function show() {
             gear.ui.changePage('#race-game');
@@ -151,6 +156,7 @@ define({
             countingdown = true;
             wave++;
             banner = 'Wave ' + wave;
+            zombieOffset = -25;
             requestRender();
             clearTimeout(bannerTimeout);
             bannerTimeout = setTimeout(startCountdown, 1500);
@@ -160,17 +166,26 @@ define({
             clearInterval(zombieInterval);
             while (zombies.length < wave) zombies.push(zombies[0].clone());
             for (var i=0;i<zombies.length;i++) zombies[i].reset();
-            zombieDistance = -25;
-            zombieInterval = setInterval(zombieTick, Math.min(350, 750-(wave*50)));
+            zombieDistance = zombieOffset;
+//            int intervalTime = Math.min(350, 750-(wave*50));
+			var intervalTime = 33;
+            zombieInterval = setInterval(zombieTick, intervalTime);
         }
         
         function zombieTick() {
         	if(hr < minHeartRate)
         	{
-            	zombieDistance++;
+            	zombieOffset += zombieCatchupSpeed;
         	}
+        	var r = race.getOngoingRace();
+        	zombieDistance = r.getDistance() + zombieOffset;
             requestRender();
             step();
+            
+            //general update of track window
+            screenWidthDistance = Math.max( 10, Math.min( -zombieOffset, 100));
+            screenLeftDistance = (zombieDistance + r.getDistance() - screenWidthDistance)/2;
+            
         }
         
         function stopZombies() {
@@ -317,9 +332,11 @@ define({
             context.fillStyle = '#fff';
             context.textBaseline = "top";
             context.textAlign = "left";
-            context.fillText('0', 10, canvas.height-25);
+            context.fillText(''+ Math.floor(screenLeftDistance), 10, canvas.height-25);
             context.textAlign = "right";
-            context.fillText(''+TRACK_LENGTH, canvas.width - 10, canvas.height-25);
+            context.fillText(''+ Math.floor(screenWidthDistance + screenLeftDistance), canvas.width - 10, canvas.height-25);
+            
+            var scale = 10/screenWidthDistance;
             
             // Zombies
             if (zombieDistance !== false) {
@@ -329,13 +346,17 @@ define({
                     var y_offset = (-1+(i+1)%2) * 5;
                     if (i%2==1) context.globalAlpha = 0.5;
                     else context.globalAlpha = 1;
-                    zombie.draw(context, 0 + (zombieDistance * trackWidth / TRACK_LENGTH) - x_offset, canvas.height - zombie.height - 30 + y_offset, dt)
+                    var zombiePos = 0 + distanceToTrackPos(zombieDistance) - x_offset;
+//                    zombiePos -= screenLeftDistance;
+                    zombie.drawscaled(context, zombiePos, canvas.height - zombie.height * scale - 30 + y_offset, dt, scale);
+//                    console.log('screenwidth:' + screenWidthDistance);
+//                    console.log('scale:' + scale);
                 }
                 context.globalAlpha = 1;
             }
             
             // Self
-            runner.sprite.draw(context, 0 + (playerDistance * trackWidth / TRACK_LENGTH), canvas.height - runner.sprite.height - 30, dt);
+            runner.sprite.drawscaled(context, 0 + distanceToTrackPos(r.getDistance()), canvas.height - runner.sprite.height * scale - 30, dt, scale);
             
             /// DEBUG
             // fps
@@ -349,6 +370,13 @@ define({
             
             context.save();
             frames++;
+        }
+        
+        function distanceToTrackPos(distance)
+        {
+        	var trackWidth = canvas.width - 0 - runner.sprite.width;
+        	var pos = trackWidth * (distance - screenLeftDistance) / (screenWidthDistance);
+        	return pos;
         }
         
         function attachGame() {
