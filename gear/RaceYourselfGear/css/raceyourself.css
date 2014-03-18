@@ -163,6 +163,36 @@ img {
 	margin: 0 0;
 }
 
+.setter {
+	font-size: 4rem;
+	text-align: center;
+	padding: 25px 0px;
+}
+.setter-btn {
+	width: 20%;
+	float: left;
+}
+.setter-value {
+	width: 60%;	
+	float: left;
+}
+.setter-ok {
+	padding-top: 15px;
+	text-align: center;
+	float: clear;
+}
+#distance-value {
+	line-height: 75%;
+}
+#distance-units {
+	font-size: 30%;
+}
+
+.ry-title {
+	text-align: center;
+	padding: 25px 0px;
+}
+
 #newgames .ui-content {
 	padding: 0 0;
 	margin: 0 0;

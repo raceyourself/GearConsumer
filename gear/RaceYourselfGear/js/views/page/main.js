@@ -9,7 +9,7 @@ define({
     requires: [
         'core/event',
         'models/application',
-        'views/page/mode',
+        'views/page/setdistance',
         'views/page/games',
         'views/page/newmain'
     ],
@@ -37,7 +37,7 @@ define({
         }
         
         function flingRight() {
-            e.fire('mode.show');
+            e.fire('setdistance.show');
         }
         
         function flingLeft() {
