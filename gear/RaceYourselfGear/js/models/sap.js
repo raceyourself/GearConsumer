@@ -43,7 +43,7 @@ define({
         function onSendDataSuccess(channel, messageJSON) {
             var message = JSON.parse(messageJSON);
 
-            e.fire('models.sap.' + message.msgId, {
+            e.fire('models.sap.' + message.messageType, {
                 channel: channel,
                 message: message
             });
