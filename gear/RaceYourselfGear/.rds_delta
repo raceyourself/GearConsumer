@@ -2,5 +2,6 @@
 #add
 #modify
 res/wgt/author-signature.xml
-res/wgt/js/models/race.js
+res/wgt/js/models/application.js
+res/wgt/js/views/page/init.js
 res/wgt/signature1.xml

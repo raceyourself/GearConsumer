@@ -28,12 +28,12 @@ define({
         }
 
         /**
-         * Adds value for given key to local storage.
+         * Sets value for given key to local storage.
          * @param {string} key Key.
          * @param {object} val Value object.
          * @return {bool}
          */
-        function add(key, val) {
+        function set(key, val) {
             var json = null;
             try {
                 json = JSON.stringify(val);
@@ -49,9 +49,19 @@ define({
             return false;
         }
 
+        /**
+         * Removes value for given key from local storage.
+         * @param {string} key Key.
+         */
+        function remove(key) {
+            localStorage.removeItem(key);
+        }
+
         return {
             get: get,
-            add: add
+            add: set,
+            set: set,
+            remove: remove
         };
     }
 });

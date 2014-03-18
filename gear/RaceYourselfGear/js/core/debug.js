@@ -1,5 +1,5 @@
 /*jslint forin: true*/
-/*global define, console, window, CustomEvent*/
+/*global console, window*/
 
 
 (function debug() {

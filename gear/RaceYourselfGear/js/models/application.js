@@ -90,6 +90,7 @@ define({
         if (typeof tizen !== 'undefined' &&
                 typeof tizen.application !== 'undefined') {
             app = tizen.application;
+            tizen.power.request("SCREEN", "SCREEN_NORMAL");
         } else {
             console.warn(
                 'tizen or tizen.application not available, using a mock instead'

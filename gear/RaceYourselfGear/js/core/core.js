@@ -1,4 +1,4 @@
-/*global window, document, console, $*/
+/*global window, document, console*/
 
 (function core(window, document) {
     'use strict';
@@ -31,24 +31,24 @@
     }
 
     /**
-     * Have all dependencies deps been sorted already?
-     * @param {array} deps Dependencies.
-     * @param {array} sorted Sorted dependencies.
+     * Have all requires been sorted already?
+     * @param {array} requires Requires.
+     * @param {array} sorted Sorted requires.
      * @return {bool} result.
      */
-    function areSorted(deps, sorted) {
+    function areSorted(requires, sorted) {
         var i = 0,
-            depsLen = deps.length,
+            depsLen = requires.length,
             result = true;
         for (i = 0; i < depsLen; i += 1) {
             // Has mod been sorted already?
-            result = result && (sorted.indexOf(deps[i]) !== -1);
+            result = result && (sorted.indexOf(requires[i]) !== -1);
         }
         return result;
     }
 
     /**
-     * Sort modules by dependencies (dependents last),
+     * Sort modules by requires (dependents last),
      * returning sorted list of module names.
      * @param {object} modules Modules.
      */
@@ -60,8 +60,8 @@
             // Modules already sorted.
             sorted = [],
             // Remember length of pending list for each module.
-            beenHere = {},
-            m = null;
+            visited = {},
+            currModule = null;
 
         for (name in modules) {
             if (modules.hasOwnProperty(name)) {
@@ -79,23 +79,23 @@
         while (pending.length > 0) {
 
             // Consider the next pending module
-            m = pending.shift();
+            currModule = pending.shift();
 
             // If we've been here and have not made any progress, we are looping
-            // (no support for cyclic module dependencies).
-            if (beenHere[m] && beenHere[m] <= pending.length) {
-                throw ('Can\'t sort dependencies: ' +
-                    sorted + ' < ' + m + ' < ' + pending);
+            // (no support for cyclic module requires).
+            if (visited[currModule] && visited[currModule] <= pending.length) {
+                throw ('Can\'t sort requires: ' +
+                    sorted + ' < ' + currModule + ' < ' + pending);
             }
-            beenHere[m] = pending.length;
+            visited[currModule] = pending.length;
 
-            // Consider the current module's import dependencies.
-            if (areSorted(modules[m].requires, sorted)) {
-                // Dependencies done, module done.
-                sorted.push(m);
+            // Consider the current module's import requires.
+            if (areSorted(modules[currModule].requires, sorted)) {
+                // Requires done, module done.
+                sorted.push(currModule);
             } else {
-                // Some dependencies still pending.
-                pending.push(m);
+                // Some requires still pending.
+                pending.push(currModule);
             }
         }
 
@@ -125,58 +125,57 @@
     }
 
     /**
+     * Create the object using Def as a constructor.
+     * In this case the object inherits the prototype from Def.
+     *
+     * @param {function} Def Constructing function.
+     * @param {array} args Parameters for the constructing function.
+     * @param {object} Constructed object.
+     */
+    function construct(Def, args) {
+        var argsLen = args.length;
+
+        // Switch/case is used for performance reasons.
+        switch (argsLen) {
+        case 0:
+            return new Def();
+        case 1:
+            return new Def(args[0]);
+        case 2:
+            return new Def(args[0], args[1]);
+        case 3:
+            return new Def(args[0], args[1], args[2]);
+        case 4:
+            return new Def(args[0], args[1], args[2], args[3]);
+        case 5:
+            return new Def(args[0], args[1], args[2], args[3], args[4]);
+        default:
+            console.warn('Too many parameters, use a short form instead');
+            return Def.apply(Object.create(Def.prototype), args);
+        }
+    }
+
+    /**
      * Creates an object using the passed constructor and parameters.
      *
      * @param {function} Def Constructing function.
-     * @param {array} a Parameters for the constructing function.
+     * @param {array} args Parameters for the constructing function.
+     * @return {object} Object of Def type.
      */
-    function instantiate(Def, a) {
-        var argsLen = a.length,
-            obj = null;
+    function instantiate(Def, args) {
+        var obj = null;
 
-        /**
-         * Create the object using Def as a constructor.
-         * In this case the object inherits Def.prototype.
-         * Switch/case is used for performance reasons.
-         */
-        switch (argsLen) {
-        case 0:
-            obj = new Def();
-            break;
-        case 1:
-            obj = new Def(a[0]);
-            break;
-        case 2:
-            obj = new Def(a[0], a[1]);
-            break;
-        case 3:
-            obj = new Def(a[0], a[1], a[2]);
-            break;
-        case 4:
-            obj = new Def(a[0], a[1], a[2], a[3]);
-            break;
-        case 5:
-            obj = new Def(a[0], a[1], a[2], a[3], a[4]);
-            break;
-        case 6:
-            obj = new Def(a[0], a[1], a[2], a[3], a[4], a[5]);
-            break;
-        case 7:
-            obj = new Def(a[0], a[1], a[2], a[3], a[4], a[5], a[6]);
-            break;
-        default:
-            obj = Object.create(Def.prototype);
-            // Here we get a plain object anyway.
-            obj = Def.apply(obj, a);
-        }
+        obj = construct(Def, args);
 
-        // Constructors don't have to return anything.
+        // Constructors don't have to return anything, but we need at least
+        // an empty object.
         if (!obj) {
             obj = {};
         }
         // Modules return plain objects, we need to fix this.
         // Create an object with a valid prototype
         // and extend it by copying properties from the original object.
+        // The previous prototype, if any, is ignored.
         obj = extend(
             Object.create(Def.prototype),
             obj
@@ -247,6 +246,9 @@
     }
 
     /* build:app */
+    /**
+     * Initialize Debug module.
+     */
     function initDebug() {
         if (typeof window.debug === 'object') {
             window.debug.init(modules);
@@ -265,11 +267,11 @@
             name = '',
             module = null;
 
-        // Sort modules in dependency order.
+        // Sort modules in requires order.
         sorted = sort(modules);
         sortedLen = sorted.length;
 
-        // Link modules in dependency order.
+        // Link modules in requires order.
         for (i = 0; i < sortedLen; i += 1) {
             name = sorted[i];
             module = modules[name];
@@ -299,7 +301,7 @@
     }
 
     /**
-     * Loads module
+     * Loads a module.
      * @param {string} moduleName Module name.
      */
     function load(moduleName) {
@@ -375,8 +377,22 @@
      *     name: 'foo',
      *     requires: ['bar1', 'bar2'],
      *     def: function (require) {
-     *         var bar1 = require['bar1'],
-     *             bar2 = require['bar2'];
+     *         var bar1 = require.bar1,
+     *             bar2 = require.bar2;
+     *     }
+     * });
+     *
+     * Define `foo` module which require `path/bar1` and `path/bar2` module:
+     * define({
+     *     name: 'foo',
+     *     requires: ['path/bar1', 'path/bar2'],
+     *     def: function (require) {
+     *         // recommended
+     *         var bar1 = require.path.bar1,
+     *             bar2 = require.path.bar2;
+     *         // or
+     *         var bar1 = require['path/bar1'],
+     *             bar2 = require['path/bar2'];
      *     }
      * });
      *

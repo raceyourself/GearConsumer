@@ -1,5 +1,5 @@
 /*jslint forin: true*/
-/*global define, console, window, CustomEvent*/
+/*global define, window, CustomEvent*/
 
 /**
  * Event module
@@ -12,6 +12,10 @@ define({
 
         var listeners = {};
 
+        /**
+         * Gets listeners name for event.
+         * @param {string} eventName Event name.
+         */
         function getListenersNames(eventName) {
             var key,
                 names = [],
@@ -23,15 +27,19 @@ define({
             return names;
         }
 
-        function getListeners(name) {
-            var eventName,
+        /**
+         * Gets listeners for event.
+         * @param {string} eventName Event name.
+         */
+        function getListeners(eventName) {
+            var evName,
                 names = {};
 
-            if (name) {
-                names[name] = getListenersNames(name);
+            if (eventName) {
+                names[eventName] = getListenersNames(eventName);
             } else {
-                for (eventName in listeners) {
-                    names[eventName] = getListenersNames(eventName);
+                for (evName in listeners) {
+                    names[evName] = getListenersNames(evName);
                 }
             }
             return names;
@@ -56,6 +64,11 @@ define({
             return window.dispatchEvent(customEvent);
         }
 
+        /**
+         * Adds event listener for event name.
+         * @param {string} eventName Event name.
+         * @param {function?} handler Handler function.
+         */
         function addEventListener(eventName, handler) {
             listeners[eventName] = listeners[eventName] || [];
             listeners[eventName].push(handler);
@@ -63,6 +76,7 @@ define({
         }
 
         /**
+         * Removes event listener.
          * @param {string} eventName Event name.
          * @param {function?} handler Handler function.
          */
@@ -73,8 +87,7 @@ define({
                 window.removeEventListener(eventName, handler);
 
                 // find it in the array and clear the reference
-                handlerIndex = -1;
-                if (listeners[eventName]) listeners[eventName].indexOf(handler);
+                handlerIndex = listeners[eventName].indexOf(handler);
                 if (handlerIndex !== -1) {
                     listeners[eventName].splice(handlerIndex, 1);
                 }
@@ -92,6 +105,16 @@ define({
             }
         }
 
+        /**
+         * Adds event listeners.
+         * @param {object} listeners Listeners object.
+         *
+         * Example:
+         * addEventListeners({
+         *   'foo.event.name': function fooEventHandler(evData) {},
+         *   'bar.event.name': function barventHandler(evData) {},
+         * });
+         */
         function addEventListeners(listeners) {
             var eventName;
             for (eventName in listeners) {

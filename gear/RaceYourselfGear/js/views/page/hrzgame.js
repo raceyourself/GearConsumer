@@ -386,11 +386,11 @@ define({
                 throw "Could not load " + this.src;
             }
                         
-            if (hrm.isAvailable()) {
+           /* if (hrm.isAvailable()) {
                 hrm.start();
             } else {
                 // TODO: Disable game?
-            }                        
+            } */                       
             
             bindEvents();
         }

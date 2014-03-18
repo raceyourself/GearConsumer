@@ -1,4 +1,4 @@
-/*global define, console, window, document, jQuery*/
+/*global define, document, jQuery*/
 /*jslint plusplus: true*/
 
 /**

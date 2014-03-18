@@ -1,7 +1,7 @@
 /*global define, console, XMLHttpRequest*/
 
 /**
- * Ajax module
+ * HTTP module
  */
 
 define({
@@ -9,6 +9,14 @@ define({
     def: function coreHttp() {
         'use strict';
 
+        /**
+         * Creates and send request
+         * @param {object} options Options.
+         * @param {string} options.url Url.
+         * @param {boolean} options.async Async mode.
+         * @param {function} options.success Success callback.
+         * @param {function} options.error Error callback.
+         */
         function request(options) {
             var req = new XMLHttpRequest(),
                 async = null,

@@ -1,5 +1,6 @@
 /*jslint regexp: true, evil: true, unparam: true*/
-/*global define, $, console*/
+/*jshint unused: true*/
+/*global define, console, document*/
 
 /**
  * Template manager module
@@ -83,6 +84,7 @@ define({
          * For details, see the Qatrix website: http://qatrix.com
          *
          * @param {string} template Template.
+         * @return {function} Compiled template.
          */
         function compile(template) {
             var content = cache[template];
@@ -230,7 +232,7 @@ define({
          * Returns template completed by specified params
          * @param {function} tplCompiled Compiled template.
          * @param {array|object} tplParams Template parameters.
-         * @return {string}
+         * @return {string} Completed template.
          */
         function getCompleted(tplCompiled, tplParams) {
             /*jshint validthis:true*/
@@ -241,12 +243,51 @@ define({
          * Returns template html (from cache)
          * @param {string} tplName Template name.
          * @param {string} tplParams Template parameters.
+         * @return {string} Completed template.
          */
         function get(tplName, tplParams) {
             var tplCompiled = cache[tplName] || loadOne(tplName);
             return getCompleted(tplCompiled, tplParams);
         }
 
+        /**
+         * Returns first HTML element from completed template.
+         * @param {string} tplName Template name.
+         * @param {string} tplParams Template parameters.
+         * @return {HTMLElement} First element from the completed template.
+         */
+        function getElement(tplName, tplParams) {
+            var html = get(tplName, tplParams),
+                tempElement = document.createElement('div');
+
+            tempElement.innerHTML = html;
+            return tempElement.firstChild;
+        }
+
+        /**
+         * Returns completed template as DocumentFragment.
+         * @param {string} tplName Template name.
+         * @param {string} tplParams Template parameters.
+         * @return {DocumentFragment} First element from the completed template.
+         */
+        function getAsFragment(tplName, tplParams) {
+            var html = get(tplName, tplParams),
+                tempElement = document.createElement('div'),
+                fragment = document.createDocumentFragment(),
+                child = null;
+
+            tempElement.innerHTML = html;
+
+            while ((child = tempElement.firstChild)) {
+                fragment.appendChild(child);
+            }
+            return fragment;
+        }
+
+        /**
+         * Returns the compiled template.
+         * @return {function} Compiled template.
+         */
         function getCompiled(tplName) {
             return cache[tplName] || loadOne(tplName);
         }
@@ -254,6 +295,8 @@ define({
         return {
             load: load,
             getCompiled: getCompiled,
+            getElement: getElement,
+            getAsFragment: getAsFragment,
             get: get
         };
     }

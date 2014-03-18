@@ -24,7 +24,7 @@ define({
 
             if (route.date) {
                 routeDate = new Date(route.date);
-                routeName = date.format(routeDate, 'HH:MM ddd, d mmm');
+                routeName = date.format(routeDate, 'h:MMTT ddd, mmm d');
             } else {
                 routeName = route.id;
             }
@@ -32,8 +32,28 @@ define({
             return routeName;
         }
 
+        /**
+         * Sorts descending routes data (by route id).
+         * @param {array} routes
+         * @return {array}
+         */
+        function sortDescending(routes) {
+            routes.sort(function (a, b) {
+                if (a.id < b.id) {
+                    return 1;
+                } else if (a.id > b.id) {
+                    return -1;
+                } else {
+                    return 0;
+                }
+            });
+
+            return routes;
+        }
+
         return {
-            getRouteName: getRouteName
+            getRouteName: getRouteName,
+            sortDescending: sortDescending
         };
     }
 });

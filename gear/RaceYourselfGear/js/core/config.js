@@ -14,6 +14,12 @@ define({
             'templateExtension': '.tpl'
         };
 
+        /**
+         * Gets value from configuration.
+         * If configuration value doesn’t exists return default value.
+         * @param {string} value
+         * @param {string} defaultValue
+         */
         function get(value, defaultValue) {
             if (properties[value] !== undefined) {
                 return properties[value];
