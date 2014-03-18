@@ -1,11 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<widget xmlns="http://www.w3.org/ns/widgets" xmlns:tizen="http://tizen.org/ns/widgets" id="http://yourdomain/RaceYourselfGear" version="2.2.0" viewmodes="fullscreen">
-    <tizen:application id="3ytvXgxJYZ.RaceYourselfGear" package="3ytvXgxJYZ" required_version="2.2"/>
+<widget xmlns="http://www.w3.org/ns/widgets" xmlns:tizen="http://tizen.org/ns/widgets" id="http://raceyourself.com/RaceYourselfGear" version="2.2.0" viewmodes="fullscreen">
+    <tizen:application id="Bv0jCZIpsd.RaceYourselfGear" package="Bv0jCZIpsd" required_version="2.2"/>
     <content src="index.html"/>
     <feature name="http://tizen.org/feature/screen.size.normal.320.320"/>
     <icon src="icon.png"/>
     <name>RaceYourselfGear</name>
     <tizen:privilege name="http://tizen.org/privilege/application.launch"/>
     <tizen:privilege name="http://tizen.org/privilege/context"/>
-    <tizen:setting background-support="enable" encryption="enable" hwkey-event="enable"/>
+    <tizen:privilege name="http://tizen.org/privilege/power"/>
+    <tizen:setting background-support="enable" hwkey-event="enable"/>
 </widget>
