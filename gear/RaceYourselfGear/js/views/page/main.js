@@ -10,7 +10,8 @@ define({
         'core/event',
         'models/application',
         'views/page/mode',
-        'views/page/games'
+        'views/page/games',
+        'views/page/newmain'
     ],
     def: function viewsPageMain(req) {
         'use strict';
@@ -40,7 +41,7 @@ define({
         }
         
         function flingLeft() {
-            e.fire('games.show');
+            e.fire('newmain.show');
         }
         
         function onBack() {
