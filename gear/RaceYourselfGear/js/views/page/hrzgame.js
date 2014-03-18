@@ -24,7 +24,7 @@ define({
             page = null,
             canvas,
             context,
-            TRACK_LENGTH = 100,
+            TRACK_LENGTH = 500,
             lastRender = null,
             bannerTimeout = false,
             raf = false,
@@ -55,8 +55,8 @@ define({
             hrInterval = 5000,
             zombieCatchupSpeed = 0.05,
             zombieOffset = -25,
-            screenWidthDistance = 100,	//'real-world' distance covered by the screen's width
-            screenLeftDistance = 0;		//'real-world' position of left of screen
+            screenWidthDistance = 25,	//'real-world' distance covered by the screen's width
+            screenLeftDistance = zombieOffset;		//'real-world' position of left of screen
             
 
         function show() {
@@ -154,6 +154,7 @@ define({
         function nextWave() {
             countingdown = true;
             wave++;
+            zombieCatchupSpeed += 0.01;
             banner = 'Wave ' + wave;
             zombieOffset = -25;
             requestRender();
@@ -339,6 +340,7 @@ define({
 			//draw distance markers for screen range
 			var distMarkerSpacing = 10;
 			var distMarkerIndex = Math.floor(screenLeftDistance/distMarkerSpacing);
+			distMarkerIndex = Math.max(distMarkerIndex, 0);
 			while (distMarkerIndex * distMarkerSpacing <= (screenLeftDistance + 2*screenWidthDistance) )
 			{
 				var dist = distMarkerIndex * distMarkerSpacing
