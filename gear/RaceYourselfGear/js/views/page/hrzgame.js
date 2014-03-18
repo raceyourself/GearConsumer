@@ -277,6 +277,7 @@ define({
             }
             
             // Track
+            context.beginPath();
             context.moveTo(15, canvas.height - 25);
             context.lineTo(canvas.width - 15, canvas.height - 25);
             context.lineWidth = 3;
