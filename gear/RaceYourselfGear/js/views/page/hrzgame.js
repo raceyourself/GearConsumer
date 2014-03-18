@@ -32,6 +32,7 @@ define({
             banner = false,
             countingdown = false,
             runner = null,
+            heart = null,
             runnerAnimations = {
                     idle: { name: 'idle', sprite: null, speedThreshold: 0},
                     running: { name: 'running', sprite: null, speedThreshold: 0.1},
@@ -54,10 +55,12 @@ define({
             maxHeartRate = 150,
             minHeartRate = 120,
             hrInterval = 5000,
+            hrColour = '#fff',
             zombieCatchupSpeed = 0.05,
             zombieOffset = -25,
             screenWidthDistance = 25,	//'real-world' distance covered by the screen's width
             screenLeftDistance = zombieOffset;		//'real-world' position of left of screen
+            
             
 
         function show() {
@@ -214,7 +217,18 @@ define({
         }
         
         function handleHRChanged() {
-        	//move zombies closer if too high
+			if(hr > maxHeartRate)
+			{
+				hrColour = '#ff0000';
+			}
+			else if (hr > minHeartRate)
+			{
+				hrColour = '#fff';
+			}
+			else
+			{
+				hrColour = '#5555ff';
+			}
         }
         
         function step() {
@@ -300,6 +314,12 @@ define({
                 var delta = r.getDistance() - zombieDistance;
                 delta = ~~delta;
                 var postfix = 'ahead';
+                var prefix = '';
+                if(delta > 0) 
+                { prefix = '+'; }
+                else if(delta < 0)
+                { prefix = '-'; }
+                
                 // TODO: Relative speed: 'catching up', 'breaking away'
                 
                 var columnCenter = canvas.width/2;
@@ -307,21 +327,22 @@ define({
                 
                 if (true) {
                     context.font = '45px Samsung Sans';
-                    context.fillStyle = '#fff';
+                    context.fillStyle = '#5f9a4a';
                     context.textBaseline = "top";
                     context.textAlign = "center";
-                    context.fillText(delta+'m', 0+columnCenter, 25);
+                    context.fillText('+'+delta+'m', 0+columnCenter, 25);
                     context.font = '25px Samsung Sans';
-                    context.fillText(postfix, 0+columnCenter, 25+45);
+                    //context.fillText(postfix, 0+columnCenter, 25+45);
                 }
                 if (true) {
-                    context.font = '25px Samsung Sans';
-                    context.fillStyle = '#fff';
-                    context.textBaseline = "top";
-                    context.textAlign = "center";
-                    context.fillText('Heart Rate', canvas.width-columnCenter, 25);
+                	var hrXPos = canvas.width/2 + 10;
+                	var hrYPos = 25+25;
+                    context.fillStyle = hrColour;
+                    context.textBaseline = "middle";
+                    context.textAlign = "left";
                     context.font = '45px Samsung Sans';
-                    context.fillText(hr+'bpm', canvas.width-columnCenter, 25+25);
+                    context.fillText(hr, hrXPos + heart.width*heart.scale, hrYPos);
+                    heart.drawscaled(context, hrXPos, hrYPos - heart.height * heart.scale/2, dt, heart.scale);
                 }
             }
             
@@ -486,7 +507,18 @@ define({
             zombieGrowl.onerror = function() {
                 throw "Could not load " + this.src;
             }
-                        
+            
+            //heart     
+        	image = new Image();
+        	image.onload = function() {
+        		heart = new Sprite(this, this.width, 1000);
+        		heart.scale = 0.5;
+        	}
+            image.onerror = function() {
+                throw "Could not load " + this.src;
+            }
+            image.src = 'images/heartratemonitor.png';
+                    	
            /* if (hrm.isAvailable()) {
                 hrm.start();
             } else {
