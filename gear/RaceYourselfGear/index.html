@@ -24,24 +24,20 @@
         </section>
     </div>
 
-    <div class="ui-page" id="mode">
+    <div class="ui-page" id="setdistance">
     	<div class="navborder">
-	        <header class="ui-header" data-position="fixed">
-	            <h2 class="ui-title">Mode of transport</h2>
-	        </header>
 	        <section class="ui-content">
-	            <a href="#" id="runner-mode-btn" class="menu-item">
-		            	<img src="images/menu-runner.png" />
-		                <span class="title">Runner</span>
-	            </a>
-	            <a href="#" id="cyclist-mode-btn" class="menu-item">
-		            	<img src="images/menu-cyclist.png" />
-		                <span class="title">Cyclist</span>
-	            </a>
+	            <div class="ry-title">Set the distance</div>
+	        	<div class="setter">
+		        	<div class="setter-btn" id="distance-minus">-</div>
+		        	<div class="setter-value">
+		        		<div id="distance-value">10,0</div>
+		        		<div id="distance-units">&nbsp;km&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;m</div>
+		        	</div>
+		        	<div class="setter-btn" id="distance-plus">+</div>
+		        	<img class="setter-ok" id="distance-ok" src="images/distance-set.png" alt="Set" />
+	        	</div>
 	        </section>    	
-		    <div class="footer footer-gray">
-		    	<p class="text-center">Settings</p>
-		    </div>
 	    </div>
     </div>
     

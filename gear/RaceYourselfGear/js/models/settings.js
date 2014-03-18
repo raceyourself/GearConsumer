@@ -17,7 +17,8 @@ define({
         var s = req.core.storage,
             units = req.helpers.units,
             defaults = {
-                unit: units.UNIT_METER
+                unit: units.UNIT_METER,
+                distance: 100
             },
             settings = {},
             STORAGE_KEY = 'settings';
@@ -28,6 +29,10 @@ define({
          */
         function getUnit() {
             return settings.unit;
+        }
+        
+        function getDistance() {
+            return settings.distance;
         }
 
         function saveSettings() {
@@ -44,9 +49,13 @@ define({
         function setUnit(value) {
             settings.unit = value;
             return saveSettings();
-
         }
 
+        function setDistance(distance) {
+            settings.distance = distance;
+            return saveSettings();
+        }
+        
         /**
          * Initializes module.
          */
@@ -61,7 +70,9 @@ define({
         return {
             init: init,
             getUnit: getUnit,
-            setUnit: setUnit
+            setUnit: setUnit,
+            getDistance: getDistance,
+            setDistance: setDistance
         };
     }
 

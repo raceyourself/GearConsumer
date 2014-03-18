@@ -36,6 +36,8 @@ define({
         }
 
         function onTouchEnd(ev) {        
+            if (touch_start === null) return;
+            
             var dx = ev.changedTouches.item(0).pageX - touch_start.pageX;
         	var dy = ev.changedTouches.item(0).pageY - touch_start.pageY;
         	if (dx >= fling_limit.x) {
