@@ -135,6 +135,17 @@
 	        		</div>
 	        	</div>
         	</div>
+        	<div id="pregame-disabled-gps" class="fill hidden">
+            	<div class="center-container">
+		        	<div class="center gps-screen">
+	    				<img src="images/gps-lock.png" />
+	    				<p>GPS disabled</p>
+		           		<a href="#" class="race-btn" id="pregame-race-anyway-btn">
+			        		Start Race
+			        	</a>
+	        		</div>
+	        	</div>
+        	</div>
     </div>
     
     <div class="ui-page flick-left flick-right" id="race-game">
@@ -151,6 +162,7 @@
 		        		<div class="stat-label">Duration:</div>
 			        	<span id="duration-stat" class="stat-value"></span>
 			        </div>
+		        		<span id="debug-log"></span>
 				</section>
 				<section class="section-active">
 				  	<canvas id="race-canvas">

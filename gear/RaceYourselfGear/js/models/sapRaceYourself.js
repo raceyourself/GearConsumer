@@ -28,6 +28,10 @@ define({
          * Send request to get the status of the GPS (enabled/disabled/ready)
          */
         function sendGpsStatusReq() {
+            if (!sap.isAvailable()) {
+                e.fire('gps.status', 'disabled');                
+                return;
+            }
             sap.sendData(
                 SAP_CHANNEL,
                 {
@@ -60,7 +64,7 @@ define({
          * Send a 'stop tracking' message to the phone
          * This will stop recording the user's position and stop sending gps-position-data messages  
          */
-        function sendStartTrackingReq() {
+        function sendStopTrackingReq() {
             sap.sendData(
                 SAP_CHANNEL,
                 {
@@ -74,7 +78,7 @@ define({
         
         /**
          * Send an authentication request - the phone may pop up and ask the
-         * user to register / autheticate 
+         * user to register / authenticate 
          */
         function sendAuthenticationReq() {
             sap.sendData(
@@ -110,6 +114,7 @@ define({
          */
         function connect() {
             sap.connect();
+            console.log('Connecting to provider..');
         }
 
         /**
@@ -125,9 +130,7 @@ define({
          */
         function onConnection(data) {
             if (data.detail.status) {
-                // if connection was established properly
-                // request host to send media change information
-                mediaChangeInfo(true);
+                console.log('Connected to provider!');
             }
         }
 
@@ -136,22 +139,25 @@ define({
          */
         function onGpsPositionChanged(data) {
             var message = data.detail.message;
-            var distance = data.GPS_DISTANCE;  // cumulative distance covered whilst tracking
-            var time = data.GPS_TIME;    // cumulative time spent tracking in milliseconds
-            var speed = data.GPS_SPEED;  // current speed in metres per second
-            var state = data.GPS_STATE;  // string describing stopped / accelerating / steady speed etc
-            // TODO: update game state
+            var distance = message.GPS_DISTANCE;  // cumulative distance covered whilst tracking
+            var time = message.GPS_TIME;    // cumulative time spent tracking in milliseconds
+            var speed = message.GPS_SPEED;  // current speed in metres per second
+            var state = message.GPS_STATE;  // string describing stopped / accelerating / steady speed etc
+            e.fire('gps.location', message);
         }
         
         /**
          * Fired on incoming GPS status
          */
         function onGpsStatusChanged(data) {
-            var message = data.detail.message;
-            var status = data.GPS_STATUS_KEY;  // String ["enabled","disabled","ready"]
-            // TODO: update game/menu state
+            var message = data.detail.message;            
+            var status = message.GPS_STATUS_KEY;  // String ["enabled","disabled","ready"]
+            e.fire('gps.status', status);
         }
         
+        function isAvailable() {
+            return sap.isAvailable();
+        }
 
         e.listeners({
             'models.sap.init': onConnection,
@@ -160,7 +166,13 @@ define({
         });
 
         return {
-            init: init
+            init: init,
+            sendGpsStatusReq: sendGpsStatusReq,
+            sendStartTrackingReq: sendStartTrackingReq,
+            sendStopTrackingReq: sendStopTrackingReq,
+            sendAuthenticationReq: sendAuthenticationReq,
+            sendAnalytics: sendAnalytics,
+            isAvailable: isAvailable
         };
     }
 

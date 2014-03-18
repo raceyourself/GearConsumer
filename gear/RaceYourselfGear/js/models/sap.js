@@ -32,6 +32,7 @@ define({
                 return false;
             }
 
+            // TODO: try..catch IOError: Connection closed
             socket.sendData(channel, JSON.stringify(params));
         }
 
@@ -41,6 +42,7 @@ define({
          * @param {object} messageJSON
          */
         function onSendDataSuccess(channel, messageJSON) {
+            document.getElementById('debug-log').innerHTML = channel + ": " + messageJSON;
             var message = JSON.parse(messageJSON);
 
             e.fire('models.sap.' + message.messageType, {
@@ -81,6 +83,7 @@ define({
 
             agent.setPeerAgentFindListener({
                 onpeeragentfound: function onpeeragentfound(peerAgent) {
+                    console.log('found peer ' + peerAgent.appName);
                     agent.requestServiceConnection(peerAgent);
                 },
                 onerror: function onerror() {
@@ -112,8 +115,8 @@ define({
             }
 
             if (window.navigator.platform.indexOf('emulated') !== -1) {
-                alert('SAP works only on Target. Please run this on Target.');
-                tizen.application.getCurrentApplication().exit();
+                console.error('SAP works only on Target. Please run this on Target.');
+                //tizen.application.getCurrentApplication().exit();
                 return;
             }
 
@@ -123,11 +126,16 @@ define({
                 console.warn('webapis.sa.requestSAAgent failed: ' + e.message);
             }
         }
+        
+        function isAvailable() {
+            return (window.navigator.platform.indexOf('emulated') === -1 && !!webapis.sa);
+        }
 
         return {
             connect: connect,
             sendData: sendData,
-            isConnected: isConnected
+            isConnected: isConnected,
+            isAvailable: isAvailable
         };
     }
 
