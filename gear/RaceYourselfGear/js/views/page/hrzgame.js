@@ -33,11 +33,12 @@ define({
             countingdown = false,
             runner = null,
             runnerAnimations = {
-                    idle: { name: 'idle', sprite: null, speedThreshold: 1},
-                    running: { name: 'running', sprite: null, speedThreshold: 2},
+                    idle: { name: 'idle', sprite: null, speedThreshold: 0},
+                    running: { name: 'running', sprite: null, speedThreshold: 0.1},
                     sprinting: { name: 'sprinting', sprite: null, speedThreshold: 4}
             },
             zombies = [],
+            zombiesAnimOffset = [],
             zombieDistance = false,
             zombieInterval = false,
             zombieMoan = null,
@@ -146,7 +147,11 @@ define({
         
         function startZombies() {
             clearInterval(zombieInterval);
-            while (zombies.length < wave) zombies.push(zombies[0].clone());
+            var animDelay = Math.random() * 0.2;
+            while (zombies.length < wave) {
+                zombies.push(zombies[0].clone());
+                zombiesAnimOffset.push(animDelay);
+            };
             for (var i=0;i<zombies.length;i++) zombies[i].reset();
             zombieDistance = -25;
             zombieInterval = setInterval(zombieTick, Math.min(350, 750-(wave*50)));
@@ -295,7 +300,9 @@ define({
                     var y_offset = (-1+(i+1)%2) * 5;
                     if (i%2==1) context.globalAlpha = 0.5;
                     else context.globalAlpha = 1;
-                    zombie.draw(context, 0 + (zombieDistance * trackWidth / TRACK_LENGTH) - x_offset, canvas.height - zombie.height - 30 + y_offset, dt)
+
+                    var localDT = dt * (0.9 + zombiesAnimOffset[i]);
+                    zombie.draw(context, 0 + (zombieDistance * trackWidth / TRACK_LENGTH) - x_offset, canvas.height - zombie.height - 30 + y_offset, localDT)
                 }
                 context.globalAlpha = 1;
             }
@@ -343,7 +350,7 @@ define({
             runnerAnimations.sprinting.previous = runnerAnimations.running;
             runnerAnimations.sprinting.next = null;
             
-            var image = new Image();
+            var image = new Image();            
             image.onload = function() {
                 runnerAnimations.idle.sprite = new Sprite(this, this.width, 1000);
                 runner = runnerAnimations.idle;
@@ -352,30 +359,40 @@ define({
                 throw "Could not load " + this.src;
             }
             image.src = 'images/runner-idle-anim.png';
+
+
             image = new Image();
             image.onload = function() {
-                runnerAnimations.running.sprite = new Sprite(this, this.width, 1000);
+                runnerAnimations.running.sprite = new Sprite(this, this.width / 6, 1000);
+                runnerAnimations.sprinting.sprite = new Sprite(this, this.width / 6, 1000);
             }
             image.onerror = function() {
                 throw "Could not load " + this.src;
             }
-            image.src = 'images/runner-running-anim.png';
+            image.src = 'images/animation_runner_green.png';
+
+            /*
             image = new Image();
             image.onload = function() {
-                runnerAnimations.sprinting.sprite = new Sprite(this, this.width, 1000);
+                runnerAnimations.sprinting.sprite = new Sprite(this, this.width / 6, 2500);
             }
             image.onerror = function() {
                 throw "Could not load " + this.src;
             }
             image.src = 'images/runner-sprinting-anim.png';
+            */
+
             image = new Image();
             image.onload = function() {
-                zombies.push(new Sprite(this, this.width/10, 2500));
+                zombies.push(new Sprite(this, this.width / 6, 1000));
+                var animDelay = Math.random() * 0.2;
+                zombiesAnimOffset.push(animDelay);
             }
             image.onerror = function() {
                 throw "Could not load " + this.src;
             }
-            image.src = 'images/zombie-shuffle-anim.png';
+            image.src = 'images/animation_zombie1.png';
+
             
             zombieMoan = new Audio('audio/zombie_moan.wav');
             zombieMoan.onerror = function() {
