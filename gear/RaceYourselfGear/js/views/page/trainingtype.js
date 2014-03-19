@@ -47,7 +47,8 @@ define({
         }
         
         function onTypeBtnClick(event) {
-        	switch(event.target.id) {
+        	console.log(this);
+        	switch(this.id) {
         	case 'weight-loss-btn':
         		race.setGoal('WeightLoss');
         		break;
