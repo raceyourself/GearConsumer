@@ -12,6 +12,7 @@ define({
         'core/storage',
         'helpers/date',
         'models/race',        
+        'models/game',        
         'models/settings'
     ],
     def: function modelsAchievements(req) {
@@ -20,6 +21,7 @@ define({
         var e = req.core.event,
             s = req.core.storage,
             d = req.helpers.date,
+            game = req.models.game,
             race = req.models.race,
             settings = req.models.settings,
             achieved = {},
@@ -155,6 +157,41 @@ define({
                         return '0%';
                     }
                 },
+                // Grind
+                'boulder' : {
+                    title: 'Boulder dash',
+                    description: 'Unlocked the Race Boulder game by running a total of 5km',
+                    points: 0,
+                    uses: 1,
+                    init: function() {
+                        e.listen('race.end', function(event) {
+                            if (progress.total.distance >= 5000) {
+                                achieve('boulder');
+                                game.unlock('boulder');
+                            }
+                        });
+                    },
+                    progress: function() {
+                        return Number(Math.min(5000, progress.total.distance)*100/5000).toFixed(1).replace('.0', '') + '%';
+                    }
+                },
+                'dino' : {
+                    title: 'Jurassic Trek',
+                    description: 'Unlocked the Race Dino game by running a total of 20km',
+                    points: 0,
+                    uses: 1,
+                    init: function() {
+                        e.listen('race.end', function(event) {
+                            if (progress.total.distance >= 20000) {
+                                achieve('dino');
+                                game.unlock('dino');
+                            }
+                        });
+                    },
+                    progress: function() {
+                        return Number(Math.min(20000, progress.total.distance)*100/20000).toFixed(1).replace('.0', '') + '%';
+                    }
+                },
                 // Dedication
                 'thrice_weekly' : {
                     title: 'Addict',
@@ -259,12 +296,24 @@ define({
             progress.daily.races = progress.daily.races || 0;
             progress.weekly.races = progress.weekly.races || 0;
             progress.monthly.races = progress.monthly.races || 0;
+            progress.total.races = progress.total.races || 0;
+            progress.daily.distance = progress.daily.distance || 0;
+            progress.weekly.distance = progress.weekly.distance || 0;
+            progress.monthly.distance = progress.monthly.distance || 0;
+            progress.total.distance = progress.total.distance || 0;
             e.listen('race.end', function(event) {
                 var race = event.detail;
+                
                 progress.daily.races++;
                 progress.weekly.races++;
                 progress.monthly.races++;
                 progress.total.races++;
+                
+                progress.daily.distance += race.getDistance();
+                progress.weekly.distance += race.getDistance();
+                progress.monthly.distance += race.getDistance();
+                progress.total.distance += race.getDistance();
+                
                 save();
             });            
                         
