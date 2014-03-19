@@ -60,7 +60,8 @@ define({
             hr = 100,
             maxHeartRate = 150,
             minHeartRate = 120,
-            hrInterval = 5000,
+            hrInterval = false,
+            hrChangePeriod = 5000,
             hrColour = '#fff',
             zombieCatchupSpeed = 0.05,
             zombieStartOffset = -25,
@@ -77,7 +78,7 @@ define({
 			warningTimeout = false,
 			zombiesCatchingUp = false,
 			adaptingToRecentZoneShift = false,
-			adaptingTimeout = false;
+			adaptingTimeout = false,
 			showWarning = false;
 			
 
@@ -98,13 +99,12 @@ define({
             var r = race.getOngoingRace();
             if (r === null || !r.isRunning() || r.hasStopped()) {
                 r = race.newRace();
-                TRACK_LENGTH = settings.getDistance();
                 e.listen('pedometer.step', step);
                 e.listen('hrm.change', onHeartRateChange);
                 startCountdown();
             }
             
-            TRACK_LENGTH = 
+			TRACK_LENGTH = settings.getDistance();
             
             canvas.width = canvas.offsetWidth;
             canvas.height = canvas.offsetHeight;        
@@ -119,7 +119,7 @@ define({
             
             requestRender();
             
-            hrInterval = setInterval(randomHR, hrInterval);
+            hrInterval = setInterval(randomHR, hrChangePeriod);
         }
         
         function onPageHide() {
@@ -132,9 +132,7 @@ define({
             clearTimeout(warningTimeout);
             sectionChanger.destroy();
             e.die('tizen.back', onBack);
-        }        
-        
-        function onBack() {
+            
             var r = race.getOngoingRace();
             if (r !== null) {
                 r.stop();
@@ -145,6 +143,9 @@ define({
             if (!!raf) cancelAnimationFrame(raf);
             clearInterval(zombieInterval);
             clearTimeout(bannerTimeout)
+        }        
+        
+        function onBack() {
             e.fire('gameselect.show');
         }
         
@@ -253,6 +254,12 @@ define({
         
         function setCurrentHRZone(zone)
         {
+        if(zone == currentHRZone)
+        {
+        	
+        }
+        else
+        {
         	currentHRZone = zone;
         //eventually look up based on age, but for now just used valued based on 30yo
         	var hrMinMax = new Object();
@@ -313,6 +320,11 @@ define({
 			//set that we are currently adapting
 			adaptingToRecentZoneShift = true;
 			adaptingTimeout	= setTimeout(adaptComplete, 1 * 60 * 100 * timeMultiplier);
+			
+			//vibrate
+			navigator.vibrate([10, 10, 10, 10, 10, 10, 10]);
+
+        }
         }
 
         function adaptComplete()
@@ -434,7 +446,7 @@ define({
 				//stop zombies catching up
 				zombiesCatchingUp = false;
 			}
-			}
+			
 							
 			
         }
@@ -467,15 +479,19 @@ define({
                 lastRender = null;
                 stopZombies();
                 
-                e.fire('main.show');
-                
-                banner = 'RaceComplete';
+                banner = 'Complete!';
                 requestRender();
                 clearTimeout(bannerTimeout);
-                bannerTimeout = setTimeout(nextWave, 1500);
+				bannerTimeout = setTimeout(continueToResults, 2000);
+				
+                
+
                 return;
             }
             
+            
+            
+            /*
             if (runner.next !== null && r.getSpeed() >= runner.next.speedThreshold) {
                 runner.sprite.onEnd(function(dt) {
                     runner.sprite.onEnd(null);
@@ -490,9 +506,17 @@ define({
                     runner.sprite.time = dt;
                 });
             }
+            */
             
             requestRender();
         }
+
+		function continueToResults()
+		{
+			clearbanner();
+		    e.fire('main.show');
+
+		}
 
         function animate(time) {
             raf = requestAnimationFrame(animate);
@@ -672,7 +696,7 @@ define({
             var image = new Image();            
             image.onload = function() {
                 runnerAnimations.idle.sprite = new Sprite(this, this.width, 1000);
-                runner = runnerAnimations.idle;
+                runner = runnerAnimations.running;
             }
             image.onerror = function() {
                 throw "Could not load " + this.src;

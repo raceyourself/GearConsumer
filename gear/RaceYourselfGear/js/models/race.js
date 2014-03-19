@@ -166,12 +166,12 @@ define({
         }
         
         function getGoal() {
-        	return this._goal;
+        	return _goal;
         }
         
         function setGoal(goal) {
         	console.log(goal);
-        	this._goal = goal;
+        	_goal = goal;
         }
         
         return {
