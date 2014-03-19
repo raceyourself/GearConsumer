@@ -37,7 +37,7 @@ define({
         }
         
         function onBack() {
-            app.closeApplication();
+            history.back();
         }
 
         function bindEvents() {
@@ -69,7 +69,7 @@ define({
         		break;
         	}
         	if(settings.getFirstTimeAge()) {
-        		e.fire('ageselect.show');
+        		e.fire('ageselect.show', 'choosegoal');
         	} else {
         		e.fire('choosegoal.show');
         	}

@@ -315,12 +315,49 @@ li.profile-step-length {
     min-height: 0;
 }
 
-.ui-listview li.li-has-multiline {
+.ui-listview li {
+        position: relative;
+}
+
+.ui-listview li.li-has-multiline.disabled,
+.ui-listview li.li-has-multiline.disabled > * {
+        color: rgb(51, 51, 51);
+}
+.ui-listview li.li-has-multiline > a {
+        margin-top: -14px;
+        margin-bottom: -14px;
+        padding-top: 14px;
+        padding-bottom: 14px;
+}
+.ui-listview li.li-has-multiline.2lines > a {
+        margin-bottom: -62px;
+        padding-bottom: 62px;
+}
+.ui-listview li.li-has-multiline.disabled .li-text-sub {
+        color: rgb(31, 31, 31);
+}
+.ui-listview li.li-has-multiline-sup {
         padding-top: 8px;
         padding-bottom: 9px;
         min-height: 90px;
 }
+.ui-listview li.li-has-multiline-sup.disabled {
+        color: rgb(51, 51, 51);
+}
+.ui-listview li.li-has-multiline-sup > a {
+        margin-top: -38px;
+        margin-bottom: -14px;
+        padding-top: 38px;
+        padding-bottom: 14px;
+}
 
+.ui-listview li, .ui-listview li > * {
+        white-space: nowrap;
+        text-overflow: ellipsis;
+        -o-text-overflow: ellipsis;
+        overflow: hidden!important;
+        -webkit-user-select: none;
+}
 .ui-listview li .li-text-sub {
         display: block;
         color: rgb(255, 255, 255);
@@ -328,4 +365,18 @@ li.profile-step-length {
         opacity: 0.5;
         text-overflow: ellipsis;
         overflow: hidden;
+}
+
+.ui-listview li input[type="checkbox"],
+.ui-listview li input[type="radio"] {
+        position: absolute;
+        right: 8px;
+        top: 0px;
+        margin-top: 19px;
+}
+.ui-listview li.li-has-radio {
+        padding-right: 68px;
+}
+.ui-listview li.li-has-radio label{
+        display: block;
 }

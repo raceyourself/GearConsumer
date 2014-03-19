@@ -47,7 +47,7 @@ define({
         }
         
         function onBack() {
-            e.fire('newmain.show');
+            history.back();
         }
         
         function onGpsStatus(e) {

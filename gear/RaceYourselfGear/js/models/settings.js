@@ -23,7 +23,9 @@ define({
                 points: 0,
                 age: 0,
                 zombieTutorial: false,
-                firstTimeAge: true
+                firstTimeAge: true,
+                distanceunits: 'km',
+                paceunits: 'min/km'
             },
             settings = {},
             STORAGE_KEY = 'settings';
@@ -64,6 +66,16 @@ define({
         function getFirstTimeAge() {
         	if(!isFinite(settings.firstTimeAge)) return defaults.firstTimeAge;
         	return settings.firstTimeAge;
+        }
+        
+        function getDistanceUnits() {
+        	if(!isFinite(settings.distanceunits)) return defaults.distanceunits;
+        	return settings.distanceunits;
+        }
+        
+        function getPaceUnits() {
+        	if(!isFinite(settings.paceunits)) return defaults.paceunits;
+        	return settings.paceunits;
         }
         
         function saveSettings() {
@@ -112,6 +124,16 @@ define({
         	return saveSettings();
         }
         
+        function setDistanceUnits(distanceunits) {
+        	settings.distanceunits = distanceunits;
+        	return saveSettings();
+        }
+        
+        function setPaceUnits(paceunits) {
+        	settings.paceunits = paceunits;
+        	return saveSettings();
+        }
+        
         /**
          * Initializes module.
          */
@@ -138,7 +160,11 @@ define({
             getZombieTutorial: getZombieTutorial,
             setZombieTutorial: setZombieTutorial,
             getFirstTimeAge: getFirstTimeAge,
-            setFirstTimeAge: setFirstTimeAge
+            setFirstTimeAge: setFirstTimeAge,
+            getDistanceUnits: getDistanceUnits,
+            setDistanceUnits: setDistanceUnits,
+            getPaceUnits: getPaceUnits,
+            setPaceUnits: setPaceUnits
         };
     }
 

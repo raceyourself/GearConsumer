@@ -5,17 +5,15 @@
  */
 
 define({
-    name: 'views/page/settingspage',
+    name: 'views/page/paceunits',
     requires: [
         'core/event',
         'models/application',
         'models/race',
         'models/settings',
-        'views/page/ageselect',
-        'views/page/distanceunits',
-        'views/page/paceunits'
+        'views/page/ageselect'
     ],
-    def: function viewsPageSettingsPage(req) {
+    def: function viewsPagePaceUnits(req) {
         'use strict';
 
         var e = req.core.event,
@@ -25,7 +23,7 @@ define({
             page = null;
 
         function show() {
-            gear.ui.changePage('#settingspage');            
+            gear.ui.changePage('#paceunits');            
         }
         
         function onPageShow() {
@@ -37,39 +35,23 @@ define({
         }
         
         function onBack() {
-            history.back();
+        	history.back();
         }
 
         function bindEvents() {
         	page.addEventListener('pageshow', onPageShow);
             page.addEventListener('pagehide', onPageHide);
-            
-            document.getElementById('distance-units-btn').addEventListener('click', onDistanceUnitsBtnClick);
-            document.getElementById('pace-units-btn').addEventListener('click', onPaceUnitsBtnClick);
-            document.getElementById('age-btn').addEventListener('click', onAgeBtnClick);
-        }
-        
-        function onDistanceUnitsBtnClick() {
-        	e.fire('distanceunits.show');
-        }
-        
-        function onPaceUnitsBtnClick() {
-        	e.fire('paceunits.show');
-        }
-        
-        function onAgeBtnClick() {
-        	e.fire('ageselect.show', "settingspage");
         }
         
         function init() {
-            page = document.getElementById('settingspage');
+            page = document.getElementById('paceunits');
             bindEvents();
             // Assume we always start in this view
             onPageShow();
         }
         
         e.listeners({
-            'settingspage.show': show
+            'paceunits.show': show
         });
         
         return {

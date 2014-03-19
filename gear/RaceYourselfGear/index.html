@@ -79,12 +79,7 @@
     <div class="ui-page" id="newgames">
     	<div id="game-select-sectionchanger" class="ui-content">
     		<div>
-    			<section class="section-active">
-    				<a href="#" id="race-mode-btn">
-    					<img src="images/screen_menu_game_race yourself.png"/>
-    				</a>
-    			</section>
-    			<section>  				
+    			<section class="section-active">  				
     				<a href="#" id="zombie-mode-btn">
     					<img src="images/screen_menu_game_zombie1.png"/>
     				</a>
@@ -106,6 +101,52 @@
     			</section>
     		</div>
     	</div>
+    </div>
+    
+    <div class="ui-page" id="distanceunits">
+        <header class="ui-header">
+            <h2 class="ui-title">Distance Units</h2>
+        </header>
+        <div class="ui-content">
+            <ul class="ui-listview">
+                <li class="li-has-radio">
+                    <label>
+                        KM
+                        <input type="radio" name="radio-sample" checked="checked"/>
+                    </label>
+                </li>
+                <li class="li-has-radio">
+                    <label>
+                        Miles
+                        <input type="radio" name="radio-sample"/>
+                    </label>
+                </li>
+            </ul>
+        </div>
+    </div>
+    
+    <div class="ui-page" id="paceunits">
+        <header class="ui-header">
+            <h2 class="ui-title">Pace Units</h2>
+        </header>
+        <div class="ui-content">
+            <ul class="ui-listview">
+                <li class="li-has-multiline li-has-radio">
+                    <label>
+                        Pace
+                        <span class="li-text-sub">Min/km</span>
+                        <input type="radio" name="radio-sample" checked="checked"/>
+                    </label>
+                </li>
+                <li class="li-has-multiline li-has-radio">
+                    <label>
+                        Speed
+                        <span class="li-text-sub">km/h</span>
+                        <input type="radio" name="radio-sample"/>
+                    </label>
+                </li>
+            </ul>
+        </div>
     </div>
     
     <div class="ui-page" id="zombietutorial">
@@ -183,13 +224,13 @@
     			<li class="li-has-multiline">
     				<a href="#" id="endurance-btn">
     					Endurance
-    					<span class="li-text-sub">Mid level sustained effort</span>
+    					<span class="li-text-sub">Mid level effort</span>
     				</a>
     			</li>
     			<li class="li-has-multiline">
     				<a href="#" id="strength-btn">
     					Strength
-    					<span class="li-text-sub">High effort, build strength with interval sprints</span>
+    					<span class="li-text-sub">Build strength with interval sprints</span>
     				</a>
     			</li>
     		</ul>
@@ -254,12 +295,12 @@
     		<ul class="ui-listview">
     			<li class="li-has-multiline">
     				<a href="#" id="distance-units-btn">
-    					Units for distance
+    					Distance units
     				</a>
     			</li>
     			<li class="li-has-multiline">
     				<a href="#" id="pace-units-btn">
-    					Units for pace
+    					Pace/speed
     				</a>
     			</li>
     			<li class="li-has-multiline">

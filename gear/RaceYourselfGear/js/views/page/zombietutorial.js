@@ -38,10 +38,16 @@ define({
             
             document.getElementById('boulder-mode-btn').classList.toggle('locked-game', game.isLocked('boulder'));
             document.getElementById('dino-mode-btn').classList.toggle('locked-game', game.isLocked('dino'));
+            e.listen('tizen.back', onBack);
+        }
+        
+        function onBack() {
+            history.back();
         }
         
         function onPageHide() {
             sectionChanger.destroy();
+            e.die('tizen.back', onBack);
         }        
         
         function bindEvents() {

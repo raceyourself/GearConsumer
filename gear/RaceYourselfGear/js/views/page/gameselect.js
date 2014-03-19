@@ -29,6 +29,8 @@ define({
         function show() {
             gear.ui.changePage('#newgames');
         }
+        
+        
 
         function onPageShow() {
             sectionChanger = new SectionChanger(changer, {
@@ -39,22 +41,27 @@ define({
             
             document.getElementById('boulder-mode-btn').classList.toggle('locked-game', game.isLocked('boulder'));
             document.getElementById('dino-mode-btn').classList.toggle('locked-game', game.isLocked('dino'));
+            
+            e.listen('tizen.back', onBack);
         }
         
         function onPageHide() {
             sectionChanger.destroy();
-        }        
+            e.die('tizen.back', onBack);
+        }   
+        
+        function onBack() {
+            history.back();
+        }
         
         function bindEvents() {
-        	var raceBtnEl = document.getElementById('race-mode-btn'),
-        		zombieBtnEl = document.getElementById('zombie-mode-btn'),
+        	var zombieBtnEl = document.getElementById('zombie-mode-btn'),
         		boulderBtnEl = document.getElementById('boulder-mode-btn'),
         		dinoBtnEl = document.getElementById('dino-mode-btn');
         	
         	 page.addEventListener('pageshow', onPageShow);
              page.addEventListener('pagehide', onPageHide);
              
-             raceBtnEl.addEventListener('click', onRaceBtnClick);
              zombieBtnEl.addEventListener('click', onZombieBtnClick);
              boulderBtnEl.addEventListener('click', onBoulderBtnClick);
              dinoBtnEl.addEventListener('click', onDinoBtnClick);
@@ -65,12 +72,6 @@ define({
             if (Math.abs(sectionChanger.lastTouchPointX - sectionChanger.startTouchPointX) > 5) return true;
             if (Math.abs(sectionChanger.lastTouchPointY - sectionChanger.startTouchPointY) > 5) return true;
             return false;
-        }
-        
-        function onRaceBtnClick(event) {
-            if (isScrolling()) return;
-        	game.setCurrentGame('racegame');
-        	e.fire('trainingtype.show');
         }
         
         function onZombieBtnClick(event) {

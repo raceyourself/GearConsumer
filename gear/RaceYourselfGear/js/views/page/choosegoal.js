@@ -32,7 +32,7 @@ define({
         }
         
         function onBack() {
-            app.closeApplication();
+            history.back();
         }
 
         function bindEvents() {

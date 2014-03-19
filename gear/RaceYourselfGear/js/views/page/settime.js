@@ -31,6 +31,15 @@ define({
         function onPageShow() {
             t = settings.getTime();
             render();
+            e.listen('tizen.back', onBack);
+        }
+        
+        function onPageHide() {
+        	e.die('tizen.back', onBack);
+        }
+        
+        function onBack() {
+            history.back();
         }
         
         function render() {

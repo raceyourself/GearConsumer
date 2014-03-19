@@ -10,8 +10,7 @@ define({
         'core/event',
         'models/application',
         'models/settings',
-        'views/page/choosegoal',
-        'views/page/settingspage'
+        'views/page/choosegoal'
     ],
     def: function viewsPageAgeSelect(req) {
         'use strict';
@@ -19,10 +18,12 @@ define({
         var e = req.core.event,
             app = req.models.application,
             settings = req.models.settings,
+            nextpage = "",
             page = null;
 
-        function show() {
-            gear.ui.changePage('#ageselect');            
+        function show(event) {
+            gear.ui.changePage('#ageselect');
+            nextpage = event.detail;
         }
         
         function onPageShow() {
@@ -34,7 +35,7 @@ define({
         }
         
         function onBack() {
-            app.closeApplication();
+            history.back();    		
         }
 
         function bindEvents() {
@@ -45,12 +46,11 @@ define({
        		document.getElementById('mid-fifties-btn').addEventListener('click', onAgeBtnClick);
        		document.getElementById('mid-sixties-btn').addEventListener('click', onAgeBtnClick);
        		document.getElementById('mid-seventies-btn').addEventListener('click', onAgeBtnClick);
-       		document.getElementById('over-eighties-btn').addEventListener('clicl', onAgeBtnClick);        	
+       		document.getElementById('over-eighties-btn').addEventListener('click', onAgeBtnClick);        	
         	
             page.addEventListener('pageshow', onPageShow);
             page.addEventListener('pagehide', onPageHide);
             
-           
         }
         
         function onAgeBtnClick(event) {
@@ -92,17 +92,22 @@ define({
         		
         		break;
         	}
+        	
         	if(settings.getFirstTimeAge()) {
         		settings.setFirstTimeAge(false);
-        		e.fire('choosegoal.show');
+        	}
+        	if(nextpage != "") {
+        		console.log('there is a nextpage, its ' + nextpage);
+        		e.fire(nextpage + '.show');
         	} else {
         		e.fire('settingspage.show');
         	}
-        	
+        
         }
 
         function init() {
             page = document.getElementById('ageselect');
+            
             bindEvents();
         }
         

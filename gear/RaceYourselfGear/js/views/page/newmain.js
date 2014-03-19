@@ -10,7 +10,8 @@ define({
         'core/event',
         'models/application',
         'views/page/gameselect',
-        'views/page/achievements'
+        'views/page/achievements',
+        'views/page/settingspage'
     ],
     def: function viewsPageNewMain(req) {
         'use strict';
@@ -59,7 +60,7 @@ define({
         }
         
         function onSettingsBtnClick() {
-        	
+        	e.fire('settingspage.show');
         }
         
         function onHistoryBtnClick() {
