@@ -36,7 +36,7 @@ define({
         function render() {
             d = Math.max(100, d);
             d = Math.min(99900, d);
-            valueEl.innerHTML = Number(d/1000).toFixed(1).replace('.', ',');
+            valueEl.innerHTML = Number(d/1000).toFixed(1);
         }
         
         function onMinus() {
@@ -82,6 +82,10 @@ define({
             plusBtnEl.addEventListener('mousedown', onPlus);
             minusBtnEl.addEventListener('mouseup', onHalt);
             plusBtnEl.addEventListener('mouseup', onHalt);
+            minusBtnEl.addEventListener('touchstart', onMinus);
+            plusBtnEl.addEventListener('touchstart', onPlus);
+            minusBtnEl.addEventListener('touchend', onHalt);
+            plusBtnEl.addEventListener('touchend', onHalt);
             okBtnEl.addEventListener('click', onOk);
         }
 

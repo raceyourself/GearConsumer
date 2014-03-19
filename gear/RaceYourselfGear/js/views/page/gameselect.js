@@ -33,6 +33,9 @@ define({
                 orientation: "horizontal",
                 scrollbar: "bar"
             });
+            
+            document.getElementById('boulder-mode-btn').classList.toggle('locked-game', game.isLocked('boulder'));
+            document.getElementById('dino-mode-btn').classList.toggle('locked-game', game.isLocked('dino'));
         }
         
         function onPageHide() {
@@ -61,24 +64,30 @@ define({
             return false;
         }
         
-        function onRaceBtnClick() {
+        function onRaceBtnClick(event) {
             if (isScrolling()) return;
         	game.setCurrentGame('racegame');
         	e.fire('trainingtype.show');
         }
         
-        function onZombieBtnClick() {
+        function onZombieBtnClick(event) {
             if (isScrolling()) return;
         	game.setCurrentGame('hrzgame');
         	e.fire('trainingtype.show');
         }
         
-        function onBoulderBtnClick() {
+        function onBoulderBtnClick(event) {
             if (isScrolling()) return;
+            if (game.isLocked('boulder')) return;
+            game.setCurrentGame('hrzgame');
+            e.fire('choosegoal.show');
         }
         
-        function onDinoBtnClick() {
+        function onDinoBtnClick(event) {
             if (isScrolling()) return;
+            if (game.isLocked('dino')) return;
+            game.setCurrentGame('hrzgame');
+            e.fire('choosegoal.show');
         }
         
         function init() {
