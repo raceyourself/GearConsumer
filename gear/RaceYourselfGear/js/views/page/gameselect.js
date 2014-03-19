@@ -77,7 +77,7 @@ define({
         function onZombieBtnClick(event) {
             if (isScrolling()) return;
         	game.setCurrentGame('hrzgame');
-        	if(settings.getZombieTutorial) {
+        	if(settings.getZombieTutorial()) {
         		e.fire('trainingtype.show');
         	}
         	else {
