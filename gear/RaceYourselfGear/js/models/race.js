@@ -14,6 +14,7 @@ define({
         'models/settings',
         'models/mocks/pedometer',
         'models/pedometer',
+        'models/sapRaceYourself',
         'helpers/units'
     ],
     def: function modelsRace(req) {
@@ -23,6 +24,7 @@ define({
             s = req.core.storage,
             pedometer = req.models.pedometer,
             mock = req.models.mocks.pedometer,
+            provider = req.models.sapRaceYourself,
             settings = req.models.settings,
             ongoingRace = null;
         
@@ -55,6 +57,7 @@ define({
             start: function start() {
             	console.log('listener added');
                 e.listen('pedometer.change', onPedometerInfoChange);
+                e.listen('gps.location', onGpsLocation);
                 if (pedometer.isAvailable()) {
                     pedometer.start();
                 } else {
@@ -62,6 +65,7 @@ define({
                     console.log('Using mock pedometer');
                     window.webapis.pedometer.setChangeListener(pedometer._handlePedometerInfo);
                 }
+                if (provider.isAvailable()) provider.sendStartTrackingReq();
                 var ld = pedometer.getLastData();
                 if (ld != null && ld.length > 0) {
                     this.initiaDistance = ld.distance;
@@ -77,6 +81,8 @@ define({
             		e.die('pedometer.change', onPedometerInfoChange);
             	}
                 
+                e.die('gps.location', onGpsLocation);
+                if (provider.isAvailable()) provider.sendStopTrackingReq();
                 if (pedometer.isAvailable()) {
                     pedometer.stop();
                 } else {
@@ -136,6 +142,20 @@ define({
                 ongoingRace.track.push({distance: ongoingRace.getDistance(), time: ongoingRace.getDuration()});
                 e.fire('pedometer.step');
             }
+        }
+        
+        function onGpsLocation(e) {
+            console.log('gps');
+            var message = e.detail;
+            console.log(message);
+            var distance = message.GPS_DISTANCE;  // cumulative distance covered whilst tracking
+            console.log(distance);
+            var time = message.GPS_TIME;    // cumulative time spent tracking in milliseconds
+            console.log(time);
+            var speed = message.GPS_SPEED;  // current speed in metres per second
+            console.log(speed);
+            var state = message.GPS_STATE;  // string describing stopped / accelerating / steady speed etc
+            console.log(state);
         }
         
         return {

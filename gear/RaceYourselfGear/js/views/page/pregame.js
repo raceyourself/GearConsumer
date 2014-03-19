@@ -11,7 +11,8 @@ define({
         'views/page/racegame',
         'views/page/hrzgame',
         'models/settings',
-        'models/game'
+        'models/game',
+        'models/sapRaceYourself'
     ],
     def: function viewsPagePregame(req) {
         'use strict';
@@ -19,8 +20,7 @@ define({
         var e = req.core.event,
             page = null,
             game = req.models.game,
-            timeout,
-            gps_lock = false;
+            provider = req.models.sapRaceYourself;
 
         function show() {
             gear.ui.changePage('#pregame');
@@ -28,33 +28,37 @@ define({
 
         function onPageShow() {
             var waitingEl = document.getElementById('pregame-waiting-gps'),
-                lockedEl = document.getElementById('pregame-locked-gps');
+            lockedEl = document.getElementById('pregame-locked-gps'),
+            disabledEl = document.getElementById('pregame-disabled-gps');
         
             e.listen('tizen.back', onBack);
-
-            if (gps_lock) return onGpsLock(); // Short-circuit
             
             lockedEl.classList.toggle('hidden', true);
-            waitingEl.classList.toggle('hidden', false);
+            waitingEl.classList.toggle('hidden', false);            
+            disabledEl.classList.toggle('hidden', true);
             
-            timeout = setTimeout(onGpsLock, 1000);
+            e.listen('gps.status', onGpsStatus);
+            provider.sendGpsStatusReq();
         }
         
         function onPageHide() {
             e.die('tizen.back', onBack);            
-            clearTimeout(timeout);
+            e.die('gps.status', onGpsStatus);
         }
         
         function onBack() {
             e.fire('newmain.show');
         }
         
-        function onGpsLock() {
+        function onGpsStatus(e) {
+            var status = e.detail;
             var waitingEl = document.getElementById('pregame-waiting-gps'),
-                lockedEl = document.getElementById('pregame-locked-gps');
+                lockedEl = document.getElementById('pregame-locked-gps'),
+                disabledEl = document.getElementById('pregame-disabled-gps');
         
-            waitingEl.classList.toggle('hidden', true);
-            lockedEl.classList.toggle('hidden', false);            
+            waitingEl.classList.toggle('hidden', status != 'enabled');
+            lockedEl.classList.toggle('hidden', status != 'ready');
+            disabledEl.classList.toggle('hidden', status != 'disabled');
         }
         
         function onRace(ev) {
@@ -63,16 +67,19 @@ define({
         }
         
         function bindEvents() {
-            var raceBtnEl = document.getElementById('pregame-race-btn');
+            var raceBtnEl = document.getElementById('pregame-race-btn'),
+                raceAnywayBtnEl = document.getElementById('pregame-race-anyway-btn');
             
             page.addEventListener('pageshow', onPageShow);
             page.addEventListener('pagehide', onPageHide);
             raceBtnEl.addEventListener('click', onRace);
+            raceAnywayBtnEl.addEventListener('click', onRace);
         }
 
         function init() {
             page = document.getElementById('pregame');
             bindEvents();
+            provider.init();
         }
 
         e.listeners({
