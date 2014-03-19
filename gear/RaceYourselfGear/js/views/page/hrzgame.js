@@ -79,6 +79,7 @@ define({
             var r = race.getOngoingRace();
             if (r === null || !r.isRunning() || r.hasStopped()) {
                 r = race.newRace();
+                r.data.hr_zones = true;
                 e.listen('pedometer.step', step);
                 e.listen('hrm.change', onHeartRateChange);
                 startCountdown();
@@ -272,11 +273,16 @@ define({
 			{
 				hrColour = '#5555ff';
 			}
+			var r = race.getOngoingRace();
+			if (!!r) {
+			    if (hr > maxHeartRate || hr < minHeartRate) r.data.zoned_out = true;
+			}
         }
         
         function step() {
             var r = race.getOngoingRace();
             if (r.getDistance() < zombieDistance) {
+                r.data.caught_by = 'zombie';
                 zombieGrowl.play();
                 navigator.vibrate([1000, 500, 250, 100]);
                 e.fire('race.end', r);
@@ -284,6 +290,7 @@ define({
                 lastRender = null;
                 stopZombies();
                 r = race.newRace();
+                r.data.hr_zones = true;
                 
                 banner = 'R.I.P.';
                 requestRender();
@@ -299,6 +306,7 @@ define({
                 lastRender = null;
                 stopZombies();
                 r = race.newRace();
+                r.data.hr_zones = true;
                 
                 banner = 'You won!';
                 requestRender();

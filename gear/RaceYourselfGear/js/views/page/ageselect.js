@@ -44,7 +44,7 @@ define({
        		document.getElementById('mid-fifties-btn').addEventListener('click', onAgeBtnClick);
        		document.getElementById('mid-sixties-btn').addEventListener('click', onAgeBtnClick);
        		document.getElementById('mid-seventies-btn').addEventListener('click', onAgeBtnClick);
-       		document.getElementById('over-eighties-btn').addEventListener('clicl', onAgeBtnClick);        	
+       		document.getElementById('over-eighties-btn').addEventListener('click', onAgeBtnClick);        	
         	
             page.addEventListener('pageshow', onPageShow);
             page.addEventListener('pagehide', onPageHide);

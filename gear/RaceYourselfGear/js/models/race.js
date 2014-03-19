@@ -54,10 +54,10 @@ define({
             this.track = [];
             this.running = false;
             this.stopped = false;
+            this.data = {}; // Game-specific race data
         }
         Race.prototype = {
             start: function start() {
-            	console.log('listener added');
                 e.listen('pedometer.change', onPedometerInfoChange);
                 e.listen('gps.location', onGpsLocation);
                 if (pedometer.isAvailable()) {

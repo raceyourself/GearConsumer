@@ -101,6 +101,11 @@ define({
         	return saveSettings();
         }
         
+        function addPoints(points) {
+            settings.points += points;
+            return saveSettings();
+        }
+        
         /**
          * Initializes module.
          */
@@ -122,6 +127,7 @@ define({
             setTime: setTime,
             getPoints: getPoints,
             setPoints: setPoints,
+            addPoints: addPoints,
             getAgeRange: getAgeRange,
             setAgeRange: setAgeRange,
             getZombieTutorial: getZombieTutorial,
