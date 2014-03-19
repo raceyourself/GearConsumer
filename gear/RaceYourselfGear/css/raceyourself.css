@@ -187,6 +187,12 @@ img {
 #distance-units {
 	font-size: 30%;
 }
+#time-value {
+	line-height: 75%;
+}
+#time-units {
+	font-size: 30%;
+}
 
 .ry-title {
 	text-align: center;

@@ -10,6 +10,7 @@ define({
         'core/event',
         'models/application',
         'views/page/setdistance',
+        'views/page/settime',
         'views/page/games',
         'views/page/newmain'
     ],

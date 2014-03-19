@@ -18,7 +18,8 @@ define({
             units = req.helpers.units,
             defaults = {
                 unit: units.UNIT_METER,
-                distance: 100
+                distance: 100,
+                time: 30
             },
             settings = {},
             STORAGE_KEY = 'settings';
@@ -32,9 +33,15 @@ define({
         }
         
         function getDistance() {
+            if (!isFinite(settings.distance)) return defaults.distance;
             return settings.distance;
         }
 
+        function getTime() {
+            if (!isFinite(settings.time)) return defaults.time;
+            return settings.time;
+        }
+        
         function saveSettings() {
             if (s.add(STORAGE_KEY, settings)) {
                 return true;
@@ -56,6 +63,11 @@ define({
             return saveSettings();
         }
         
+        function setTime(time) {
+            settings.time = time;
+            return saveSettings();
+        }
+        
         /**
          * Initializes module.
          */
@@ -72,7 +84,9 @@ define({
             getUnit: getUnit,
             setUnit: setUnit,
             getDistance: getDistance,
-            setDistance: setDistance
+            setDistance: setDistance,
+            getTime: getTime,
+            setTime: setTime
         };
     }
 
