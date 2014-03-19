@@ -16,33 +16,38 @@ define({
 
         var e = req.core.event,
             s = req.core.storage,
-            locked = true,
+            games = {},
+            defaults = {
+                'yourself' : {
+                    locked: true
+                },
+                'zombies' : {
+                    locked: false
+                },
+                'boulder' : {
+                    locked: true
+                },
+                'dino' : {
+                    locked: true
+                }
+            },
+            STORAGE_KEY = 'games',
             currentGame;
 
-        function getName() {
-            return "Heart Rate Zombies";
+        function isLocked(game) {
+            return games[game].locked;
         }
         
-        function getTitle() {
-            return "Escape Zombies";
+        function unlock(game) {
+            games[game].locked = false;
+            return saveGames();
         }
         
-        function getImage() {
-            return "images/heartratemonitor.png";
-        }
-        
-        function getDescription() {
-            return "Your heart rate determines your speed.";
-        }
-        
-        function isLocked() {
-            return locked;
-        }
-        
-        function unlock() {
-            locked = false;
-        }
-        
+        /**
+         * Sets the current game.
+         * Detaches any old game using the canvas and attaches the new game.
+         * @param game
+         */
         function setCurrentGame(game) {
             if (currentGame != null) e.fire(currentGame+'.detach');
             currentGame = game;
@@ -53,18 +58,26 @@ define({
             return currentGame;
         }
         
+        function saveGames() {
+            if (s.add(STORAGE_KEY, games)) {
+                return true;
+            }
+            return false;
+        }
+        
         /**
          * Initializes module.
          */
         function init() {
+            games = s.get(STORAGE_KEY);
+            if (games === null) {
+                games = defaults;
+                saveGames();
+            }            
         }
 
         return {
             init: init,
-            getName: getName,
-            getTitle: getTitle,
-            getImage: getImage,
-            getDescription: getDescription,
             isLocked: isLocked,
             unlock: unlock,
             setCurrentGame: setCurrentGame,

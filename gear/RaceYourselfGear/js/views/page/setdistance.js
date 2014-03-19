@@ -36,7 +36,7 @@ define({
         function render() {
             d = Math.max(100, d);
             d = Math.min(99900, d);
-            valueEl.innerHTML = Number(d/1000).toFixed(1).replace('.', ',');
+            valueEl.innerHTML = Number(d/1000).toFixed(1);
         }
         
         function onMinus() {
