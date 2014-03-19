@@ -10,8 +10,10 @@ define({
         'core/event',
         'models/application',
         'models/race',
+        'models/settings',
         'views/page/setdistance',
-        'views/page/ageselect'
+        'views/page/ageselect',
+        'views/page/choosegoal'
     ],
     def: function viewsPageTrainingType(req) {
         'use strict';
@@ -19,6 +21,7 @@ define({
         var e = req.core.event,
             app = req.models.application,
             race = req.models.race,
+            settings = req.models.settings,
             page = null;
 
         function show() {
@@ -34,7 +37,7 @@ define({
         }
         
         function onBack() {
-            app.closeApplication();
+            history.back();
         }
 
         function bindEvents() {
@@ -47,7 +50,8 @@ define({
         }
         
         function onTypeBtnClick(event) {
-        	switch(event.target.id) {
+        	console.log(this);
+        	switch(this.id) {
         	case 'weight-loss-btn':
         		race.setGoal('WeightLoss');
         		break;
@@ -64,15 +68,18 @@ define({
         			
         		break;
         	}
-        	e.fire('ageselect.show');
+        	if(settings.getFirstTimeAge()) {
+        		e.fire('ageselect.show', 'choosegoal');
+        	} else {
+        		e.fire('choosegoal.show');
+        	}
+        	
         }
         
 
         function init() {
             page = document.getElementById('trainingtype');
             bindEvents();
-            // Assume we always start in this view
-            onPageShow();
         }
         
         e.listeners({

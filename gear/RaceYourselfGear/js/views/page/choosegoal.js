@@ -32,7 +32,7 @@ define({
         }
         
         function onBack() {
-            app.closeApplication();
+            history.back();
         }
 
         function bindEvents() {
@@ -63,8 +63,6 @@ define({
         function init() {
             page = document.getElementById('racetype');
             bindEvents();
-            // Assume we always start in this view
-            onPageShow();
         }
         
         e.listeners({

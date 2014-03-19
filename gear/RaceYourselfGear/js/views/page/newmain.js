@@ -9,7 +9,9 @@ define({
     requires: [
         'core/event',
         'models/application',
-        'views/page/gameselect'
+        'views/page/gameselect',
+        'views/page/achievements',
+        'views/page/settingspage'
     ],
     def: function viewsPageNewMain(req) {
         'use strict';
@@ -23,17 +25,11 @@ define({
         }
         
         function onPageShow() {
-            e.listen('fling.right', flingRight);
             e.listen('tizen.back', onBack);
         }
 
         function onPageHide() {
-            e.die('fling.right', flingRight);
             e.die('tizen.back', onBack);
-        }
-        
-        function flingRight() {
-            e.fire('main.show');
         }
         
         function onBack() {
@@ -60,11 +56,11 @@ define({
         }
         
         function onAchievementsBtnClick() {
-        	
+            e.fire('achievements.show');
         }
         
         function onSettingsBtnClick() {
-        	
+        	e.fire('settingspage.show');
         }
         
         function onHistoryBtnClick() {
@@ -74,8 +70,6 @@ define({
         function init() {
             page = document.getElementById('newmain');
             bindEvents();
-            // Assume we always start in this view
-            onPageShow();
         }
         
         e.listeners({

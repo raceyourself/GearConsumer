@@ -203,4 +203,12 @@ img {
 	padding: 0 0;
 	margin: 0 0;
 }
+
+#achievement-description {
+	padding-bottom: 30px;
+}
+
+#achievement-awarded, #achievement-progress {
+	font-size: 50%;
+	padding-bottom: 10px;
 }

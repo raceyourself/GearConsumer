@@ -31,6 +31,15 @@ define({
         function onPageShow() {
             d = settings.getDistance();
             render();
+            e.listen('tizen.back', onBack);
+        }
+        
+        function onPageHide() {
+        	e.die('tizen.back', onBack);
+        }
+        
+        function onBack() {
+            history.back();
         }
         
         function render() {
@@ -43,6 +52,7 @@ define({
             increment = 100;
             d -= increment;
             render();
+            clearInterval(holdInterval);
             holdInterval = setInterval(function() {
                 d -= increment;
                 increment = Math.min(1000, increment + 100);
@@ -54,6 +64,7 @@ define({
             increment = 100;
             d += increment;
             render();
+            clearInterval(holdInterval);
             holdInterval = setInterval(function() {
                 d += increment;
                 increment = Math.min(1000, increment + 100);
@@ -86,6 +97,8 @@ define({
             plusBtnEl.addEventListener('touchstart', onPlus);
             minusBtnEl.addEventListener('touchend', onHalt);
             plusBtnEl.addEventListener('touchend', onHalt);
+            minusBtnEl.addEventListener('touchcancel', onHalt);
+            plusBtnEl.addEventListener('touchcancel', onHalt);
             okBtnEl.addEventListener('click', onOk);
         }
 

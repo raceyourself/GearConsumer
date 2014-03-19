@@ -5,17 +5,16 @@
  */
 
 define({
-    name: 'views/page/gameselect',
+    name: 'views/page/zombietutorial',
     requires: [
         'core/event',
         'models/race',
         'models/game',
         'models/settings',
         'views/page/pregame',
-        'views/page/trainingtype',
-        'views/page/zombietutorial'
+        'views/page/trainingtype'
     ],
-    def: function viewsPageGameSelect(req) {
+    def: function viewsPageZombieTutorial(req) {
         'use strict';
 
         var e = req.core.event,
@@ -27,10 +26,8 @@ define({
             sectionChanger;
 
         function show() {
-            gear.ui.changePage('#newgames');
+            gear.ui.changePage('#zombietutorial');
         }
-        
-        
 
         function onPageShow() {
             sectionChanger = new SectionChanger(changer, {
@@ -41,30 +38,22 @@ define({
             
             document.getElementById('boulder-mode-btn').classList.toggle('locked-game', game.isLocked('boulder'));
             document.getElementById('dino-mode-btn').classList.toggle('locked-game', game.isLocked('dino'));
-            
             e.listen('tizen.back', onBack);
         }
-        
-        function onPageHide() {
-            sectionChanger.destroy();
-            e.die('tizen.back', onBack);
-        }   
         
         function onBack() {
             history.back();
         }
         
+        function onPageHide() {
+            sectionChanger.destroy();
+            e.die('tizen.back', onBack);
+        }        
+        
         function bindEvents() {
-        	var zombieBtnEl = document.getElementById('zombie-mode-btn'),
-        		boulderBtnEl = document.getElementById('boulder-mode-btn'),
-        		dinoBtnEl = document.getElementById('dino-mode-btn');
-        	
         	 page.addEventListener('pageshow', onPageShow);
              page.addEventListener('pagehide', onPageHide);
              
-             zombieBtnEl.addEventListener('click', onZombieBtnClick);
-             boulderBtnEl.addEventListener('click', onBoulderBtnClick);
-             dinoBtnEl.addEventListener('click', onDinoBtnClick);
         }
 
         function isScrolling() {
@@ -74,41 +63,16 @@ define({
             return false;
         }
         
-        function onZombieBtnClick(event) {
-            if (isScrolling()) return;
-        	game.setCurrentGame('hrzgame');
-        	if(settings.getZombieTutorial) {
-        		e.fire('trainingtype.show');
-        	}
-        	else {
-        		e.fire('zombietutorial.show');
-        	}
-        	
-        	
-        }
         
-        function onBoulderBtnClick(event) {
-            if (isScrolling()) return;
-            if (game.isLocked('boulder')) return;
-            game.setCurrentGame('hrzgame');
-            e.fire('choosegoal.show');
-        }
-        
-        function onDinoBtnClick(event) {
-            if (isScrolling()) return;
-            if (game.isLocked('dino')) return;
-            game.setCurrentGame('hrzgame');
-            e.fire('choosegoal.show');
-        }
         
         function init() {
-            page = document.getElementById('newgames');
-            changer = document.getElementById("game-select-sectionchanger");
+            page = document.getElementById('zombietutorial');
+            changer = document.getElementById("zombie-tutorial-sectionchanger");
             bindEvents();
         }
 
         e.listeners({
-            'gameselect.show': show,
+            'zombietutorial.show': show,
         });
 
         return {

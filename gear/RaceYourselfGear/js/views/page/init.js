@@ -10,6 +10,7 @@ define({
         'core/event',
         'core/template',
         'models/application',
+        'models/achievements',
         'views/page/main'
     ],
     def: function viewsPageInit(req) {
@@ -17,6 +18,7 @@ define({
 
         var e = req.core.event,
             app = req.models.application,
+            achievements = req.models.achievements,
             touch_start = null, 
             fling_limit = {};
 
