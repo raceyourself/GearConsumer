@@ -37,7 +37,11 @@ define({
             banner = false,
             countingdown = false,
             runner = null,
-            heart = null,
+            heartGreen = null,
+            heartRed = null,
+            heartBlack = null,
+            gps = null,
+            sweat = null,
             runnerAnimations = {
                     idle: { name: 'idle', sprite: null, speedThreshold: 0},
                     running: { name: 'running', sprite: null, speedThreshold: 0.1},
@@ -530,6 +534,10 @@ define({
         function render() {
             if (!visible) return;
             var dt = 0;
+            var trackHeight = 50;
+            var green = '#51b848';
+            var red = '#cb2027';
+            
             if (lastRender !== null) {
                 dt = Date.now() - lastRender;
                 lastRender = Date.now();
@@ -538,6 +546,32 @@ define({
             context.clearRect(0, 0, canvas.width, canvas.height);            
             var trackWidth = canvas.width - 0 - runner.sprite.width;
             var r = race.getOngoingRace();
+
+			//Header
+			//sweat points
+			if(true)
+			{
+				var xpos = 0;
+				var ypos = 0;
+				sweat.draw(context, xpos,ypos,0);
+				context.font = '18px Samsung Sans';
+				context.fillStyle = '#fff';
+				context.textBaseline = "middle";
+				context.textAlign = "left";
+				context.fillText('SP', xpos + sweat.width + 5, ypos + sweat.height/2);
+				context.fillStyle = green;
+				context.fillText(settings.getPoints(), xpos + sweat.width + 5 + 30, ypos + sweat.height/2);
+			}
+
+			
+			//GPS
+			if(true)
+			{
+				var scale = sweat.height / gps.height;
+				gps.drawscaled(context, canvas.width - gps.width*scale, 0, 0, scale);
+			}
+			
+
 
             // Banner
             if (banner !== false) {
@@ -563,7 +597,7 @@ define({
                 var columnCenter = canvas.width/2;
                 columnCenter = ~~(columnCenter/2);
                 
-                if (true) {
+                if (false) {
                     context.font = '45px Samsung Sans';
                     context.fillStyle = '#5f9a4a';
                     context.textBaseline = "top";
@@ -572,7 +606,7 @@ define({
                     context.font = '25px Samsung Sans';
                     //context.fillText(postfix, 0+columnCenter, 25+45);
                 }
-                if (true) {
+                if (false) {
                 	var hrXPos = canvas.width/2 + 10;
                 	var hrYPos = 25+25;
                     context.fillStyle = hrColour;
@@ -584,11 +618,85 @@ define({
                 }
             }
             
+            // Heart Rate
+			var heartIcon = null;
+			var hrFillColour = green;
+
+            if(hr > maxHeartRate) 
+            {
+             	heartIcon = heartBlack; 
+				hrFillColour = red;             	
+            }
+            else if(hr < minHeartRate) 
+            {
+            	heartIcon = heartRed; 
+            	hrFillColour = red;
+            }
+            else { heartIcon = heartGreen; }
+            
+            var radius = 115/2;
+            var hrXPos = canvas.width - 30 - radius;
+            var hrYPos = 37 + radius;
+            //fill
+            var MaxCircleHR = 200;
+            var MinCircleHR = 50;
+            context.beginPath();
+            context.arc(hrXPos, hrYPos, radius, 0, 2*Math.PI, false);
+            context.fillStyle = '#fff';
+            context.fill();
+            
+            //how high up the circle as a percentage of diameter 
+            var fillProportion = (hr - MinCircleHR)/(MaxCircleHR - MinCircleHR);
+            console.log('fill proportion: ' + fillProportion);
+            //height in pixels above centre line
+            var h = fillProportion * 2 * radius - radius
+            console.log('h: ' + h);
+            var angle = Math.asin(h/radius);
+            context.beginPath();
+            context.arc(hrXPos, hrYPos, radius, -angle, Math.PI + angle, false);
+            context.fillStyle = hrFillColour;
+            context.fill();
+            
+
+
+            //icon
+
+            heartIcon.draw(context, hrXPos-heartIcon.width/2, hrYPos-heartIcon.height/2 - 30, 0);
+            //number
+            context.font = '56px Samsung Sans';
+            context.textAlign = 'center';
+            context.textBaseline = "middle";
+			context.fillStyle = '#000';
+            context.fillText(hr, hrXPos, hrYPos + 10);
+            //bpm
+            context.font = '18px Samsung Sans';
+            context.fillText('bpm', hrXPos, hrYPos + 38);
+            
+            
+            //Ahead/Behind
+            var distXPos = 30 + radius;
+            var distYPos = 37 + radius;
+            context.beginPath();
+            context.arc(distXPos, distYPos, radius, 0, 360, false);
+            context.fillStyle = green;
+			context.fill();
+			//+
+			context.fillStyle = '#fff';
+			context.font ='25px Samsung Sans';
+			context.fillText('+', distXPos, distYPos - 33);
+			//m
+			context.font = '18px Samsung Sans';
+			context.fillText('m', distXPos, distYPos + 38);
+			//number
+			var delta = Math.round(r.getDistance() - zombieDistance);
+			context.font = '56px Samsung Sans';
+			context.fillText(delta, distXPos, distYPos +4);
+            
             // Track
             context.beginPath();
-            context.moveTo(15, canvas.height - 25);
-            context.lineTo(canvas.width - 15, canvas.height - 25);
-            context.lineWidth = 3;
+            context.moveTo(15, canvas.height - trackHeight);
+            context.lineTo(canvas.width - 15, canvas.height - trackHeight);
+            context.lineWidth = 1;
             context.strokeStyle = "#fff";
             context.stroke();
             
@@ -603,23 +711,38 @@ define({
   			context.textAlign = "center";          
 			
 			//draw distance markers for screen range
+			context.beginPath();
 			var distMarkerSpacing = 10;
 			var distMarkerIndex = Math.floor(screenLeftDistance/distMarkerSpacing);
 			distMarkerIndex = Math.max(distMarkerIndex, 0);
 			while (distMarkerIndex * distMarkerSpacing <= (screenLeftDistance + 2*screenWidthDistance) )
 			{
 				var dist = distMarkerIndex * distMarkerSpacing
-				if(dist == 0)
+				var screenPosX = distanceToTrackPos(dist);
+				if(dist%500 == 0)
 				{
-					context.fillText('START', distanceToTrackPos(0), canvas.height-25);
+					context.textBaseline = "bottom";
+					context.textAlign = "right";
+					context.font = '18px Samsung Sans';
+					var distkm = dist/1000;
+					context.fillText(distkm, distanceToTrackPos(dist), canvas.height-trackHeight + 20);
+					context.textAlign = "left";
+					context.font = "15px Samsung Sans";
+					context.fillText('km', distanceToTrackPos(dist) + 1, canvas.height-trackHeight + 20);
 				}
 				else
 				{
-					context.fillText('' + dist, distanceToTrackPos(dist), canvas.height-25);
+					var distMarkerHeight = 12;
+					if(dist%100 == 0) { distMarkerHeight = 20; }
+//					context.fillText('' + dist, distanceToTrackPos(dist), canvas.height-25);
+					context.moveTo(screenPosX, canvas.height - trackHeight +3);
+					context.lineTo(screenPosX, canvas.height - (trackHeight -3 - distMarkerHeight*scale));
 				}
-				
 				distMarkerIndex++;
 			}
+			context.lineWidth = 6*scale;
+			context.strokeStyle = "#fff";
+			context.stroke();
 			
             
             var scale = 10/screenWidthDistance;
@@ -636,7 +759,7 @@ define({
 //                    zombiePos -= screenLeftDistance;
 		    var localDT = dt * (0.9 + zombiesAnimOffset[i]);
 
-                    zombie.drawscaled(context, zombiePos, canvas.height - zombie.height * scale - 30 + y_offset, localDT, scale);
+                    zombie.drawscaled(context, zombiePos, canvas.height - zombie.height * scale - trackHeight - 5*scale + y_offset, localDT, scale);
 //                    console.log('screenwidth:' + screenWidthDistance);
 //                    console.log('scale:' + scale);
                 }
@@ -644,16 +767,18 @@ define({
             }
             
             // Self
-            runner.sprite.drawscaled(context, 0 + distanceToTrackPos(r.getDistance()), canvas.height - runner.sprite.height * scale - 30, dt, scale);
+            runner.sprite.drawscaled(context, 0 + distanceToTrackPos(r.getDistance()), canvas.height - runner.sprite.height * scale - trackHeight - 5*scale, dt, scale);
             
             /// DEBUG
             // fps
+            if(false)
+            {
             context.font = '20px Samsung Sans';
             context.fillStyle = '#fff';
             context.textBaseline = "top";
             context.textAlign = "center";
             context.fillText('fps: '+fps, canvas.width/2, 0);
-            
+            }
             /// DEBUG
             
             context.save();
@@ -749,14 +874,51 @@ define({
             //heart     
         	image = new Image();
         	image.onload = function() {
-        		heart = new Sprite(this, this.width, 1000);
-        		heart.scale = 0.5;
+        		heartGreen = new Sprite(this, this.width, 1000);
+        		heartGreen.scale = 0.5;
         	}
             image.onerror = function() {
                 throw "Could not load " + this.src;
             }
-            image.src = 'images/heartratemonitor.png';
-                    	
+            image.src = 'images/image_heart_green.png';
+
+        	image = new Image();
+        	image.onload = function() {
+        		heartRed = new Sprite(this, this.width, 1000);
+        		heartRed.scale = 0.5;
+        	}
+            image.onerror = function() {
+                throw "Could not load " + this.src;
+            }
+            image.src = 'images/image_heart_red.png';
+            
+			image = new Image();
+        	image.onload = function() {
+        		heartBlack = new Sprite(this, this.width, 1000);
+        		heartBlack.scale = 0.5;
+        	}
+            image.onerror = function() {
+                throw "Could not load " + this.src;
+            }
+            image.src = 'images/image_heart_black.png';
+            
+                        
+            //gps
+            image = new Image();
+            image.onload = function() {
+            	gps = new Sprite(this, this.width, 10);
+			}
+			image.onerror = function() { throw "could not load" + this.src; }
+			image.src = 'images/gps-lock.png';
+			
+			//sweat points
+			image = new Image();
+			image.onload = function() {
+				sweat = new Sprite(this, this.width, 1000);
+			}
+			image.onerror = function() { throw "could not load" + this.src; }
+			image.src = 'images/image_sweat_point_green.png';
+            
            /* if (hrm.isAvailable()) {
                 hrm.start();
             } else {
