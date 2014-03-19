@@ -10,11 +10,13 @@ define({
         'core/event',
         'views/page/statsleft',
         'views/page/statsright',
+//        'views/page/gameselect',
         'models/race',
         'models/hrm',
         'models/sprite',
         'models/settings',
-        //'views/page/gameselect'
+        //'views/page/main',
+
     ],
     def: function viewsPageHeartRateZombiesGame(req) {
         'use strict';
@@ -61,7 +63,8 @@ define({
             hrInterval = 5000,
             hrColour = '#fff',
             zombieCatchupSpeed = 0.05,
-            zombieOffset = -25,
+            zombieStartOffset = -25,
+            zombieOffset = zombieStartOffset,
             screenWidthDistance = 25,	//'real-world' distance covered by the screen's width
             screenLeftDistance = zombieOffset,		//'real-world' position of left of screen
 			hrZones = [],
@@ -69,7 +72,14 @@ define({
 			currentZone = 0,
 			warmupTimeout = false,
 			timeMultiplier = 0.01,			//hack to test quickly. Set to 1
-			intervalTimeout = false;
+			intervalTimeout = false,
+			zoneAdaptTimeout = false,
+			warningTimeout = false,
+			zombiesCatchingUp = false,
+			adaptingToRecentZoneShift = false,
+			adaptingTimeout = false;
+			showWarning = false;
+			
 
             
 
@@ -118,6 +128,8 @@ define({
             clearInterval(randomHR);
 			clearTimeout(warmupTimeout);
             clearTimeout(intervalTimeout);
+            clearTimeout(adaptingTimeout);
+            clearTimeout(warningTimeout);
             sectionChanger.destroy();
             e.die('tizen.back', onBack);
         }        
@@ -133,7 +145,7 @@ define({
             if (!!raf) cancelAnimationFrame(raf);
             clearInterval(zombieInterval);
             clearTimeout(bannerTimeout)
-            e.fire('newmain.show');
+            e.fire('gameselect.show');
         }
         
         function startCountdown() {
@@ -194,6 +206,9 @@ define({
         	}
         	console.log("Ended warmup. Now in zone " + currentHRZone);
         }
+        
+
+        
         
         function nextHRZone()
         {
@@ -295,9 +310,16 @@ define({
 			maxHeartRate = max20 - p * (max20 - max75);
 			minHeartRate = min20 - p * (min20 - min75);
 			console.log("age = " + age + " " + minHeartRate + " " + maxHeartRate);
-			
+			//set that we are currently adapting
+			adaptingToRecentZoneShift = true;
+			adaptingTimeout	= setTimeout(adaptComplete, 1 * 60 * 100 * timeMultiplier);
         }
 
+        function adaptComplete()
+        {
+        	adaptingToRecentZoneShift = false;
+        }
+        
         function clearbanner() {
             banner = false;
             requestRender();
@@ -311,7 +333,8 @@ define({
             zombieOffset = -25;
             requestRender();
             clearTimeout(bannerTimeout);
-            bannerTimeout = setTimeout(startCountdown, 1500);
+            bannerTimeout = setTimeout(go, 1500);
+            startZombies();
         }
         
         function startZombies() {
@@ -323,6 +346,7 @@ define({
                 zombiesAnimOffset.push(animDelay);
             };
             for (var i=0;i<zombies.length;i++) zombies[i].reset();
+            zombieOffset = zombieStartOffset;
             zombieDistance = zombieOffset;
 //            int intervalTime = Math.min(350, 750-(wave*50));
 			var intervalTime = 33;
@@ -330,7 +354,7 @@ define({
         }
         
         function zombieTick() {
-        	if(hr < minHeartRate)
+        	if(zombiesCatchingUp)
         	{
             	zombieOffset += zombieCatchupSpeed;
         	}
@@ -382,6 +406,44 @@ define({
 			{
 				hrColour = '#5555ff';
 			}
+			
+
+			//instigate warning
+			if(hr < minHeartRate)
+			{	
+				if(!showWarning)
+				{
+					showWarning = true;
+					zombieGrowl.play();
+					navigator.vibrate([1000, 500, 250, 100]);
+				}
+				if(!adaptingToRecentZoneShift)
+				{
+					if(warningTimeout == false)
+					{
+						warningTimeout = setTimeout(warningOver, 10*1000 * timeMultiplier);
+					}
+				}
+			}
+			else
+			{
+				//clear warning
+				showWarning = false;
+				clearTimeout(warningTimeout);
+				warningTimeout = false;
+				//stop zombies catching up
+				zombiesCatchingUp = false;
+			}
+			}
+							
+			
+        }
+        
+        function warningOver() 
+        {
+        	console.log("Warning up! Zombies catching up");
+        	zombiesCatchingUp = true;
+        	showWarning = false;
         }
         
         function step() {
@@ -389,15 +451,13 @@ define({
             if (r.getDistance() < zombieDistance) {
                 zombieGrowl.play();
                 navigator.vibrate([1000, 500, 250, 100]);
-                r.stop();
+//                r.stop();
                 lastRender = null;
                 stopZombies();
-                r = race.newRace();
-                
                 banner = 'R.I.P.';
                 requestRender();
                 clearTimeout(bannerTimeout);
-                bannerTimeout = setTimeout(nextWave, 1500);
+                bannerTimeout = setTimeout(nextWave, 500);
                 return;
             }
             if (r.getDistance() >= TRACK_LENGTH) {
@@ -406,9 +466,10 @@ define({
                 r.stop();
                 lastRender = null;
                 stopZombies();
-                r = race.newRace();
                 
-                banner = 'You won!';
+                e.fire('main.show');
+                
+                banner = 'RaceComplete';
                 requestRender();
                 clearTimeout(bannerTimeout);
                 bannerTimeout = setTimeout(nextWave, 1500);
