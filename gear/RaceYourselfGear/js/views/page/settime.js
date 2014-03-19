@@ -62,6 +62,7 @@ define({
             increment = 1;
             t -= increment;
             render();
+            clearInterval(holdInterval);
             holdInterval = setInterval(function() {
                 t -= increment;
                 increment = Math.min(15, increment + 1);
@@ -73,6 +74,7 @@ define({
             increment = 1;
             t += increment;
             render();
+            clearInterval(holdInterval);
             holdInterval = setInterval(function() {
                 t += increment;
                 increment = Math.min(15, increment + 1);
@@ -105,6 +107,8 @@ define({
             plusBtnEl.addEventListener('touchstart', onPlus);
             minusBtnEl.addEventListener('touchend', onHalt);
             plusBtnEl.addEventListener('touchend', onHalt);
+            minusBtnEl.addEventListener('touchcancel', onHalt);
+            plusBtnEl.addEventListener('touchcancel', onHalt);
             okBtnEl.addEventListener('click', onOk);
         }
 
