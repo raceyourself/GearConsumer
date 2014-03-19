@@ -28,10 +28,28 @@ define({
         
         function onPageShow() {
             e.listen('tizen.back', onBack);
+            
+            var radios = document.getElementsByName('pace-units');
+            for(var i=0, length = radios.length; i < length; i++) {
+            	if(settings.getPaceUnits() == radios[i].id)
+            	{
+            		console.log('FOUND MATCHING RADIO - ' + radios[i].id + ", settings is " + settings.getPaceUnits());
+            		radios[i].checked = true;
+            		break;
+            	}
+            }
         }
 
         function onPageHide() {
            e.die('tizen.back', onBack);
+           var radios = document.getElementsByName('pace-units');
+           for(var i=0, length=radios.length; i<length; i++) {
+        	   if(radios[i].checked) {
+        		   console.log('FOUND MATCHING RADIO - ' + radios[i].id);
+        		   settings.setPaceUnits(radios[i].id);
+        		   break;
+        	   }
+           }
         }
         
         function onBack() {
