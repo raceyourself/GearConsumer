@@ -25,7 +25,7 @@ define({
             page = null,
             canvas,
             context,
-            TRACK_LENGTH = 100,
+            TRACK_LENGTH = 500,
             lastRender = null,
             bannerTimeout = false,
             raf = false,
@@ -33,6 +33,7 @@ define({
             banner = false,
             countingdown = false,
             runner = null,
+            heart = null,
             runnerAnimations = {
                     idle: { name: 'idle', sprite: null, speedThreshold: 0},
                     running: { name: 'running', sprite: null, speedThreshold: 0.1},
@@ -42,6 +43,7 @@ define({
             zombiesAnimOffset = [],
             zombieDistance = false,
             zombieInterval = false,
+            zombieSpeed = 0,
             zombieMoan = null,
             zombieGrowl = null,
             visible = false,
@@ -49,7 +51,18 @@ define({
             sectionChanger,
             fpsInterval = false,
             frames = 0,
-            fps = 0;
+            fps = 0,
+            hr = 100,
+            maxHeartRate = 150,
+            minHeartRate = 120,
+            hrInterval = 5000,
+            hrColour = '#fff',
+            zombieCatchupSpeed = 0.05,
+            zombieOffset = -25,
+            screenWidthDistance = 25,	//'real-world' distance covered by the screen's width
+            screenLeftDistance = zombieOffset;		//'real-world' position of left of screen
+            
+            
 
         function show() {
             gear.ui.changePage('#race-game');
@@ -67,6 +80,7 @@ define({
             if (r === null || !r.isRunning() || r.hasStopped()) {
                 r = race.newRace();
                 e.listen('pedometer.step', step);
+                e.listen('hrm.change', onHeartRateChange);
                 startCountdown();
             }
             
@@ -82,11 +96,15 @@ define({
             animate();
             
             requestRender();
+            
+            updateMinMaxHR();
+            hrInterval = setInterval(randomHR, hrInterval);
         }
         
         function onPageHide() {
             visible = false;
             clearInterval(fpsInterval);
+            clearInterval(randomHR);
             sectionChanger.destroy();
             e.die('tizen.back', onBack);
         }        
@@ -97,6 +115,7 @@ define({
                 r.stop();
                 lastRender = null;                
                 e.die('pedometer.step', step);
+                e.die('hrm.change', onHeartRateChange);
             }
             if (!!raf) cancelAnimationFrame(raf);
             clearInterval(zombieInterval);
@@ -109,6 +128,7 @@ define({
             clearTimeout(bannerTimeout);
             bannerTimeout = setTimeout(ready, 1000);
         }
+        
         
         function ready() {
             banner = 'Ready';
@@ -132,6 +152,47 @@ define({
             clearTimeout(bannerTimeout);
             bannerTimeout = setTimeout(clearbanner, 1000);
         }
+        
+        function updateMinMaxHR()
+        {
+        //eventually look up based on age, but for now just used valued based on 30yo
+            var r = race.getOngoingRace();
+        	var hrMinMax = new Object();
+        	switch(r.goal)
+        	{
+        	case "WeightLoss":
+	        	hrMinMax.min20 = 120;
+	        	hrMinMax.max20 = 140;
+	        	hrMinMax.min75 = 90;
+	        	hrMinMax.max75 = 110;
+	        	break;
+			case "Endurance":
+        		hrMinMax.min20 = 140;
+        		hrMinMax.max20 = 160;
+        		hrMinMax.min75 = 110;
+        		hrMinMax.max75 = 120;
+        		break;
+        	case "Strength":
+        		hrMinMax.min20 = 160;
+        		hrMinMax.max20 = 180;
+        		hrMinMax.min75 = 120;
+        		hrMinMax.max75 = 135;
+        		break;
+			default:
+        		hrMinMax.min20 = 140;
+        		hrMinMax.max20 = 160;
+        		hrMinMax.min75 = 110;
+        		hrMinMax.max75 = 120;
+			}
+			var age = 30;		//TODO get from profile
+			//clamp to range 20-75
+			age = Math.min( age, 75);
+			age = Math.max( age, 20);
+			var p = (75 - age)/(75-20)
+			maxHeartRate = hrMinMax.max20 - p * (hrMinMax.max20 - hrMinMax.max75);
+			minHeartRate = hrMinMax.min20 - p * (hrMinMax.min20 - hrMinMax.min75);
+        }
+
         function clearbanner() {
             banner = false;
             requestRender();
@@ -140,7 +201,9 @@ define({
         function nextWave() {
             countingdown = true;
             wave++;
+            zombieCatchupSpeed += 0.01;
             banner = 'Wave ' + wave;
+            zombieOffset = -25;
             requestRender();
             clearTimeout(bannerTimeout);
             bannerTimeout = setTimeout(startCountdown, 1500);
@@ -154,19 +217,61 @@ define({
                 zombiesAnimOffset.push(animDelay);
             };
             for (var i=0;i<zombies.length;i++) zombies[i].reset();
-            zombieDistance = -25;
-            zombieInterval = setInterval(zombieTick, Math.min(350, 750-(wave*50)));
+            zombieDistance = zombieOffset;
+//            int intervalTime = Math.min(350, 750-(wave*50));
+			var intervalTime = 33;
+            zombieInterval = setInterval(zombieTick, intervalTime);
         }
         
         function zombieTick() {
-            zombieDistance++;
+        	if(hr < minHeartRate)
+        	{
+            	zombieOffset += zombieCatchupSpeed;
+        	}
+        	var r = race.getOngoingRace();
+        	zombieDistance = r.getDistance() + zombieOffset;
             requestRender();
             step();
+            
+            //general update of track window
+            screenWidthDistance = Math.max( 10, Math.min( -zombieOffset, 100));
+            screenLeftDistance = (zombieDistance + r.getDistance() - screenWidthDistance)/2;
+            
         }
         
         function stopZombies() {
             clearInterval(zombieInterval);
             zombieDistance = false;            
+        }
+        
+        function onHeartRateChange(hrmInfo) {
+        	//set heartRate
+        	handleHRChanged();
+        }
+
+		function setMinMaxHeartRate() {
+			//to be eventually based on age and user-defined goals. Just use values for 30yo aerobic exercise for now.
+		}
+        
+        //test function to provide random heart rate
+        function randomHR() {
+        	hr = Math.floor( 50 + 150 * (Math.random()) );
+        	handleHRChanged();
+        }
+        
+        function handleHRChanged() {
+			if(hr > maxHeartRate)
+			{
+				hrColour = '#ff0000';
+			}
+			else if (hr > minHeartRate)
+			{
+				hrColour = '#fff';
+			}
+			else
+			{
+				hrColour = '#5555ff';
+			}
         }
         
         function step() {
@@ -252,6 +357,12 @@ define({
                 var delta = r.getDistance() - zombieDistance;
                 delta = ~~delta;
                 var postfix = 'ahead';
+                var prefix = '';
+                if(delta > 0) 
+                { prefix = '+'; }
+                else if(delta < 0)
+                { prefix = '-'; }
+                
                 // TODO: Relative speed: 'catching up', 'breaking away'
                 
                 var columnCenter = canvas.width/2;
@@ -259,21 +370,22 @@ define({
                 
                 if (true) {
                     context.font = '45px Samsung Sans';
-                    context.fillStyle = '#fff';
+                    context.fillStyle = '#5f9a4a';
                     context.textBaseline = "top";
                     context.textAlign = "center";
-                    context.fillText(delta+'m', 0+columnCenter, 25);
+                    context.fillText('+'+delta+'m', 0+columnCenter, 25);
                     context.font = '25px Samsung Sans';
-                    context.fillText(postfix, 0+columnCenter, 25+45);
+                    //context.fillText(postfix, 0+columnCenter, 25+45);
                 }
                 if (true) {
-                    context.font = '25px Samsung Sans';
-                    context.fillStyle = '#fff';
-                    context.textBaseline = "top";
-                    context.textAlign = "center";
-                    context.fillText('Heart Rate', canvas.width-columnCenter, 25);
+                	var hrXPos = canvas.width/2 + 10;
+                	var hrYPos = 25+25;
+                    context.fillStyle = hrColour;
+                    context.textBaseline = "middle";
+                    context.textAlign = "left";
                     context.font = '45px Samsung Sans';
-                    context.fillText('F', canvas.width-columnCenter, 25+25);
+                    context.fillText(hr, hrXPos + heart.width*heart.scale, hrYPos);
+                    heart.drawscaled(context, hrXPos, hrYPos - heart.height * heart.scale/2, dt, heart.scale);
                 }
             }
             
@@ -289,10 +401,33 @@ define({
             context.font = '25px Samsung Sans';
             context.fillStyle = '#fff';
             context.textBaseline = "top";
-            context.textAlign = "left";
-            context.fillText('0', 10, canvas.height-25);
-            context.textAlign = "right";
-            context.fillText(''+TRACK_LENGTH, canvas.width - 10, canvas.height-25);
+//            context.textAlign = "left";
+//            context.fillText(''+ Math.floor(screenLeftDistance), 10, canvas.height-25);
+//            context.textAlign = "right";
+//            context.fillText(''+ Math.floor(screenWidthDistance + screenLeftDistance), canvas.width - 10, canvas.height-25);
+  			context.textAlign = "center";          
+			
+			//draw distance markers for screen range
+			var distMarkerSpacing = 10;
+			var distMarkerIndex = Math.floor(screenLeftDistance/distMarkerSpacing);
+			distMarkerIndex = Math.max(distMarkerIndex, 0);
+			while (distMarkerIndex * distMarkerSpacing <= (screenLeftDistance + 2*screenWidthDistance) )
+			{
+				var dist = distMarkerIndex * distMarkerSpacing
+				if(dist == 0)
+				{
+					context.fillText('START', distanceToTrackPos(0), canvas.height-25);
+				}
+				else
+				{
+					context.fillText('' + dist, distanceToTrackPos(dist), canvas.height-25);
+				}
+				
+				distMarkerIndex++;
+			}
+			
+            
+            var scale = 10/screenWidthDistance;
             
             // Zombies
             if (zombieDistance !== false) {
@@ -302,15 +437,19 @@ define({
                     var y_offset = (-1+(i+1)%2) * 5;
                     if (i%2==1) context.globalAlpha = 0.5;
                     else context.globalAlpha = 1;
+                    var zombiePos = 0 + distanceToTrackPos(zombieDistance) - x_offset;
+//                    zombiePos -= screenLeftDistance;
+		    var localDT = dt * (0.9 + zombiesAnimOffset[i]);
 
-                    var localDT = dt * (0.9 + zombiesAnimOffset[i]);
-                    zombie.draw(context, 0 + (zombieDistance * trackWidth / TRACK_LENGTH) - x_offset, canvas.height - zombie.height - 30 + y_offset, localDT)
+                    zombie.drawscaled(context, zombiePos, canvas.height - zombie.height * scale - 30 + y_offset, localDT, scale);
+//                    console.log('screenwidth:' + screenWidthDistance);
+//                    console.log('scale:' + scale);
                 }
                 context.globalAlpha = 1;
             }
             
             // Self
-            runner.sprite.draw(context, 0 + (r.getDistance() * trackWidth / TRACK_LENGTH), canvas.height - runner.sprite.height - 30, dt);
+            runner.sprite.drawscaled(context, 0 + distanceToTrackPos(r.getDistance()), canvas.height - runner.sprite.height * scale - 30, dt, scale);
             
             /// DEBUG
             // fps
@@ -324,6 +463,13 @@ define({
             
             context.save();
             frames++;
+        }
+        
+        function distanceToTrackPos(distance)
+        {
+        	var trackWidth = canvas.width - 0 - runner.sprite.width;
+        	var pos = trackWidth * (distance - screenLeftDistance) / (screenWidthDistance);
+        	return pos;
         }
         
         function attachGame() {
@@ -404,7 +550,18 @@ define({
             zombieGrowl.onerror = function() {
                 throw "Could not load " + this.src;
             }
-                        
+            
+            //heart     
+        	image = new Image();
+        	image.onload = function() {
+        		heart = new Sprite(this, this.width, 1000);
+        		heart.scale = 0.5;
+        	}
+            image.onerror = function() {
+                throw "Could not load " + this.src;
+            }
+            image.src = 'images/heartratemonitor.png';
+                    	
            /* if (hrm.isAvailable()) {
                 hrm.start();
             } else {
