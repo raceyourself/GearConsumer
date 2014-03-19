@@ -75,7 +75,7 @@ define({
         }
         
         function onOk() {
-            settings.setDistance(t);
+            settings.setTime(t);
             e.fire('games.show');
         }
 
@@ -91,6 +91,10 @@ define({
             plusBtnEl.addEventListener('mousedown', onPlus);
             minusBtnEl.addEventListener('mouseup', onHalt);
             plusBtnEl.addEventListener('mouseup', onHalt);
+            minusBtnEl.addEventListener('touchstart', onMinus);
+            plusBtnEl.addEventListener('touchstart', onPlus);
+            minusBtnEl.addEventListener('touchend', onHalt);
+            plusBtnEl.addEventListener('touchend', onHalt);
             okBtnEl.addEventListener('click', onOk);
         }
 
