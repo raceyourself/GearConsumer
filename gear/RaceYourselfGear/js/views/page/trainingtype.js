@@ -9,13 +9,16 @@ define({
     requires: [
         'core/event',
         'models/application',
-        'views/page/setdistance'
+        'models/race',
+        'views/page/setdistance',
+        'views/page/ageselect'
     ],
     def: function viewsPageTrainingType(req) {
         'use strict';
 
         var e = req.core.event,
             app = req.models.application,
+            race = req.models.race,
             page = null;
 
         function show() {
@@ -35,29 +38,35 @@ define({
         }
 
         function bindEvents() {
-        	/*var timeBtnEl = document.getElementById('time-run-btn'),
-        		distanceBtnEl = document.getElementById('distance-run-btn'),
-        		justRunBtnEl = document.getElementById('just-run-btn');*/
+        	document.getElementById('weight-loss-btn').addEventListener('click', onTypeBtnClick);
+        	document.getElementById('endurance-btn').addEventListener('click', onTypeBtnClick);
+        	document.getElementById('strength-btn').addEventListener('click', onTypeBtnClick);
         	
             page.addEventListener('pageshow', onPageShow);
             page.addEventListener('pagehide', onPageHide);
-            
-            /*timeBtnEl.addEventListener('click', onTimeBtnClick);
-            distanceBtnEl.addEventListener('click', onDistanceBtnClick);
-            justRunBtnEl.addEventListener('click', onJustRunBtnClick);*/
         }
         
-        /*function onTimeBtnClick() {
-        	
+        function onTypeBtnClick(event) {
+        	switch(event.target.id) {
+        	case 'weight-loss-btn':
+        		race.setGoal('WeightLoss');
+        		break;
+        		
+        	case 'endurance-btn':
+        		race.setGoal('Endurance');
+        		break;
+        		
+        	case 'strength-btn':
+        		race.setGoal('Strength');
+        		break;
+        		
+        	default:
+        			
+        		break;
+        	}
+        	e.fire('ageselect.show');
         }
         
-        function onDistanceBtnClick() {
-        	e.fire('setdistance.show');
-        }
-        
-        function onJustRunBtnClick() {
-        	e.fire('pregame.show');
-        }*/
 
         function init() {
             page = document.getElementById('trainingtype');

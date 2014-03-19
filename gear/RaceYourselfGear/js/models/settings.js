@@ -19,7 +19,10 @@ define({
             defaults = {
                 unit: units.UNIT_METER,
                 distance: 100,
-                time: 30
+                time: 30,
+                points: 0,
+                age: 0,
+                zombieTutorial: false
             },
             settings = {},
             STORAGE_KEY = 'settings';
@@ -40,6 +43,21 @@ define({
         function getTime() {
             if (!isFinite(settings.time)) return defaults.time;
             return settings.time;
+        }
+        
+        function getPoints() {
+        	if(!isFinite(settings.points)) return defaults.points;
+        	return settings.points;
+        }
+        
+        function getAgeRange() {
+        	if(!isFinite(settings.age)) return defaults.age;
+        	return settings.age;
+        }
+        
+        function getZombieTutorial() {
+        	if(!isFinite(settings.zombieTutorial)) return defaults.zombieTutorial;
+        	return settings.zombieTutorial;
         }
         
         function saveSettings() {
@@ -68,6 +86,21 @@ define({
             return saveSettings();
         }
         
+        function setPoints(points) {
+        	settings.points = points;
+        	return saveSettings();
+        }
+        
+        function setAgeRange(age) {
+        	settings.age = age;
+        	return saveSettings();
+        }
+        
+        function setZombieTutorial(zombieTutorial) {
+        	settings.zombieTutorial = zombieTutorial;
+        	return saveSettings();
+        }
+        
         /**
          * Initializes module.
          */
@@ -86,7 +119,13 @@ define({
             getDistance: getDistance,
             setDistance: setDistance,
             getTime: getTime,
-            setTime: setTime
+            setTime: setTime,
+            getPoints: getPoints,
+            setPoints: setPoints,
+            getAgeRange: getAgeRange,
+            setAgeRange: setAgeRange,
+            getZombieTutorial: getZombieTutorial,
+            setZombieTutorial: setZombieTutorial
         };
     }
 

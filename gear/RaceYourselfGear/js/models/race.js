@@ -26,6 +26,7 @@ define({
             mock = req.models.mocks.pedometer,
             provider = req.models.sapRaceYourself,
             settings = req.models.settings,
+            _goal = "",
             ongoingRace = null;
         
         function newRace() {
@@ -47,6 +48,7 @@ define({
             this.initialDistance = null;
             this.distance = 0; // meters
             this.speed = 0; // km/h
+            this.goal = _goal;
             this.initialSteps = null;
             this.steps = 0;
             this.track = [];
@@ -117,8 +119,16 @@ define({
             
             getSteps: function getSteps() {
                 return this.steps;
-            }
+            },
             
+            getGoal: function getGoal() {
+            	return this.goal;
+            },
+            
+            setGoal: function setGoal(goal) {
+            	console.log(goal);
+            	this.goal = goal;
+            }
         };
         
         function onPedometerInfoChange(param) {
@@ -155,10 +165,23 @@ define({
             console.log(state);
         }
         
+        function getGoal() {
+        	return this._goal;
+        }
+        
+        function setGoal(goal) {
+        	console.log(goal);
+        	this._goal = goal;
+        }
+        
         return {
             newRace: newRace,
-            getOngoingRace: getOngoingRace
+            getOngoingRace: getOngoingRace,
+            setGoal: setGoal,
+            getGoal: getGoal
         };
+        
+        
     }
 
 });

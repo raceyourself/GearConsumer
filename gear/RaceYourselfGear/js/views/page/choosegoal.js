@@ -9,7 +9,8 @@ define({
     requires: [
         'core/event',
         'models/application',
-        'views/page/setdistance'
+        'views/page/setdistance',
+        'views/page/settime'
     ],
     def: function viewsPageChooseGoal(req) {
         'use strict';
@@ -48,7 +49,7 @@ define({
         }
         
         function onTimeBtnClick() {
-        	
+        	e.fire('settime.show');
         }
         
         function onDistanceBtnClick() {

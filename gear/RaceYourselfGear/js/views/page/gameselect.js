@@ -11,7 +11,7 @@ define({
         'models/race',
         'models/game',
         'views/page/pregame',
-        'views/page/choosegoal'
+        'views/page/trainingtype'
     ],
     def: function viewsPageGameSelect(req) {
         'use strict';
@@ -64,13 +64,13 @@ define({
         function onRaceBtnClick() {
             if (isScrolling()) return;
         	game.setCurrentGame('racegame');
-        	e.fire('choosegoal.show');
+        	e.fire('trainingtype.show');
         }
         
         function onZombieBtnClick() {
             if (isScrolling()) return;
         	game.setCurrentGame('hrzgame');
-        	e.fire('choosegoal.show');
+        	e.fire('trainingtype.show');
         }
         
         function onBoulderBtnClick() {
