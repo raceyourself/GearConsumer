@@ -18,11 +18,12 @@ define({
             units = req.helpers.units,
             defaults = {
                 unit: units.UNIT_METER,
-                distance: 100,
+                distance: 5000,
                 time: 30,
                 points: 0,
                 age: 0,
-                zombieTutorial: false
+                zombieTutorial: false,
+                firstTimeAge: true
             },
             settings = {},
             STORAGE_KEY = 'settings';
@@ -58,6 +59,11 @@ define({
         function getZombieTutorial() {
         	if(!isFinite(settings.zombieTutorial)) return defaults.zombieTutorial;
         	return settings.zombieTutorial;
+        }
+        
+        function getFirstTimeAge() {
+        	if(!isFinite(settings.firstTimeAge)) return defaults.firstTimeAge;
+        	return settings.firstTimeAge;
         }
         
         function saveSettings() {
@@ -101,6 +107,11 @@ define({
         	return saveSettings();
         }
         
+        function setFirstTimeAge(firstTimeAge) {
+        	settings.firstTimeAge = firstTimeAge;
+        	return saveSettings();
+        }
+        
         /**
          * Initializes module.
          */
@@ -125,7 +136,9 @@ define({
             getAgeRange: getAgeRange,
             setAgeRange: setAgeRange,
             getZombieTutorial: getZombieTutorial,
-            setZombieTutorial: setZombieTutorial
+            setZombieTutorial: setZombieTutorial,
+            getFirstTimeAge: getFirstTimeAge,
+            setFirstTimeAge: setFirstTimeAge
         };
     }
 

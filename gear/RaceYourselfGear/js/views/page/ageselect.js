@@ -10,7 +10,8 @@ define({
         'core/event',
         'models/application',
         'models/settings',
-        'views/page/choosegoal'
+        'views/page/choosegoal',
+        'views/page/settingspage'
     ],
     def: function viewsPageAgeSelect(req) {
         'use strict';
@@ -91,7 +92,13 @@ define({
         		
         		break;
         	}
-        	e.fire('choosegoal.show');
+        	if(settings.getFirstTimeAge()) {
+        		settings.setFirstTimeAge(false);
+        		e.fire('choosegoal.show');
+        	} else {
+        		e.fire('settingspage.show');
+        	}
+        	
         }
 
         function init() {

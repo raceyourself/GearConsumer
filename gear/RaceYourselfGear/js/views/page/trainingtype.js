@@ -10,8 +10,10 @@ define({
         'core/event',
         'models/application',
         'models/race',
+        'models/settings',
         'views/page/setdistance',
-        'views/page/ageselect'
+        'views/page/ageselect',
+        'views/page/choosegoal'
     ],
     def: function viewsPageTrainingType(req) {
         'use strict';
@@ -19,6 +21,7 @@ define({
         var e = req.core.event,
             app = req.models.application,
             race = req.models.race,
+            settings = req.models.settings,
             page = null;
 
         function show() {
@@ -65,7 +68,12 @@ define({
         			
         		break;
         	}
-        	e.fire('ageselect.show');
+        	if(settings.getFirstTimeAge()) {
+        		e.fire('ageselect.show');
+        	} else {
+        		e.fire('choosegoal.show');
+        	}
+        	
         }
         
 

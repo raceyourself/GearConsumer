@@ -10,8 +10,10 @@ define({
         'core/event',
         'models/race',
         'models/game',
+        'models/settings',
         'views/page/pregame',
-        'views/page/trainingtype'
+        'views/page/trainingtype',
+        'views/page/zombietutorial'
     ],
     def: function viewsPageGameSelect(req) {
         'use strict';
@@ -20,6 +22,7 @@ define({
          	app = req.models.application,
          	page = null,
          	game = req.models.game,
+         	settings = req.models.settings,
             changer,
             sectionChanger;
 
@@ -73,7 +76,14 @@ define({
         function onZombieBtnClick(event) {
             if (isScrolling()) return;
         	game.setCurrentGame('hrzgame');
-        	e.fire('trainingtype.show');
+        	if(settings.getZombieTutorial) {
+        		e.fire('trainingtype.show');
+        	}
+        	else {
+        		e.fire('zombietutorial.show');
+        	}
+        	
+        	
         }
         
         function onBoulderBtnClick(event) {
