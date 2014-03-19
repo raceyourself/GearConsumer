@@ -31,6 +31,16 @@ define({
 //            console.log("Sprite " + spritesheet.src + " has " + this.frames + " " + this.width + "x" + this.height + " frames");
         }
         Sprite.prototype = {
+                drawscaled: function drawscaled(context, x, y, dt, scale) {
+                    this.time += dt;
+                    if (this.time >= this.animationPeriod) {
+                        while (this.time > this.animationPeriod) this.time -= this.animationPeriod;
+                        if (!!this.endCallback) this.endCallback(this.time);
+                    }
+                    var frame = ~~(this.time/this.frameDelay);
+                    context.drawImage(this.spritesheet, frame*this.width, 0, this.width, this.spritesheet.height, x, y, this.width * scale, this.spritesheet.height * scale);
+                },
+                
                 draw: function draw(context, x, y, dt) {
                     this.time += dt;
                     if (this.time >= this.animationPeriod) {
@@ -40,6 +50,7 @@ define({
                     var frame = ~~(this.time/this.frameDelay);
                     context.drawImage(this.spritesheet, frame*this.width, 0, this.width, this.spritesheet.height, x, y, this.width, this.spritesheet.height);
                 },
+                
                 reset: function reset() {
                     this.time = 0;
                     this.endCallback = undefined;
