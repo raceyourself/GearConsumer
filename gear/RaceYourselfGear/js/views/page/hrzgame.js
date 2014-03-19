@@ -96,6 +96,7 @@ define({
             
             requestRender();
             
+            updateMinMaxHR();
             hrInterval = setInterval(randomHR, hrInterval);
         }
         
@@ -150,6 +151,47 @@ define({
             clearTimeout(bannerTimeout);
             bannerTimeout = setTimeout(clearbanner, 1000);
         }
+        
+        function updateMinMaxHR()
+        {
+        //eventually look up based on age, but for now just used valued based on 30yo
+            var r = race.getOngoingRace();
+        	var hrMinMax = new Object();
+        	switch(r.goal)
+        	{
+        	case "WeightLoss":
+	        	hrMinMax.min20 = 120;
+	        	hrMinMax.max20 = 140;
+	        	hrMinMax.min75 = 90;
+	        	hrMinMax.max75 = 110;
+	        	break;
+			case "Endurance":
+        		hrMinMax.min20 = 140;
+        		hrMinMax.max20 = 160;
+        		hrMinMax.min75 = 110;
+        		hrMinMax.max75 = 120;
+        		break;
+        	case "Strength":
+        		hrMinMax.min20 = 160;
+        		hrMinMax.max20 = 180;
+        		hrMinMax.min75 = 120;
+        		hrMinMax.max75 = 135;
+        		break;
+			default:
+        		hrMinMax.min20 = 140;
+        		hrMinMax.max20 = 160;
+        		hrMinMax.min75 = 110;
+        		hrMinMax.max75 = 120;
+			}
+			var age = 30;		//TODO get from profile
+			//clamp to range 20-75
+			age = Math.min( age, 75);
+			age = Math.max( age, 20);
+			var p = (75 - age)/(75-20)
+			maxHeartRate = hrMinMax.max20 - p * (hrMinMax.max20 - hrMinMax.max75);
+			minHeartRate = hrMinMax.min20 - p * (hrMinMax.min20 - hrMinMax.min75);
+        }
+
         function clearbanner() {
             banner = false;
             requestRender();
