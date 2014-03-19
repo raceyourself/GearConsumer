@@ -104,8 +104,6 @@ define({
         function init() {
             page = document.getElementById('ageselect');
             bindEvents();
-            // Assume we always start in this view
-            onPageShow();
         }
         
         e.listeners({

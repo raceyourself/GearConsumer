@@ -21,7 +21,8 @@ define({
             achieved = {},
             ACHIEVEMENTS = {
                 'run' : {
-                    title: 'Completed a run',
+                    title: 'First run',
+                    description: 'Completed a run',
                     points: 100,
                     uses: 1,
                     init: function() {
@@ -29,10 +30,15 @@ define({
                             var race = event.detail;
                             achieve('run');
                         });
+                    },
+                    progress: function() {
+                        if (!!achieved['run']) return '100%';
+                        return '0%';
                     }
                 },
                 'run_in_zone' : {
-                    title: 'Completed a run without leaving target heart rate zone',
+                    title: 'Trainer',
+                    description: 'Completed a run without leaving target heart rate zone',
                     points: 150,
                     uses: Infinity,
                     init: function() {
@@ -40,6 +46,10 @@ define({
                             var race = event.detail;
                             if (race.in_da_zone_TODO) achieve('run_in_zone');
                         });
+                    },
+                    progress: function() {
+                        if (!!achieved['run_in_zone']) return 'Achievable';
+                        return 'Not yet achieved';
                     }
                 }
             },
