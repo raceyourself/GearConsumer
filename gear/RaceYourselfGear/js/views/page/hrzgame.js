@@ -13,6 +13,7 @@ define({
         'models/race',
         'models/hrm',
         'models/sprite',
+        'models/settings',
         //'views/page/gameselect'
     ],
     def: function viewsPageHeartRateZombiesGame(req) {
@@ -21,6 +22,7 @@ define({
         var e = req.core.event,
             race = req.models.race,
             hrm = req.models.hrm,
+            settings = req.models.settings,
             Sprite = req.models.sprite.Sprite,
             page = null,
             canvas,
@@ -41,6 +43,7 @@ define({
             },
             zombies = [],
             zombiesAnimOffset = [],
+            numZombies = 0,
             zombieDistance = false,
             zombieInterval = false,
             zombieSpeed = 0,
@@ -60,8 +63,14 @@ define({
             zombieCatchupSpeed = 0.05,
             zombieOffset = -25,
             screenWidthDistance = 25,	//'real-world' distance covered by the screen's width
-            screenLeftDistance = zombieOffset;		//'real-world' position of left of screen
-            
+            screenLeftDistance = zombieOffset,		//'real-world' position of left of screen
+			hrZones = [],
+			currentHRZone = "Recovery",
+			currentZone = 0,
+			warmupTimeout = false,
+			timeMultiplier = 0.01,			//hack to test quickly. Set to 1
+			intervalTimeout = false;
+
             
 
         function show() {
@@ -79,10 +88,13 @@ define({
             var r = race.getOngoingRace();
             if (r === null || !r.isRunning() || r.hasStopped()) {
                 r = race.newRace();
+                TRACK_LENGTH = settings.getDistance();
                 e.listen('pedometer.step', step);
                 e.listen('hrm.change', onHeartRateChange);
                 startCountdown();
             }
+            
+            TRACK_LENGTH = 
             
             canvas.width = canvas.offsetWidth;
             canvas.height = canvas.offsetHeight;        
@@ -97,7 +109,6 @@ define({
             
             requestRender();
             
-            updateMinMaxHR();
             hrInterval = setInterval(randomHR, hrInterval);
         }
         
@@ -105,6 +116,8 @@ define({
             visible = false;
             clearInterval(fpsInterval);
             clearInterval(randomHR);
+			clearTimeout(warmupTimeout);
+            clearTimeout(intervalTimeout);
             sectionChanger.destroy();
             e.die('tizen.back', onBack);
         }        
@@ -129,7 +142,6 @@ define({
             bannerTimeout = setTimeout(ready, 1000);
         }
         
-        
         function ready() {
             banner = 'Ready';
             requestRender();
@@ -151,46 +163,139 @@ define({
             countingdown = false;
             clearTimeout(bannerTimeout);
             bannerTimeout = setTimeout(clearbanner, 1000);
+            setCurrentHRZone("Light");
+            warmupTimeout = setTimeout(endWarmup, 5*60*1000 * timeMultiplier);	//5 minutes warmup
         }
         
-        function updateMinMaxHR()
+        function endWarmup() 
         {
-        //eventually look up based on age, but for now just used valued based on 30yo
-            var r = race.getOngoingRace();
-        	var hrMinMax = new Object();
-        	switch(r.goal)
+        	var r = race.getOngoingRace();
+        	        	console.log("Warmup over. Goal is: " + r.getGoal());
+
+        	switch(r.getGoal())
         	{
-        	case "WeightLoss":
-	        	hrMinMax.min20 = 120;
-	        	hrMinMax.max20 = 140;
-	        	hrMinMax.min75 = 90;
-	        	hrMinMax.max75 = 110;
+        	
+        		case "WeightLosss":
+        		//set new zone and stay there
+        			setCurrentHRZone("Light");
+        			break;
+        		case "Endurance":
+        		//set light zone, then step up to aerobic later
+        			setCurrentHRZone("Light");
+        			intervalTimeout = setTimeout(nextHRZone, 3*60*1000 * timeMultiplier);
+        			break;
+				case "Strength":
+					setCurrentHRZone("Light");
+				//set light zone then step up later
+					intervalTimeout = setTimeout(nextHRZone, 3*60*1000 * timeMultiplier);
+					break;
+				default:
+					console.error("Unknown goal type: " + r.getGoal());
+        	}
+        	console.log("Ended warmup. Now in zone " + currentHRZone);
+        }
+        
+        function nextHRZone()
+        {
+
+			var r = race.getOngoingRace();
+        	console.log("Next HR Zone. Goal is: " + r.getGoal());
+			switch(r.getGoal())
+			{
+				case "Endurance":
+					switch(currentHRZone)
+					{
+						case "Light":
+							//step up to aerobic and stay there
+							setCurrentHRZone("Aerobic");
+							break;
+						default:
+							console.log("shouldn't be in this zone in Endurance training: " + currentHRZone);
+							break;
+					}
+					break;
+				case "Strength":
+					switch(currentHRZone)
+					{
+						case "Light":
+						case "Anaerobic":
+							//transition to Aerobic for next interval
+							setCurrentHRZone("Aerobic");
+							intervalTimeout = setTimeout(nextHRZone, 1*60*1000 * timeMultiplier);
+							break;
+						case "Aerobic":
+							//transition up to Anaerobic
+							setCurrentHRZone("Anaerobic");
+							intervalTimeout = setTimeout(nextHRZone, 2*60*1000 * timeMultiplier);
+							break;
+						default:
+							console.log("shouldn't be in this zone in Strength training: " + currentHRzone);
+					}
+				}
+				console.log("Interval Complete. Now in zone: " + currentHRZone);
+        }
+
+        
+        function setCurrentHRZone(zone)
+        {
+        	currentHRZone = zone;
+        //eventually look up based on age, but for now just used valued based on 30yo
+        	var hrMinMax = new Object();
+        	var min20, max20, min75, max75;
+        	switch(zone)
+        	{
+        	case "Recovery":
+        		min20 = 0;
+        		max20 = 120;
+        		min75 = 0;
+        		max75 = 90;
+        		numZombies = 0;
+        		break;
+        	case "Light":
+	        	min20 = 120;
+	        	max20 = 140;
+	        	min75 = 90;
+	        	max75 = 110;
+	        	numZombies = 1;
 	        	break;
-			case "Endurance":
-        		hrMinMax.min20 = 140;
-        		hrMinMax.max20 = 160;
-        		hrMinMax.min75 = 110;
-        		hrMinMax.max75 = 120;
+			case "Aerobic":
+        		min20 = 140;
+        		max20 = 160;
+        		min75 = 110;
+        		max75 = 120;
+        		numZombies = 2;
         		break;
-        	case "Strength":
-        		hrMinMax.min20 = 160;
-        		hrMinMax.max20 = 180;
-        		hrMinMax.min75 = 120;
-        		hrMinMax.max75 = 135;
+        	case "Anaerobic":
+        		min20 = 160;
+        		max20 = 180;
+        		min75 = 120;
+        		max75 = 135;
+        		numZombies = 3;
         		break;
+			case "Performance":
+				min20 = 180;
+				max20 = 200;
+				min75 = 135;
+				max75 = 150;
+				numZombies = 4;
+				break;
 			default:
-        		hrMinMax.min20 = 140;
-        		hrMinMax.max20 = 160;
-        		hrMinMax.min75 = 110;
-        		hrMinMax.max75 = 120;
+				console.log("Unknown heart rate zone");
+        		min20 = 140;
+        		max20 = 160;
+        		min75 = 110;
+        		max75 = 120;
+        		numZombies = 1;
 			}
-			var age = 30;		//TODO get from profile
+			var age = settings.getAgeRange();
 			//clamp to range 20-75
 			age = Math.min( age, 75);
 			age = Math.max( age, 20);
-			var p = (75 - age)/(75-20)
-			maxHeartRate = hrMinMax.max20 - p * (hrMinMax.max20 - hrMinMax.max75);
-			minHeartRate = hrMinMax.min20 - p * (hrMinMax.min20 - hrMinMax.min75);
+			var p = 1-(75 - age)/(75-20);
+			maxHeartRate = max20 - p * (max20 - max75);
+			minHeartRate = min20 - p * (min20 - min75);
+			console.log("age = " + age + " " + minHeartRate + " " + maxHeartRate);
+			
         }
 
         function clearbanner() {
@@ -212,7 +317,8 @@ define({
         function startZombies() {
             clearInterval(zombieInterval);
             var animDelay = Math.random() * 0.2;
-            while (zombies.length < wave) {
+            //4 zombies, we just don't show them all
+            while (zombies.length < 4) {
                 zombies.push(zombies[0].clone());
                 zombiesAnimOffset.push(animDelay);
             };
@@ -234,15 +340,19 @@ define({
             step();
             
             //general update of track window
-            screenWidthDistance = Math.max( 10, Math.min( -zombieOffset, 100));
+            screenWidthDistance = Math.max( 10, Math.min( -zombieOffset + 15, 100));
             screenLeftDistance = (zombieDistance + r.getDistance() - screenWidthDistance)/2;
             
+			//see if we've finished the current interval
+			
         }
+
         
         function stopZombies() {
             clearInterval(zombieInterval);
             zombieDistance = false;            
         }
+        
         
         function onHeartRateChange(hrmInfo) {
         	//set heartRate
@@ -431,9 +541,9 @@ define({
             
             // Zombies
             if (zombieDistance !== false) {
-                for (var i=0;i<zombies.length;i++) {
+                for (var i=0;i<numZombies;i++) {
                     var zombie = zombies[i];
-                    var x_offset = (i*(zombie.width/2))+(i%2)*10;
+                    var x_offset = ((i*(zombie.width*0.3))+(i%2)*5 + zombie.width*0.3) * scale;
                     var y_offset = (-1+(i+1)%2) * 5;
                     if (i%2==1) context.globalAlpha = 0.5;
                     else context.globalAlpha = 1;
