@@ -79,7 +79,6 @@ define({
             bindEvents();
             fling_limit.x = document.querySelector('.ui-page-active').offsetWidth/3;
             fling_limit.y = document.querySelector('.ui-page-active').offsetHeight/3;
-            console.log(achievements.getAchievements());
         }
 
         return {

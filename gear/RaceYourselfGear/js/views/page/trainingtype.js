@@ -72,8 +72,6 @@ define({
         function init() {
             page = document.getElementById('trainingtype');
             bindEvents();
-            // Assume we always start in this view
-            onPageShow();
         }
         
         e.listeners({

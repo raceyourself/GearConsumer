@@ -79,7 +79,6 @@ define({
         function init() {
             page = document.getElementById('pregame');
             bindEvents();
-            provider.init();
         }
 
         e.listeners({
