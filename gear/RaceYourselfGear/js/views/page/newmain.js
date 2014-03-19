@@ -9,7 +9,7 @@ define({
     requires: [
         'core/event',
         'models/application',
-        'views/page/trainingtype'
+        'views/page/gameselect'
     ],
     def: function viewsPageNewMain(req) {
         'use strict';
@@ -23,11 +23,17 @@ define({
         }
         
         function onPageShow() {
+            e.listen('fling.right', flingRight);
             e.listen('tizen.back', onBack);
         }
 
         function onPageHide() {
+            e.die('fling.right', flingRight);
             e.die('tizen.back', onBack);
+        }
+        
+        function flingRight() {
+            e.fire('main.show');
         }
         
         function onBack() {
@@ -50,7 +56,7 @@ define({
         }
         
         function onGameBtnClick() {
-        	e.fire('trainingtype.show');
+        	e.fire('gameselect.show');
         }
         
         function onAchievementsBtnClick() {
