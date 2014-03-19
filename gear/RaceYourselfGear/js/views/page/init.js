@@ -66,10 +66,9 @@ define({
 
         function bindEvents() {
             window.addEventListener('tizenhwkey', onHardwareKeysTap);
-            window.addEventListener('touchstart', onTouchStart);
-            window.addEventListener('touchmove', onTouchMove);
-            window.addEventListener('touchend', onTouchEnd);
-            window.addEventListener('touchcancel', onTouchCancel);
+            window.onkeydown = function(event) {
+                if (event.keyCode == 40) e.fire('tizen.back'); // down arrow
+            };
             window.onerror = onError;
         }
 

@@ -10,6 +10,7 @@ define({
         'core/event',
         'models/application',
         'views/page/setdistance',
+        'views/page/settime',
         'views/page/games',
         'views/page/newmain'
     ],
@@ -25,22 +26,13 @@ define({
         }
         
         function onPageShow() {
-            e.listen('fling.right', flingRight);
-            e.listen('fling.left', flingLeft);
             e.listen('tizen.back', onBack);
         }
 
         function onPageHide() {
-            e.die('fling.right', flingRight);
-            e.die('fling.left', flingLeft);
             e.die('tizen.back', onBack);
         }
-        
-        function flingRight() {
-            e.fire('setdistance.show');
-        }
-        
-        function flingLeft() {
+        function onClick() {
             e.fire('newmain.show');
         }
         
@@ -51,6 +43,7 @@ define({
         function bindEvents() {
             page.addEventListener('pageshow', onPageShow);
             page.addEventListener('pagehide', onPageHide);
+            page.addEventListener('click', onClick);
         }
 
         function init() {

@@ -23,17 +23,11 @@ define({
         }
         
         function onPageShow() {
-            e.listen('fling.right', flingRight);
             e.listen('tizen.back', onBack);
         }
 
         function onPageHide() {
-            e.die('fling.right', flingRight);
             e.die('tizen.back', onBack);
-        }
-        
-        function flingRight() {
-            e.fire('main.show');
         }
         
         function onBack() {

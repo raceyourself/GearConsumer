@@ -61,7 +61,7 @@
 }
 
 .menu-item {
-	margin-top: 30px;
+	margin-top: 5px;
 	width: 50%;
 	display: block;
 	float: left;
@@ -185,6 +185,12 @@ img {
 	line-height: 75%;
 }
 #distance-units {
+	font-size: 30%;
+}
+#time-value {
+	line-height: 75%;
+}
+#time-units {
 	font-size: 30%;
 }
 

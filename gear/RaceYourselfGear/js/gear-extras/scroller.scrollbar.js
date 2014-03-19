@@ -109,7 +109,7 @@ Scroller.Scrollbar.prototype = {
 	},
 
 	_removeScrollbar: function() {
-		if (!this.element) {
+		if (!!this.element) {
 			this.element.parentNode.removeChild(this.element);
 		}
 

@@ -64,7 +64,7 @@ define({
             });
             
             var r = race.getOngoingRace();
-            if (r === null || r.hasStopped()) {
+            if (r === null || !r.isRunning() || r.hasStopped()) {
                 r = race.newRace();
                 e.listen('pedometer.step', step);
                 startCountdown();

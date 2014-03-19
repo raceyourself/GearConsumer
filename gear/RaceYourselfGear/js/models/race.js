@@ -76,11 +76,8 @@ define({
             },
             
             stop: function stop() {
-            	console.log('listener removed');
-            	if(this.running && !this.stopped) {
-            		e.die('pedometer.change', onPedometerInfoChange);
-            	}
-                
+                if (!this.running) return;
+                e.die('pedometer.change', onPedometerInfoChange);
                 e.die('gps.location', onGpsLocation);
                 if (provider.isAvailable()) provider.sendStopTrackingReq();
                 if (pedometer.isAvailable()) {

@@ -47,7 +47,7 @@ define({
             });
             
             var r = race.getOngoingRace();
-            if (r === null || r.hasStopped()) {
+            if (r === null || !r.isRunning() || r.hasStopped()) {
                 r = race.newRace();
                 e.listen('pedometer.step', step);
                 startCountdown();
@@ -68,7 +68,9 @@ define({
         
         function onBack() {
             var r = race.getOngoingRace();
-            if (r !== null) r.stop();
+            if (r !== null) {
+                r.stop();
+            }
             clearTimeout(renderTimeout);
             clearTimeout(bannerTimeout)
             e.fire('newmain.show');
