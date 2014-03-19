@@ -46,7 +46,7 @@ define({
         }
         
         function onBack() {
-            gear.ui.changePage('#games');
+            e.fire('newmain.show');
         }
         
         function onGpsLock() {

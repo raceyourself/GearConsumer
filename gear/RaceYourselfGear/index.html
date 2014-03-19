@@ -62,19 +62,24 @@
     <div class="ui-page" id="newgames">
     	<div id="game-select-sectionchanger" class="ui-content">
     		<div>
-    			<section class="section-active">  				
+    			<section class="section-active">
+    				<a href="#" id="race-mode-btn">
+    					<img src="images/screen_menu_game_race yourself.png"/>
+    				</a>
+    			</section>
+    			<section>  				
     				<a href="#" id="zombie-mode-btn">
     					<img src="images/screen_menu_game_zombie1.png"/>
     				</a>
     			</section>
     			<section>
     				<a href="#" id="boulder-mode-btn">
-    					<img src="images/screen_menu_game_boulder.png"/>
+    					<img src="images/screen_menu_game_boulder_locked.png"/>
     				</a>
     			</section>
     			<section>
     				<a href="#" id="dino-mode-btn">
-    					<img src="images/screen_menu_game_dino.png"/>
+    					<img src="images/screen_menu_game_dino_locked.png"/>
     				</a>
     			</section>
     			<section>
@@ -100,6 +105,31 @@
 		            <span class="title">Escape Zombies</span>
 		       </a>
         </section>    	
+    </div>
+    
+    <div class="ui-page" id="racetype">
+    	<header class="ui-header" data-position="fixed">
+    		<h2 class="ui-title">Choose a goal</h2>
+    	</header>
+    	<div class="ui-content">
+    		<ul class="ui-listview">
+    			<li class="li-has-multiline">
+    				<a href="#" id="time-run-btn">
+    					Time
+    				</a>
+    			</li>
+    			<li class="li-has-multiline">
+    				<a href="#" id="distance-run-btn">
+    					Distance
+    				</a>
+    			</li>
+    			<li class="li-has-multiline">
+    				<a href="#" id="just-run-btn">
+    					Just Run
+    				</a>
+    			</li>
+    		</ul>
+    	</div>
     </div>
     
     <div class="ui-page" id="lockedgame">

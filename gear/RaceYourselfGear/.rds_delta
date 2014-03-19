@@ -2,5 +2,6 @@
 #add
 #modify
 res/wgt/author-signature.xml
-res/wgt/index.html
+res/wgt/js/views/page/hrzgame.js
+res/wgt/js/views/page/racegame.js
 res/wgt/signature1.xml

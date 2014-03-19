@@ -53,6 +53,7 @@ define({
         }
         Race.prototype = {
             start: function start() {
+            	console.log('listener added');
                 e.listen('pedometer.change', onPedometerInfoChange);
                 if (pedometer.isAvailable()) {
                     pedometer.start();
@@ -71,7 +72,11 @@ define({
             },
             
             stop: function stop() {
-                e.die('pedometer.change', onPedometerInfoChange);
+            	console.log('listener removed');
+            	if(this.running && !this.stopped) {
+            		e.die('pedometer.change', onPedometerInfoChange);
+            	}
+                
                 if (pedometer.isAvailable()) {
                     pedometer.stop();
                 } else {

@@ -40,18 +40,25 @@ define({
         }        
         
         function bindEvents() {
-        	var zombieBtnEl = document.getElementById('zombie-mode-btn'),
+        	var raceBtnEl = document.getElementById('race-mode-btn'),
+        		zombieBtnEl = document.getElementById('zombie-mode-btn'),
         		boulderBtnEl = document.getElementById('boulder-mode-btn'),
         		dinoBtnEl = document.getElementById('dino-mode-btn');
         	
         	 page.addEventListener('pageshow', onPageShow);
              page.addEventListener('pagehide', onPageHide);
              
+             raceBtnEl.addEventListener('click', onRaceBtnClick);
              zombieBtnEl.addEventListener('click', onZombieBtnClick);
              boulderBtnEl.addEventListener('click', onBoulderBtnClick);
              dinoBtnEl.addEventListener('click', onDinoBtnClick);
         }
 
+        function onRaceBtnClick() {
+        	game.setCurrentGame('racegame');
+        	e.fire('pregame.show');
+        }
+        
         function onZombieBtnClick() {
         	game.setCurrentGame('hrzgame');
         	e.fire('pregame.show');

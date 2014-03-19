@@ -314,3 +314,9 @@ li.profile-step-length > a {
 li.profile-step-length {
     min-height: 0;
 }
+
+.ui-listview li.li-has-multiline {
+        padding-top: 8px;
+        padding-bottom: 9px;
+        min-height: 90px;
+}

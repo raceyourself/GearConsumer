@@ -12,7 +12,8 @@ define({
         'views/page/statsright',
         'models/race',
         'models/hrm',
-        'models/sprite'
+        'models/sprite',
+        //'views/page/gameselect'
     ],
     def: function viewsPageHeartRateZombiesGame(req) {
         'use strict';
@@ -100,7 +101,7 @@ define({
             if (!!raf) cancelAnimationFrame(raf);
             clearInterval(zombieInterval);
             clearTimeout(bannerTimeout)
-            gear.ui.changePage('#games');
+            e.fire('newmain.show');
         }
         
         function startCountdown() {

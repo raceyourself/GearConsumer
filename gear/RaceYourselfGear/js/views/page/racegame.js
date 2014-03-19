@@ -71,7 +71,7 @@ define({
             if (r !== null) r.stop();
             clearTimeout(renderTimeout);
             clearTimeout(bannerTimeout)
-            gear.ui.changePage('#games');
+            e.fire('newmain.show');
         }
         
         function startCountdown() {
