@@ -32,7 +32,6 @@ define({
                 orientation: "horizontal",
                 scrollbar: "bar"
             });
-            console.log("section has changed");
         }
         
         function onPageHide() {
@@ -54,22 +53,31 @@ define({
              dinoBtnEl.addEventListener('click', onDinoBtnClick);
         }
 
+        function isScrolling() {
+            if (!sectionChanger) return false;
+            if (Math.abs(sectionChanger.lastTouchPointX - sectionChanger.startTouchPointX) > 5) return true;
+            if (Math.abs(sectionChanger.lastTouchPointY - sectionChanger.startTouchPointY) > 5) return true;
+            return false;
+        }
+        
         function onRaceBtnClick() {
+            if (isScrolling()) return;
         	game.setCurrentGame('racegame');
         	e.fire('pregame.show');
         }
         
         function onZombieBtnClick() {
+            if (isScrolling()) return;
         	game.setCurrentGame('hrzgame');
         	e.fire('pregame.show');
         }
         
         function onBoulderBtnClick() {
-        	
+            if (isScrolling()) return;
         }
         
         function onDinoBtnClick() {
-        	
+            if (isScrolling()) return;
         }
         
         function init() {
