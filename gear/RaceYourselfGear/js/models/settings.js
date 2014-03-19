@@ -24,8 +24,8 @@ define({
                 age: 0,
                 zombieTutorial: false,
                 firstTimeAge: true,
-                distanceunits: 'km',
-                paceunits: 'min/km'
+                distanceunits: 'KM',
+                paceunits: 'Min/km'
             },
             settings = {},
             STORAGE_KEY = 'settings';
@@ -69,12 +69,10 @@ define({
         }
         
         function getDistanceUnits() {
-        	if(!isFinite(settings.distanceunits)) return defaults.distanceunits;
         	return settings.distanceunits;
         }
         
         function getPaceUnits() {
-        	if(!isFinite(settings.paceunits)) return defaults.paceunits;
         	return settings.paceunits;
         }
         

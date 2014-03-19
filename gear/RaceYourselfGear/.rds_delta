@@ -2,11 +2,8 @@
 #add
 #modify
 res/wgt/author-signature.xml
-res/wgt/js/views/page/ageselect.js
-res/wgt/js/views/page/choosegoal.js
-res/wgt/js/views/page/gameselect.js
-res/wgt/js/views/page/pregame.js
-res/wgt/js/views/page/setdistance.js
-res/wgt/js/views/page/settime.js
-res/wgt/js/views/page/zombietutorial.js
+res/wgt/index.html
+res/wgt/js/models/settings.js
+res/wgt/js/views/page/distanceunits.js
+res/wgt/js/views/page/paceunits.js
 res/wgt/signature1.xml

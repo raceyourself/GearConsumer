@@ -28,10 +28,29 @@ define({
         
         function onPageShow() {
             e.listen('tizen.back', onBack);
+            
+            var radios = document.getElementsByName('distance-units');
+            for(var i=0, length = radios.length; i < length; i++) {
+            	if(settings.getDistanceUnits() == radios[i].id)
+            	{
+            		console.log('FOUND MATCHING RADIO - ' + radios[i].id + ", settings is " + settings.getDistanceUnits());
+            		radios[i].checked = true;
+            		break;
+            	}
+            }
         }
 
         function onPageHide() {
            e.die('tizen.back', onBack);
+           var radios = document.getElementsByName('distance-units');
+           for(var i=0, length=radios.length; i<length; i++) {
+        	   if(radios[i].checked) {
+        		   console.log('FOUND MATCHING RADIO - ' + radios[i].id);
+        		   settings.setDistanceUnits(radios[i].id);
+        		   break;
+        	   }
+        	   
+           }
         }
         
         function onBack() {
@@ -45,6 +64,9 @@ define({
         
         function init() {
             page = document.getElementById('distanceunits');
+                       
+            
+            
             bindEvents();
             // Assume we always start in this view
             onPageShow();
