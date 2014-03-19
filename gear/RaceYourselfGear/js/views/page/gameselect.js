@@ -10,7 +10,8 @@ define({
         'core/event',
         'models/race',
         'models/game',
-        'views/page/pregame'
+        'views/page/pregame',
+        'views/page/choosegoal'
     ],
     def: function viewsPageGameSelect(req) {
         'use strict';
@@ -56,12 +57,12 @@ define({
 
         function onRaceBtnClick() {
         	game.setCurrentGame('racegame');
-        	e.fire('pregame.show');
+        	e.fire('choosegoal.show');
         }
         
         function onZombieBtnClick() {
         	game.setCurrentGame('hrzgame');
-        	e.fire('pregame.show');
+        	e.fire('choosegoal.show');
         }
         
         function onBoulderBtnClick() {

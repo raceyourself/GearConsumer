@@ -320,3 +320,12 @@ li.profile-step-length {
         padding-bottom: 9px;
         min-height: 90px;
 }
+
+.ui-listview li .li-text-sub {
+        display: block;
+        color: rgb(255, 255, 255);
+        font-size: 24px;
+        opacity: 0.5;
+        text-overflow: ellipsis;
+        overflow: hidden;
+}

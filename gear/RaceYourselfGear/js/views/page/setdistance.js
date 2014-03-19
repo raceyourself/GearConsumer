@@ -9,7 +9,8 @@ define({
     requires: [
         'core/event',
         'models/race',
-        'models/settings'
+        'models/settings',
+        'views/page/pregame'
     ],
     def: function viewsPageSetDistance(req) {
         'use strict';
@@ -66,7 +67,7 @@ define({
         
         function onOk() {
             settings.setDistance(d);
-            e.fire('games.show');
+            e.fire('pregame.show');
         }
 
         function bindEvents() {

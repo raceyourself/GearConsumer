@@ -5,13 +5,13 @@
  */
 
 define({
-    name: 'views/page/choosegoal',
+    name: 'views/page/trainingtype',
     requires: [
         'core/event',
         'models/application',
         'views/page/setdistance'
     ],
-    def: function viewsPageChooseGoal(req) {
+    def: function viewsPageTrainingType(req) {
         'use strict';
 
         var e = req.core.event,
@@ -19,7 +19,7 @@ define({
             page = null;
 
         function show() {
-            gear.ui.changePage('#racetype');            
+            gear.ui.changePage('#trainingtype');            
         }
         
         function onPageShow() {
@@ -35,19 +35,19 @@ define({
         }
 
         function bindEvents() {
-        	var timeBtnEl = document.getElementById('time-run-btn'),
+        	/*var timeBtnEl = document.getElementById('time-run-btn'),
         		distanceBtnEl = document.getElementById('distance-run-btn'),
-        		justRunBtnEl = document.getElementById('just-run-btn');
+        		justRunBtnEl = document.getElementById('just-run-btn');*/
         	
             page.addEventListener('pageshow', onPageShow);
             page.addEventListener('pagehide', onPageHide);
             
-            timeBtnEl.addEventListener('click', onTimeBtnClick);
+            /*timeBtnEl.addEventListener('click', onTimeBtnClick);
             distanceBtnEl.addEventListener('click', onDistanceBtnClick);
-            justRunBtnEl.addEventListener('click', onJustRunBtnClick);
+            justRunBtnEl.addEventListener('click', onJustRunBtnClick);*/
         }
         
-        function onTimeBtnClick() {
+        /*function onTimeBtnClick() {
         	
         }
         
@@ -57,17 +57,17 @@ define({
         
         function onJustRunBtnClick() {
         	e.fire('pregame.show');
-        }
+        }*/
 
         function init() {
-            page = document.getElementById('racetype');
+            page = document.getElementById('trainingtype');
             bindEvents();
             // Assume we always start in this view
             onPageShow();
         }
         
         e.listeners({
-            'choosegoal.show': show
+            'trainingtype.show': show
         });
         
         return {

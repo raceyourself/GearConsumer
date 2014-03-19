@@ -9,7 +9,7 @@ define({
     requires: [
         'core/event',
         'models/application',
-        'views/page/gameselect'
+        'views/page/trainingtype'
     ],
     def: function viewsPageNewMain(req) {
         'use strict';
@@ -56,7 +56,7 @@ define({
         }
         
         function onGameBtnClick() {
-        	e.fire('gameselect.show');
+        	e.fire('trainingtype.show');
         }
         
         function onAchievementsBtnClick() {
