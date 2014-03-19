@@ -279,6 +279,7 @@ define({
             if (r.getDistance() < zombieDistance) {
                 zombieGrowl.play();
                 navigator.vibrate([1000, 500, 250, 100]);
+                e.fire('race.end', r);
                 r.stop();
                 lastRender = null;
                 stopZombies();
@@ -293,6 +294,7 @@ define({
             if (r.getDistance() >= TRACK_LENGTH) {
                 zombieMoan.play();
                 navigator.vibrate(1000);
+                e.fire('race.end', r);
                 r.stop();
                 lastRender = null;
                 stopZombies();

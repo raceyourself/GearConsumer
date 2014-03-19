@@ -10,6 +10,7 @@ define({
         'core/event',
         'core/template',
         'models/application',
+        'models/achievements',
         'views/page/main'
     ],
     def: function viewsPageInit(req) {
@@ -17,6 +18,7 @@ define({
 
         var e = req.core.event,
             app = req.models.application,
+            achievements = req.models.achievements,
             touch_start = null, 
             fling_limit = {};
 
@@ -77,6 +79,7 @@ define({
             bindEvents();
             fling_limit.x = document.querySelector('.ui-page-active').offsetWidth/3;
             fling_limit.y = document.querySelector('.ui-page-active').offsetHeight/3;
+            console.log(achievements.getAchievements());
         }
 
         return {
