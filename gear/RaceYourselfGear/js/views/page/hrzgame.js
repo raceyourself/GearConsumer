@@ -162,18 +162,19 @@ define({
         
         function startCountdown() {
             countingdown = true;
+			banner = 'READY';
             clearTimeout(bannerTimeout);
             bannerTimeout = setTimeout(ready, 1000);
         }
         
         function ready() {
-            banner = 'Ready';
+            banner = 'SET';
             requestRender();
             clearTimeout(bannerTimeout);
             bannerTimeout = setTimeout(set, 1000);
         }
         function set() {
-            banner = 'Set';
+            banner = 'GO';
             requestRender();
             clearTimeout(bannerTimeout);
             bannerTimeout = setTimeout(go, 1000);
@@ -182,7 +183,6 @@ define({
             race.getOngoingRace().start();
             startZombies();
             lastRender = Date.now();
-            banner = 'Go!';
             requestRender();
             countingdown = false;
             clearTimeout(bannerTimeout);
@@ -354,7 +354,7 @@ define({
             countingdown = true;
             wave++;
             zombieCatchupSpeed += 0.01;
-            banner = 'Wave ' + wave;
+            banner = 'GO';
             zombieOffset = -25;
             requestRender();
             clearTimeout(bannerTimeout);
@@ -378,7 +378,8 @@ define({
             zombieInterval = setInterval(zombieTick, intervalTime);
         }
         
-        function zombieTick() {
+        function zombieTick() 
+        {
         	if(zombiesCatchingUp)
         	{
             	zombieOffset += zombieCatchupSpeed;
@@ -389,9 +390,11 @@ define({
             step();
             
             //general update of track window
-            screenWidthDistance = Math.max( 10, Math.min( -zombieOffset + 15, 100));
-            screenLeftDistance = (zombieDistance + r.getDistance() - screenWidthDistance)/2;
-            
+            if(!isDead)
+            {
+				screenWidthDistance = Math.max( 10, Math.min( -zombieOffset + 15, 100));
+				screenLeftDistance = (zombieDistance + r.getDistance() - screenWidthDistance)/2;
+            }
 			//see if we've finished the current interval
 			
         }
@@ -621,7 +624,7 @@ define({
 			}
 
             // Banner
-            if (banner !== false) {
+            if (false) {
                 context.font = '75px Samsung Sans';
                 context.fillStyle = '#fff';
                 context.textBaseline = "top";
@@ -664,91 +667,91 @@ define({
                     heart.drawscaled(context, hrXPos, hrYPos - heart.height * heart.scale/2, dt, heart.scale);
                 }
             }
-            
-            // Heart Rate
-			var heartIcon = null;
-			var hrFillColour = green;
 
-            if(hr > maxHeartRate) 
+            if(!countingdown)
             {
-             	heartIcon = heartBlack; 
-				hrFillColour = red;             	
-            }
-            else if(hr < minHeartRate) 
-            {
-            	heartIcon = heartRed; 
-            	hrFillColour = red;
-            }
-            else { heartIcon = heartGreen; }
-            
-            var radius = 115/2;
-            var hrXPos = canvas.width - 30 - radius;
-            var hrYPos = 37 + radius;
-            //fill
-            var MaxCircleHR = 200;
-            var MinCircleHR = 50;
-            context.beginPath();
-            context.arc(hrXPos, hrYPos, radius, 0, 2*Math.PI, false);
-            context.fillStyle = '#fff';
-            context.fill();
-            
-            //how high up the circle as a percentage of diameter 
-            var fillProportion = (hr - MinCircleHR)/(MaxCircleHR - MinCircleHR);
-            //height in pixels above centre line
-            var h = fillProportion * 2 * radius - radius
-            var angle = Math.asin(h/radius);
-            context.beginPath();
-            context.arc(hrXPos, hrYPos, radius, -angle, Math.PI + angle, false);
-            context.fillStyle = hrFillColour;
-            context.fill();
-            
+				// Heart Rate
+				var heartIcon = null;
+				var hrFillColour = green;
 
-
-            //icon
-
-            heartIcon.draw(context, hrXPos-heartIcon.width/2, hrYPos-heartIcon.height/2 - 30, 0);
-            //number
-            context.font = '56px Samsung Sans';
-            context.textAlign = 'center';
-            context.textBaseline = "middle";
-			context.fillStyle = '#000';
-            context.fillText(hr, hrXPos, hrYPos + 10);
-            //bpm
-            context.font = '18px Samsung Sans';
-            context.fillText('bpm', hrXPos, hrYPos + 38);
-            
-            
-            //Ahead/Behind
-            var distXPos = 30 + radius;
-            var distYPos = 37 + radius;
-            if(!isDead)
-            {
+				if(hr > maxHeartRate) 
+				{
+					heartIcon = heartBlack; 
+					hrFillColour = red;             	
+				}
+				else if(hr < minHeartRate) 
+				{
+					heartIcon = heartRed; 
+					hrFillColour = red;
+				}
+				else { heartIcon = heartGreen; }
+			
+				var radius = 115/2;
+				var hrXPos = canvas.width - 30 - radius;
+				var hrYPos = 37 + radius;
+				//fill
+				var MaxCircleHR = 200;
+				var MinCircleHR = 50;
 				context.beginPath();
-				context.arc(distXPos, distYPos, radius, 0, 360, false);
-				context.fillStyle = green;
-				context.fill();
-				//+
+				context.arc(hrXPos, hrYPos, radius, 0, 2*Math.PI, false);
 				context.fillStyle = '#fff';
-				context.font ='25px Samsung Sans';
-				context.fillText('+', distXPos, distYPos - 33);
-				//m
-				context.font = '18px Samsung Sans';
-				context.fillText('m', distXPos, distYPos + 38);
-				//number
-				var delta = Math.round(r.getDistance() - zombieDistance);
-				context.font = '56px Samsung Sans';
-				context.fillText(delta, distXPos, distYPos +4);
-			}
-			else
-			{
-				//dead
-				context.beginPath();
-				context.arc(distXPos, distYPos, radius, 0, 360, false);
-				context.fillStyle = red;
 				context.fill();
-				//image
-				deadImage.draw(context, distXPos - deadImage.width/2, distYPos - deadImage.height/2, 0);
-			}
+			
+				//how high up the circle as a percentage of diameter 
+				var fillProportion = (hr - MinCircleHR)/(MaxCircleHR - MinCircleHR);
+				//height in pixels above centre line
+				var h = fillProportion * 2 * radius - radius
+				var angle = Math.asin(h/radius);
+				context.beginPath();
+				context.arc(hrXPos, hrYPos, radius, -angle, Math.PI + angle, false);
+				context.fillStyle = hrFillColour;
+				context.fill();
+			
+				//icon
+				heartIcon.draw(context, hrXPos-heartIcon.width/2, hrYPos-heartIcon.height/2 - 30, 0);
+				//number
+				context.font = '56px Samsung Sans';
+				context.textAlign = 'center';
+				context.textBaseline = "middle";
+				context.fillStyle = '#000';
+				context.fillText(hr, hrXPos, hrYPos + 10);
+				//bpm
+				context.font = '18px Samsung Sans';
+				context.fillText('bpm', hrXPos, hrYPos + 38);
+			
+			
+				//Ahead/Behind
+				var distXPos = 30 + radius;
+				var distYPos = 37 + radius;
+				if(!isDead)
+				{
+					context.beginPath();
+					context.arc(distXPos, distYPos, radius, 0, 360, false);
+					context.fillStyle = green;
+					context.fill();
+					//+
+					context.fillStyle = '#fff';
+					context.font ='25px Samsung Sans';
+					context.fillText('+', distXPos, distYPos - 33);
+					//m
+					context.font = '18px Samsung Sans';
+					context.fillText('m', distXPos, distYPos + 38);
+					//number
+					var delta = Math.round(r.getDistance() - zombieDistance);
+					context.font = '56px Samsung Sans';
+					context.fillText(delta, distXPos, distYPos +4);
+				}
+				else
+				{
+					//dead
+					context.beginPath();
+					context.arc(distXPos, distYPos, radius, 0, 360, false);
+					context.fillStyle = red;
+					context.fill();
+					//image
+					deadImage.draw(context, distXPos - deadImage.width/2, distYPos - deadImage.height/2, 0);
+				}
+            }
             
             // Track
             context.beginPath();
@@ -913,8 +916,9 @@ define({
             // Self
             //temp hack - make player bigger in death 'cloud' form
             var playerScale = scale;
-            if(isDead) { playerScale *= 1.5; }
-            runner.sprite.drawscaled(context, playerXPos, canvas.height - runner.sprite.height * playerScale - trackHeight - 5 * playerScale, dt, playerScale);
+            var playerOffset = runner.sprite.height * playerScale + trackHeight + 5 * playerScale 
+            if(isDead) { playerOffset += 10*playerScale; }
+            runner.sprite.drawscaled(context, playerXPos, canvas.height -playerOffset , dt, playerScale);
             
             /// DEBUG
             // fps
@@ -927,6 +931,41 @@ define({
             context.fillText('fps: '+fps, canvas.width/2, 0);
             }
             /// DEBUG
+            
+            //countdown        
+            if(countingdown && banner!=false)
+            {
+            	var centreX = canvas.width/2;
+            	var centreY = canvas.height/2;
+            	var countdownRadius = 100;
+            	
+            	//fill screen white
+            	context.globalAlpha = 0.5;
+            	context.fillStyle = '#fff';
+            	context.fillRect(0,0,canvas.width, canvas.height);
+            	context.globalAlpha = 1;
+            	
+            	//black circle
+            	context.beginPath();
+            	context.arc(centreX, centreY, countdownRadius, 0, 2* Math.PI, false);
+            	context.fillStyle = '#000';
+            	context.fill();
+//            	context.beginPath();
+//            	context.arc(centreX, centreY, countdownRadius, 0, 2* Math.PI, false);
+            	context.strokeStyle = '#fff';
+            	context.stroke();
+            	//outer ring
+            	context.beginPath();
+            	context.arc(centreX, centreY, countdownRadius + 20, 0, 2*Math.PI, false);
+            	context.stroke(); 
+            	//text
+            	context.font = '56px SamsungSans';
+            	context.textAlign = "center";
+            	context.textBaseline = "middle";
+            	context.fillStyle = '#fff';
+            	if(banner == 'GO') {context.fillStyle = green;}
+            	context.fillText(banner,centreX, centreY);
+            }
             
             context.save();
             frames++;
