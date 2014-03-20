@@ -50,6 +50,7 @@ define({
             gps = null,
             sweat = null,
             sweat_red = null,
+            paceIcon = null,
             runnerAnimations = {
                     idle: { name: 'idle', sprite: null, speedThreshold: 0},
                     running: { name: 'running', sprite: null, speedThreshold: 0.1},
@@ -935,7 +936,7 @@ define({
 				else { heartIcon = heartGreen; }
 			
 				var radius = 115/2;
-				var hrXPos = canvas.width - 30 - radius;
+				var hrXPos = radius;
 				var hrYPos = 37 + radius;
 				//fill
 				var MaxCircleHR = 200;
@@ -991,11 +992,43 @@ define({
 				context.font = '24px Samsung Sans';
 				context.fillText('bpm', hrXPos, hrYPos + 38);
 
+				//Pace
+				var PaceXPosR = canvas.width - radius;
+				context.beginPath();
+				context.arc(PaceXPosR, hrYPos, radius, Math.PI * 1.5, Math.PI * 2.5, false);
+				context.lineTo(PaceXPosR - radius, hrYPos + radius);
+				context.arc(PaceXPosR-radius, hrYPos, radius, Math.PI/2, Math.PI*1.5, false);
+				context.closePath();
+				context.fillStyle = '#fff';
+				context.fill();
+				//text
+				var pace = r.getPace();
+				//minutes part
+				var paceFractional = pace % 1;
+				var paceMinutes = pace - paceFractional;
+				var paceSeconds = Math.floor(paceFractional*60);
+				var paceSecondsString = ''+paceSeconds;
+				if(paceSecondsString.length == 1) { paceSecondsString = '0' + paceSecondsString; }
 
-
+				var paceString = paceMinutes + ':' + paceSecondsString;
+				if(r.getSpeed() == 0) { paceString = '--:--'; }
+				var paceXPos = PaceXPosR - radius/2;
+				context.font = '56px Samsung Sans';
+				context.textAlign = 'center';
+				context.textBaseline = 'middle';
+				context.fillStyle = '#000';
+				context.fillText(paceString, paceXPos, hrYPos + 4);
+				//units
+				context.font = '24px Samsung Sans';
+				context.fillText('min/km', paceXPos, hrYPos + 38);
+				//icon
+				paceIcon.draw(context, paceXPos - paceIcon.width/2, hrYPos - paceIcon.height/2 - 38, 0);
+								
 			
 			
 				//Ahead/Behind
+				if(false)
+				{
 				var distXPos = 30 + radius;
 				var distYPos = 37 + radius;
 				if(!isDead)
@@ -1025,6 +1058,7 @@ define({
 					context.fill();
 					//image
 					deadImage.draw(context, distXPos - deadImage.width/2, distYPos - deadImage.height/2, 0);
+				}
 				}
             }
             
@@ -1631,8 +1665,16 @@ define({
 			image.onload = function() {
 				dottedPattern = context.createPattern(this, "repeat");
 			}
-//			image.onerror = function() {throw "could not load" + this.src; }
+			image.onerror = function() {throw "could not load" + this.src; }
 			image.src = 'images/dashedLine.png';
+			
+			image = new Image();
+			image.onload = function() {
+				paceIcon = new Sprite(this, this.width, 1000);
+			}
+			image.onerror = function() {throw "could not load" + this.src; }
+			image.src = 'images/icon-speed_whiteBG.png';
+						
 			
            /* if (hrm.isAvailable()) {
                 hrm.start();
