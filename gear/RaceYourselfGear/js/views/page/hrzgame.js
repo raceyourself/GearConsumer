@@ -104,17 +104,18 @@ define({
             screenWidthDistance = 25,	//'real-world' distance covered by the screen's width
             screenLeftDistance = zombieOffset,		//'real-world' position of left of screen
 			hrZones = [],
-			currentHRZone = "Recovery",
+			currentHRZone = null,
 			currentZone = 0,
 			warmupTimeout = false,
-			timeMultiplier = 0.01,			//hack to test quickly. Set to 1
+			timeMultiplier = 0.1,			//hack to test quickly. Set to 1
 			intervalTimeout = false,
 			zoneAdaptTimeout = false,
 			warningTimeout = false,
 			zombiesCatchingUp = false,
 			adaptingToRecentZoneShift = false,
 			adaptingTimeout = false,
-			showWarning = false,
+			showWarningLow = false,
+			showWarningHigh = false,
 			isDead = false,
 			scale = 1,
 			opponent = 'zombie',
@@ -125,7 +126,8 @@ define({
 			flashingRedParams = { colour: '#fff', period:400, phase: 0 },
 			hrNotFound = false,
 			unlockNotification = null,
-			unlockNotificationTimer = null;
+			unlockNotificationTimer = null,
+			dottedPattern = null;
 
 			
 
@@ -168,6 +170,16 @@ define({
 			unlockNotificationTimer = setTimeout(clearUnlockNotification, 5*1000);
 		}
 
+		function onUnlockDino()
+		{
+			showUnlockNotification('dino');
+		}
+		
+		function onUnlockBoulder()
+		{
+			showUnlockNotification('boulder');
+		}
+
         function onPageShow() {
             visible = true;
             e.listen('tizen.back', onBack);
@@ -184,9 +196,13 @@ define({
                 r.data.time_in_zone = 0;
                 e.listen('pedometer.step', step);
                 e.listen('hrm.change', onHeartRateChange);
+
                 startCountdown();
             }
             
+			e.listen('game.unlock.dino', onUnlockDino);
+			e.listen('game.unlock.boulder', onUnlockBoulder);
+			
             isDead = false;
 			var length = settings.getDistance();
 			console.log('target dist = ' + length);
@@ -214,6 +230,8 @@ define({
             //get opponent type from game
 			setOpponent(game.getCurrentOpponentType());
         }
+        
+        
         
         function setOpponent(type)
         {
@@ -259,6 +277,8 @@ define({
             if (!!raf) cancelAnimationFrame(raf);
             clearInterval(zombieInterval);
             clearTimeout(bannerTimeout)
+            e.die('game.unlock.dino', onUnlockDino);
+            e.die('game.unlock.boulder', onUnlockBoulder);
         }        
         
         function onBack() {
@@ -292,7 +312,7 @@ define({
             countingdown = false;
             clearTimeout(bannerTimeout);
             bannerTimeout = setTimeout(clearbanner, 1000);
-            setCurrentHRZone("Light");
+            setCurrentHRZone("Recovery");
             warmupTimeout = setTimeout(endWarmup, 5*60*1000 * timeMultiplier);	//5 minutes warmup
         }
         
@@ -517,6 +537,71 @@ define({
 				hrNotFound = true;			
 			}
 
+
+			//instigate warning
+			if(hr < minHeartRate)
+			{	
+				showWarningLow = false;
+				ppm = 5; // Standard pts/meter
+				if(!showWarningHigh)
+				{
+					clearNotification()
+					setNotification(flashingRed, 'Heart Rate too low!', 0);
+					showWarningHigh = true;
+					regularSound.play();
+					navigator.vibrate([1000, 500, 250, 100]);
+				}
+				if(!adaptingToRecentZoneShift)
+				{
+					if(warningTimeout == false)
+					{
+						warningTimeout = setTimeout(warningOver_low, 10*1000 * timeMultiplier);
+					}
+				}
+				if(!isDead)
+				{
+					runner = runnerAnimations.running;
+				}
+			}
+			else if(hr > maxHeartRate)
+			{
+				showWarningHigh = false;
+				ppm = -1; // Negative pts/meter
+				if(!showWarningLow)
+				{
+					clearNotification();
+					setNotification(flashingRed, 'Heart Rate too high!', 0);
+					showWarningLow = true;
+					navigator.vibrate([1000, 500, 250, 100]);
+				}
+				if(!adaptingToRecentZoneShift)
+				{
+					if(warningTimeout == false)
+					{
+						warningTimeout = setTimeout(warningOver_high, 10*1000 * timeMultiplier);
+					}
+				}
+			}
+			else
+			{
+				ppm = 5; // Standard pts/meter
+				//clear warning
+				if(showWarningLow || showWarningHigh)
+				{
+					showWarningLow = false;
+					showWarningHigh = false;
+					clearNotification();
+				}
+				clearTimeout(warningTimeout);
+				warningTimeout = false;
+				//stop zombies catching up
+				zombiesCatchingUp = false;
+				//clear runner
+				if(!isDead)
+				{
+					runner = runnerAnimations.running;
+				}
+			}
         }
 
         
@@ -548,7 +633,9 @@ define({
         {
         	if(hrNotFound)
         	{
-				showWarning = false;
+				showWarningLow = false;
+				showWarningHigh = false;
+				clearTimeOut(warningTimeout);
 				zombiesCatchingUp = false;
 				runner = runnerAnimations.running;
 				clearNotification();
@@ -557,93 +644,35 @@ define({
         	else
         	{
         
-			if(hr > maxHeartRate && !hrNotFound)
-			{
-				hrColour = '#ff0000';
-			}
-			else if (hr > minHeartRate && !hrNotFound)
-			{
-				hrColour = '#fff';
-			}
-			else
-			{
-				hrColour = '#5555ff';
-			}
+				if(hr > maxHeartRate && !hrNotFound)
+				{
+					hrColour = '#ff0000';
+				}
+				else if (hr > minHeartRate && !hrNotFound)
+				{
+					hrColour = '#fff';
+				}
+				else
+				{
+					hrColour = '#5555ff';
+				}
 
-			var r = race.getOngoingRace();
-			if (!!r) {
-                if (!!r.data.zone_time_start) {
-                    var dt = Date.now() - r.data.zone_time_start;
-                    r.data.time_in_zone = r.data.time_in_zone + dt;
-                }
-			    if (hr > maxHeartRate || hr < minHeartRate) {
-			        r.data.zoned_out = true;
-			        r.data.zone_time_start = null;
-			    } else {
-                    r.data.zone_time_start = Date.now();
-			    }
-			}
+				var r = race.getOngoingRace();
+				if (!!r) {
+					if (!!r.data.zone_time_start) {
+						var dt = Date.now() - r.data.zone_time_start;
+						r.data.time_in_zone = r.data.time_in_zone + dt;
+					}
+					if (hr > maxHeartRate || hr < minHeartRate) {
+						r.data.zoned_out = true;
+						r.data.zone_time_start = null;
+					} else {
+						r.data.zone_time_start = Date.now();
+					}
+				}
 
 						
-			//instigate warning
-			if(hr < minHeartRate)
-			{	
-                ppm = 5; // Standard pts/meter
-				if(!showWarning)
-				{
-					setNotification(flashingRed, 'Heart Rate too low!', 0);
-					showWarning = true;
-					regularSound.play();
-					navigator.vibrate([1000, 500, 250, 100]);
-				}
-				if(!adaptingToRecentZoneShift)
-				{
-					if(warningTimeout == false)
-					{
-						warningTimeout = setTimeout(warningOver_low, 10*1000 * timeMultiplier);
-					}
-				}
-				if(!isDead)
-				{
-					runner = runnerAnimations.running;
-				}
-			}
-			else if(hr > maxHeartRate)
-			{
-                		ppm = -1; // Negative pts/meter
-				if(!showWarning)
-				{
-					setNotification(flashingRed, 'Heart Rate too high!', 0);
-					showWarning = true;
-					navigator.vibrate([1000, 500, 250, 100]);
-				}
-				if(!adaptingToRecentZoneShift)
-				{
-					if(warningTimeout == false)
-					{
-						warningTimeout = setTimeout(warningOver_high, 10*1000 * timeMultiplier);
-					}
-				}
-			}
-			else
-			{
-                		ppm = 5; // Standard pts/meter
-				//clear warning
-				if(showWarning)
-				{
-					showWarning = false;
-					clearNotification();
-				}
-				clearTimeout(warningTimeout);
-				warningTimeout = false;
-				//stop zombies catching up
-				zombiesCatchingUp = false;
-				//clear runner
-				if(!isDead)
-				{
-					runner = runnerAnimations.running;
-				}
-			}
+
 			}
 							
 			
@@ -653,7 +682,6 @@ define({
         {
         	console.log("Warning up! Zombies catching up");
         	zombiesCatchingUp = true;
-        	showWarning = false;
         }
         function warningOver_high()
         {
@@ -897,7 +925,28 @@ define({
 				context.arc(hrXPos, hrYPos, radius, -angle, Math.PI + angle, false);
 				context.fillStyle = hrFillColour;
 				context.fill();
-			
+						
+				//water marks
+				context.globalAlpha = 0.5;
+				context.strokeStyle = dottedPattern;
+				var heightProportion = (maxHeartRate - MinCircleHR)/(MaxCircleHR - MinCircleHR);
+				var height = heightProportion * 2 * radius - radius;
+				var a = Math.asin(height/radius);
+				//do an arc to get the pen in the right place
+				context.beginPath();
+				context.moveTo(hrXPos - radius * Math.cos(a), hrYPos - height);
+				context.lineTo(hrXPos + radius * Math.cos(a), hrYPos - height);
+				context.stroke();
+				//lower range
+				heightProportion = (minHeartRate - MinCircleHR)/(MaxCircleHR - MinCircleHR);
+				height = heightProportion * 2 * radius - radius;
+				a = Math.asin(height/radius);
+				context.beginPath();
+				context.moveTo(hrXPos - radius * Math.cos(a), hrYPos - height);
+				context.lineTo(hrXPos + radius * Math.cos(a), hrYPos - height);
+				context.stroke();
+				context.globalAlpha = 1;
+				
 				//icon
 				heartIcon.draw(context, hrXPos-heartIcon.width/2, hrYPos-heartIcon.height/2 - 30, 0);
 				//number
@@ -911,6 +960,9 @@ define({
 				//bpm
 				context.font = '18px Samsung Sans';
 				context.fillText('bpm', hrXPos, hrYPos + 38);
+
+
+
 			
 			
 				//Ahead/Behind
@@ -1509,7 +1561,14 @@ define({
 			}
 			image.onerror = function() { throw "could not load" + this.src; }
 			image.src = 'images/image_boulder_achievement_screen.png';	
-			     
+			
+			image = new Image();
+			image.onload = function() {
+				dottedPattern = context.createPattern(this, "repeat");
+			}
+			image.onerror = function() {throw "could not load" + this.src; }
+			image.src = 'images/dashedLine.png';
+			
            /* if (hrm.isAvailable()) {
                 hrm.start();
             } else {
