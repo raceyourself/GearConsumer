@@ -9,6 +9,7 @@ define({
     requires: [
         'core/event',
         'models/application',
+        'models/race',
         'views/page/gameselect',
         'views/page/achievements',
         'views/page/settingspage',
@@ -19,6 +20,7 @@ define({
 
         var e = req.core.event,
             app = req.models.application,
+            race = req.models.race,
             page = null;
 
         function show() {
@@ -65,6 +67,7 @@ define({
         }
         
         function onHistoryBtnClick() {
+            if (!race.getOngoingRace() && race.getRaceHistory().length == 0) return;
         	e.fire('racesummary.show');
         }
 

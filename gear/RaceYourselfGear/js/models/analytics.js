@@ -2,7 +2,7 @@
 /*jslint regexp: true, plusplus: true*/
 
 /**
- * Heart rate monitor module
+ * Analytics module
  */
 
 define({

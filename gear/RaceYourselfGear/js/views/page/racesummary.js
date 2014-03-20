@@ -27,7 +27,8 @@ define({
          	settings = req.models.settings,
          	units = req.helpers.units,
             changer,
-            sectionChanger;
+            sectionChanger,
+            r = null;
 
         function show() {
             gear.ui.changePage('#racesummary');
@@ -39,16 +40,29 @@ define({
                 orientation: "horizontal",
                 scrollbar: "bar"
             });
-            
-            console.log(race.getOngoingRace());
-            document.getElementById('duration-final').innerHTML = hmm(race.getOngoingRace().getDuration()/1000);
-            distance(race.getOngoingRace().getDistance());
-            document.getElementById('kcal-final').innerHTML = ~~(race.getOngoingRace().getCalories());
-            document.getElementById('steps-final').innerHTML = race.getOngoingRace().getSteps();
-            document.getElementById('current-sweat-final').innerHTML = ~~(race.getOngoingRace().getPointsEarned());
-            document.getElementById('total-sweat-final').innerHTML = ~~(race.getOngoingRace().getPoints());
+
+            r = race.getOngoingRace();
+            if (!r) {
+                var history = race.getRaceHistory();
+                if (history.length > 0) r = history[0];
+            }
             
             e.listen('tizen.back', onBack);
+            render();
+        }
+        
+        function render() {
+            if (!r) {
+                onBack();
+                return;
+            }
+            document.getElementById('duration-final').innerHTML = hmm(r.getDuration()/1000);
+            distance(r.getDistance());
+            document.getElementById('kcal-final').innerHTML = ~~(r.getCalories());
+            document.getElementById('steps-final').innerHTML = r.getSteps();
+            document.getElementById('current-sweat-final').innerHTML = ~~(r.getPointsEarned());
+            document.getElementById('total-sweat-final').innerHTML = ~~(r.getPoints());
+            
         }
         
         function onBack() {
