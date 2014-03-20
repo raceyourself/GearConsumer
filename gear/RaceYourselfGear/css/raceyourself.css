@@ -130,6 +130,19 @@ img {
 	text-align: right;
 }
 
+#summary {
+	text-align: center;
+}
+
+.summary-label {
+	font-size: 38px;
+}
+
+.summary-value {
+	font-size: 20px;
+}
+
+
 #error-page {
 	background-color: red;
 	color: white;	
