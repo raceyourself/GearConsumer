@@ -67,6 +67,7 @@ define({
             		},
             notificationTimeout = false,            	
             zombies = [],
+            zombieIdle = null,
             dino = null,
             boulder = null,
             dinoGameImage = null,
@@ -233,6 +234,7 @@ define({
             
             //get opponent type from game
 			setOpponent(game.getCurrentOpponentType());
+//			setOpponent('dinosaur');
         }
         
         
@@ -550,6 +552,16 @@ define({
 				hrNotFound = true;			
 			}
 
+			//Update player anim
+			if(r.getSpeed() == 0)
+			{
+				runner = runnerAnimations.idle;
+			}
+			else
+			{
+				runner = runnerAnimations.running;
+			}
+
 			//Update Heart Rate related mechanics
 			if(hr < minHeartRate)
 			{	
@@ -580,6 +592,8 @@ define({
 				showWarningHigh = false;
 				zombiesCatchingUp = false;
 				ppm = -1; // Negative pts/meter
+				runner = runnerAnimations.running_red;
+				//TODO check if stationary and use stationary red if so
 				if(!showWarningLow)
 				{
 					clearNotification();
@@ -806,7 +820,7 @@ define({
         function render() {
             if (!visible) return;
             var dt = 0;
-            var trackHeight = 50;
+            var trackHeight = 63;
 
             
             if (lastRender !== null) {
@@ -835,7 +849,8 @@ define({
 				var img = ppm > 0 ? sweat : sweat_red;
 				img.draw(context, xpos,ypos,0);
 				context.font = '24px Samsung Sans';
-				context.fillStyle = ppm > 0 ? '#fff' : flashingRedParams.colour;
+//				context.fillStyle = ppm > 0 ? '#fff' : flashingRedParams.colour;
+				context.fillStyle = ppm > 0 ? green : red;
 				context.textBaseline = "middle";
 				context.textAlign = "left";
 				context.fillText('SP', xpos + sweat.width + 5, ypos + sweat.height/2);
@@ -880,7 +895,7 @@ define({
                     context.textBaseline = "top";
                     context.textAlign = "center";
                     context.fillText('+'+delta+'m', 0+columnCenter, 25);
-                    context.font = '25px Samsung Sans';
+                    context.font = '24px Samsung Sans';
                     //context.fillText(postfix, 0+columnCenter, 25+45);
                 }
                 if (false) {
@@ -973,7 +988,7 @@ define({
 				if(hrNotFound) { hrText = '--'; }
 				context.fillText(hrText, hrXPos, hrYPos + 10);
 				//bpm
-				context.font = '18px Samsung Sans';
+				context.font = '24px Samsung Sans';
 				context.fillText('bpm', hrXPos, hrYPos + 38);
 
 
@@ -991,10 +1006,10 @@ define({
 					context.fill();
 					//+
 					context.fillStyle = '#fff';
-					context.font ='25px Samsung Sans';
+					context.font ='24px Samsung Sans';
 					context.fillText('+', distXPos, distYPos - 33);
 					//m
-					context.font = '18px Samsung Sans';
+					context.font = '24px Samsung Sans';
 					context.fillText('m', distXPos, distYPos + 38);
 					//number
 					var delta = Math.round(r.getDistance() - zombieDistance);
@@ -1022,7 +1037,7 @@ define({
             context.stroke();
             
             // Track text
-            context.font = '25px Samsung Sans';
+            context.font = '24px Samsung Sans';
             context.fillStyle = '#fff';
             context.textBaseline = "top";
 //            context.textAlign = "left";
@@ -1044,12 +1059,12 @@ define({
 				{
 					context.textBaseline = "bottom";
 					context.textAlign = "right";
-					context.font = '18px Samsung Sans';
+					context.font = '24px Samsung Sans';
 					var distkm = dist/1000;
-					context.fillText(distkm, distanceToTrackPos(dist), canvas.height-trackHeight + 20);
+					context.fillText(distkm, distanceToTrackPos(dist), canvas.height-trackHeight + 28);
 					context.textAlign = "left";
-					context.font = "15px Samsung Sans";
-					context.fillText('km', distanceToTrackPos(dist) + 1, canvas.height-trackHeight + 20);
+					context.font = "24px Samsung Sans";
+					context.fillText('km', distanceToTrackPos(dist) + 1, canvas.height-trackHeight + 28);
 				}
 				else
 				{
@@ -1068,7 +1083,7 @@ define({
 			if(!notification.active)
 			{
 				//Progress bar
-				var progressBarRadius = 10;
+				var progressBarRadius = 14;
 				var progressBarInnerRadius = 8;
 				var progressBarHeight = canvas.height - progressBarRadius - 8;
 				var progressBarInset = progressBarRadius + 10;
@@ -1151,7 +1166,7 @@ define({
 			//notification
 			if(notification.active)
 			{
-				var notificationInset = 15;
+				var notificationInset = 17;
 				var notificationRadius = 16;
 				var notificationHeight = canvas.height - 16;
 				//draw capsule
@@ -1165,7 +1180,7 @@ define({
 					{ context.fillStyle = flashingRedParams.colour; }
 				context.fill();
 				//text
-				context.font = '25px Samsung Sans';
+				context.font = '24px Samsung Sans';
 				context.fillStyle = '#000';
 				context.textAlign = 'center';
 				context.textBaseline = 'middle';
@@ -1174,7 +1189,7 @@ define({
 			
 			//text labels
 			///run
-			context.font = '18px Samsung Sans';
+			context.font = '24px Samsung Sans';
 			context.fillStyle = '#000';
 			context.textAlign = 'left';
 			context.textBaseline = 'middle';
@@ -1219,8 +1234,9 @@ define({
             
             var playerXPos = 0 + distanceToTrackPos(r.getDistance())
             
-            
-            switch(game.getCurrentOpponentType())
+            var opponentType = game.getCurrentOpponentType()
+//            opponentType = 'dinosaur';
+            switch(opponentType)
             {
 	            case 'zombie':
 					// Zombies
@@ -1237,17 +1253,25 @@ define({
 							if(!isDead || zombiePos < playerXPos - 10)
 							{	
 								// if we're dead don't draw them as they join the bundle
-								zombie.drawscaled(context, zombiePos, canvas.height - zombie.height * scale - trackHeight - 5*scale + y_offset, localDT, scale);
+								var pace = r.getSpeed();
+								if(pace > 0)
+								{
+									zombie.drawscaled(context, zombiePos, canvas.height - zombie.height * scale - trackHeight - 5*scale + y_offset, localDT, scale);
+								}
+								else
+								{
+									zombieIdle.drawscaled(context, zombiePos, canvas.height - zombie.height * scale - trackHeight - 5*scale + y_offset, localDT, scale);
+								}
 							}
 						}
 						context.globalAlpha = 1;
 					}
 					break;
 				case 'dinosaur':
-					if(zombieDistance != false) {
+					if(zombieDistance != false && currentHRZone!='Recovery' ) {
 						var dinoPos = 0 + distanceToTrackPos(zombieDistance);
 						dino.drawscaled(context, dinoPos, canvas.height - dino.height * scale - trackHeight - 5*scale, dt, scale);
-					}				
+					}
 					break;
 				case 'boulder':
 					if(zombieDistance != false) 
@@ -1369,7 +1393,7 @@ define({
             	}
             	unlockSprite.draw(context, centreX - unlockSprite.width/2, centreY - unlockSprite.height/2 + 50, 0);
             	//text
-            	context.font = '25px Samsung Sans';
+            	context.font = '24px Samsung Sans';
             	context.textAlign = "center";
             	context.textBaseline = "middle";
             	context.fillStyle = '#fff';
@@ -1425,7 +1449,7 @@ define({
             image.onerror = function() {
                 throw "Could not load " + this.src;
             }
-            image.src = 'images/runner-idle-anim.png';
+            image.src = 'images/animation_runner_green_still.png';
 
 
             image = new Image();
@@ -1479,6 +1503,15 @@ define({
             }
             image.src = 'images/animation_zombie1.png';
 
+			//zombie idle
+            image = new Image();
+            image.onload = function() {
+                zombieIdle = new Sprite(this, this.width, 1000);
+            }
+            image.onerror = function() {
+                throw "Could not load " + this.src;
+            }
+            image.src = 'images/animation_zombie_stationary.png';
             
             zombieMoan = new Audio('audio/zombie_moan.wav');
             zombieMoan.onerror = function() {
@@ -1566,7 +1599,7 @@ define({
 				dino = new Sprite(this, this.width, 1000);
 			}
 			image.onerror = function() { throw "could not load" + this.src; }
-			image.src = 'images/image_dino_achievement_screen.png';
+			image.src = 'images/animation_dino.png';
 			
 			//boulder image
 			image = new Image();
@@ -1589,7 +1622,7 @@ define({
 			//boulder game image
 			image = new Image();
 			image.onload = function() {
-				boulderGameImage = new Sprite(this, this.width, 1000);
+				boulderGameImage = new Sprite(this, this.width/10, 1000);
 			}
 			image.onerror = function() { throw "could not load" + this.src; }
 			image.src = 'images/image_boulder_achievement_screen.png';	
