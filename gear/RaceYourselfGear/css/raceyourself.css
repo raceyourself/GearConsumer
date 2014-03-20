@@ -9,6 +9,10 @@
 	text-align: center;
 }
 
+.noautooverflow {
+	overflow: initial;
+}
+
 .gps-screen {
 	padding: 50px;
 	color: white;
@@ -61,12 +65,28 @@
 }
 
 .menu-item {
-	margin-top: 35px;
-	width: 50%;
+	width: 140px;;
+	height: 150px;
+	line-height: 150px;
 	display: block;
 	float: left;
 	text-align: center;
-	font-size: 20px;
+	font-size: 24px;
+}
+
+.menu-item img {
+	vertical-align: middle;
+	margin-bottom: 15px;
+}
+
+.menu-label {
+	position: relative;
+	top: -35px;
+	line-height: normal;
+}
+
+.menu {
+	padding: 0px 10px;
 }
 
 .text-center {

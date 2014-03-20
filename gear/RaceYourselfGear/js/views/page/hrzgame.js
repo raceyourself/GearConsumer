@@ -1631,7 +1631,7 @@ define({
 			image.onload = function() {
 				dottedPattern = context.createPattern(this, "repeat");
 			}
-			image.onerror = function() {throw "could not load" + this.src; }
+//			image.onerror = function() {throw "could not load" + this.src; }
 			image.src = 'images/dashedLine.png';
 			
            /* if (hrm.isAvailable()) {

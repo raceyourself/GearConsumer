@@ -103,8 +103,8 @@ define({
             plusBtnEl.addEventListener('mousedown', onPlus);
             minusBtnEl.addEventListener('mouseup', onHalt);
             plusBtnEl.addEventListener('mouseup', onHalt);
-            minusBtnEl.addEventListener('touchstart', onMinus);
-            plusBtnEl.addEventListener('touchstart', onPlus);
+            minusBtnEl.addEventListener('touchstart', function(ev) { onMinus(ev); ev.stopPropagation(); ev.preventDefault(); });
+            plusBtnEl.addEventListener('touchstart', function(ev) { onPlus(ev); ev.stopPropagation(); ev.preventDefault(); });
             minusBtnEl.addEventListener('touchend', onHalt);
             plusBtnEl.addEventListener('touchend', onHalt);
             minusBtnEl.addEventListener('touchcancel', onHalt);

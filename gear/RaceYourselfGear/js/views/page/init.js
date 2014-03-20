@@ -11,6 +11,7 @@ define({
         'core/template',
         'models/application',
         'models/achievements',
+        'models/analytics',
         'views/page/main'
     ],
     def: function viewsPageInit(req) {
@@ -65,7 +66,7 @@ define({
         function onError(msg, url, line) {
             document.getElementById('error-message').innerHTML = '<p><b>' + msg + '</b></p>' + url.substr(url.lastIndexOf('/')+1) + ':' + line;
             gear.ui.changePage('#error-page');
-            document.addEventListener('click', function() {
+            document.getElementById('error-page').addEventListener('click', function() {
                 app.closeApplication();                
             });
         }
