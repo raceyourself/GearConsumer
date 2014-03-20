@@ -5,27 +5,26 @@
  */
 
 define({
-    name: 'views/page/statsleft',
+    name: 'views/page/gamestats4',
     requires: [
         'core/event',
         'models/game',
         'models/race',
-        'models/timer',
-        'helpers/timer'
+        'models/timer'
     ],
-    def: function viewsPageStatsLeft(req) {
+    def: function viewsPageGameStats4(req) {
         'use strict';
 
         var e = req.core.event,
             race = req.models.race,
             game = req.models.game,
             Timer = req.models.timer.Timer,
-            Time = req.helpers.timer.Time,
             page = null,
             timer = null,
             ongoing = null,
-            distanceEl,
-            durationEl;
+            earnedEl,
+            lostEl,
+            totalEl;
 
         function show() {
         }
@@ -51,8 +50,6 @@ define({
         
         function tick() {
             if (!ongoing) return;
-            distanceEl.innerHTML = ~~ongoing.getDistance();
-            durationEl.innerHTML = new Time(ongoing.getDuration());
         }
         
         function bindEvents() {
@@ -62,15 +59,16 @@ define({
 
         function init() {
             page = document.getElementById('race-game');
-            distanceEl = document.getElementById('distance-stat');
-            durationEl = document.getElementById('duration-stat');
-            timer = new Timer(1000, 'views.page.statsleft.tick');
+            earnedEl = document.getElementById('sweat-earned-stat');
+            lostEl = document.getElementById('sweat-lost-stat');
+            totalEl = document.getElementById('sweat-total-stat');
+            timer = new Timer(1000, 'views.page.gamestats4.tick');
             bindEvents();
         }
 
         e.listeners({
-            'statsleft.show': show,
-            'views.page.statsleft.tick': tick
+            'statsright.show': show,
+            'views.page.gamestats4.tick' : tick,
         });
 
         return {

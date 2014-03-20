@@ -8,8 +8,8 @@ define({
     name: 'views/page/hrzgame',
     requires: [
         'core/event',
-        'views/page/statsleft',
-        'views/page/statsright',
+        'views/page/gamestats1',
+        'views/page/gamestats2',
 //        'views/page/gameselect',
         'models/race',
         'models/hrm',
@@ -479,7 +479,7 @@ define({
         
         function onHeartRateChange(hrmInfo) {
         	//set heartRate
-        	hr = hrmInfo.heartRate;
+            hr = hrmInfo.detail.heartRate;
         	handleHRChanged();
         }
 
@@ -490,7 +490,7 @@ define({
         //test function to provide random heart rate
         function randomHR() {
         	hr = Math.floor( 50 + 150 * (Math.random()) );
-        	handleHRChanged();
+        	e.fire('hrm.change', {heartRate: hr});
         }
         
         function handleHRChanged() {

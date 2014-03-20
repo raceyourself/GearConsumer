@@ -5,14 +5,14 @@
  */
 
 define({
-    name: 'views/page/statsright',
+    name: 'views/page/gamestats3',
     requires: [
         'core/event',
         'models/game',
         'models/race',
         'models/timer'
     ],
-    def: function viewsPageStatsRight(req) {
+    def: function viewsPageGameStats3(req) {
         'use strict';
 
         var e = req.core.event,
@@ -22,8 +22,9 @@ define({
             page = null,
             timer = null,
             ongoing = null,
-            paceEl,
-            stepsEl;
+            caughtEl,
+            sspeedEl,
+            idealEl;
 
         function show() {
         }
@@ -49,11 +50,6 @@ define({
         
         function tick() {
             if (!ongoing) return;
-            var pace = ongoing.getPace();
-            if (isFinite(pace)) pace = pace.toFixed(2);
-            else pace = '&infin;'
-            paceEl.innerHTML = pace;
-            stepsEl.innerHTML = ongoing.getSteps();
         }
         
         function bindEvents() {
@@ -63,15 +59,16 @@ define({
 
         function init() {
             page = document.getElementById('race-game');
-            paceEl = document.getElementById('pace-stat');
-            stepsEl = document.getElementById('steps-stat');
-            timer = new Timer(1000, 'views.page.statsright.tick');
+            caughtEl = document.getElementById('caught-stat');
+            sspeedEl = document.getElementById('sspeed-stat');
+            idealEl = document.getElementById('ideal-hr-stat');
+            timer = new Timer(1000, 'views.page.gamestats3.tick');
             bindEvents();
         }
 
         e.listeners({
             'statsright.show': show,
-            'views.page.statsright.tick' : tick
+            'views.page.gamestats3.tick' : tick,
         });
 
         return {
