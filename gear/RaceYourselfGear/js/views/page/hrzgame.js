@@ -560,8 +560,7 @@ define({
 				//stop zombies catching up
 				zombiesCatchingUp = false;
 				//clear runner
-				if(!isDead)red
-				
+				if(!isDead)
 				{
 					runner = runnerAnimations.running;
 				}
