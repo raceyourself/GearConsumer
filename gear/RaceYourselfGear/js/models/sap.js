@@ -116,6 +116,7 @@ define({
 
             if (window.navigator.platform.indexOf('emulated') !== -1) {
                 console.error('SAP works only on Target. Please run this on Target.');
+                document.getElementById('debug-log').innerHTML = 'SAP works only on Target. Please run this on Target.';
                 //tizen.application.getCurrentApplication().exit();
                 return;
             }
@@ -124,6 +125,7 @@ define({
                 webapis.sa.requestSAAgent(onConnectSuccess, onConnectError);
             } catch (e) {
                 console.warn('webapis.sa.requestSAAgent failed: ' + e.message);
+                document.getElementById('debug-log').innerHTML = 'webapis.sa.requestSAAgent failed: ' + e.message;
             }
         }
         
