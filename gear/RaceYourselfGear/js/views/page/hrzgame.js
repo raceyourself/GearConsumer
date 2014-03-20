@@ -30,7 +30,8 @@ define({
             page = null,
             canvas,
             context,
-            TRACK_LENGTH = 500,
+            TRACK_LENGTH = Infinity,
+            targetTime = Infinity,
             lastRender = null,
             bannerTimeout = false,
             raf = false,
@@ -160,7 +161,14 @@ define({
             }
             
             isDead = false;
-			TRACK_LENGTH = settings.getDistance();
+			var length = settings.getDistance();
+			console.log('target dist = ' + length);
+//			var type = settings.getTargetType();
+			var type = 'time';
+			
+			if (type == 'time') { targetTime = settings.getTime() * 60 * 1000; }
+			else if (type == 'distance') { TRACK_LENGTH = settings.getDistance(); }
+				
             
             canvas.width = canvas.offsetWidth;
             canvas.height = canvas.offsetHeight;        
@@ -258,6 +266,13 @@ define({
             bannerTimeout = setTimeout(clearbanner, 1000);
             setCurrentHRZone("Light");
             warmupTimeout = setTimeout(endWarmup, 5*60*1000 * timeMultiplier);	//5 minutes warmup
+        }
+        
+        function restart() {
+        	countingdown = false;
+        	startZombies();
+        	clearTimeout(bannerTimeout);
+        	bannerTimeout = setTimeout(clearbanner, 1000);
         }
         
         function endWarmup() 
@@ -429,7 +444,7 @@ define({
             zombieOffset = -25;
             requestRender();
             clearTimeout(bannerTimeout);
-            bannerTimeout = setTimeout(go, 1500);
+            bannerTimeout = setTimeout(restart, 1500);
             startZombies();
         }
         
@@ -587,14 +602,14 @@ define({
         function step() {
             var r = race.getOngoingRace();
             if (r.getDistance() < zombieDistance && !isDead) {
-                r.data.caught_by = 'zombie';
+//                r.data.caught_by = 'zombie';
                 killSound.play();
                 navigator.vibrate([1000, 500, 250, 100]);
 //                r.stop();
-                e.fire('race.end', r);
+//                e.fire('race.end', r);
                 lastRender = null;
 //                stopZombies();
-                r.data.hr_zones = true;
+//                r.data.hr_zones = true;
 				isDead = true;
 				runner = runnerAnimations.zombieDead;
                 requestRender();
@@ -602,7 +617,7 @@ define({
                 bannerTimeout = setTimeout(nextWave, 3000);
                 return;
             }
-            if (r.getDistance() >= TRACK_LENGTH) {
+            if (r.getDistance() >= TRACK_LENGTH || r.getDuration() >= targetTime) {
 //                zombieMoan.play();
                 navigator.vibrate(1000);
                 e.fire('race.end', r);
@@ -615,8 +630,6 @@ define({
                 requestRender();
                 clearTimeout(bannerTimeout);
 				bannerTimeout = setTimeout(continueToResults, 5000);
-				
-                
 
                 return;
             }
@@ -646,7 +659,7 @@ define({
 		function continueToResults()
 		{
 			clearbanner();
-		    e.fire('main.show');
+		    e.fire('racesummary.show');
 
 		}
 
@@ -659,6 +672,26 @@ define({
             if (!raf) render();
         }
         
+        function stringForTimeHHMMSS(milliseconds, showSeconds)
+        {
+			var numSeconds = Math.floor(milliseconds/1000);
+			var numMinutes = Math.floor(numSeconds / 60);
+			var numHours = Math.floor(numMinutes / 60);
+			var timeString = '';
+			
+			var secondsString = '' + numSeconds%60;
+			if (secondsString.length == 1) { secondsString = '0' + secondsString; }
+			
+			var minutesString = '' + numMinutes%60;
+			if (minutesString.length ==1) { minutesString = '0' + minutesString; }
+			
+			if(true) { timeString = timeString + numHours + ':'; }
+			timeString = timeString + minutesString + ':';
+			timeString = timeString + secondsString;
+			return timeString;
+		}
+
+
         function render() {
             if (!visible) return;
             var dt = 0;
@@ -906,7 +939,22 @@ define({
 			
 				//green fill
 				context.beginPath();
-				var fillProportion = r.getDistance()/TRACK_LENGTH;
+				var fillProportion = 0;
+				if(TRACK_LENGTH < Infinity) 
+				{
+					fillProportion = r.getDistance()/TRACK_LENGTH;
+				}
+
+				else if(targetTime < Infinity)
+				{
+					fillProportion = r.getDuration()/targetTime;
+				}
+				else
+				{
+					//'just run' mode
+					fillProportion = 0;
+				}
+					
 				var fillDistance = (canvas.width - 2*progressBarInset + 2*progressBarRadius) * fillProportion;
 				if(fillDistance <= progressBarInnerRadius)
 				{
@@ -916,11 +964,9 @@ define({
 					var h = progressBarInnerRadius - fillDistance;
 					var angle = Math.asin(h/progressBarInnerRadius);
 					context.arc(progressBarInset, progressBarHeight, progressBarInnerRadius, angle + Math.PI/2, 1.5*Math.PI - angle, false);
-
 				}
 				else if(fillDistance >= (canvas.width - 2*progressBarInset) + progressBarInnerRadius )
 				{
-
 					//fill in semicircle, full box, and partial circle
 					context.arc(progressBarInset, progressBarHeight, progressBarInnerRadius, Math.PI/2, 1.5*Math.PI, false);
 					//across and down
@@ -987,12 +1033,35 @@ define({
 			context.fillStyle = '#000';
 			context.textAlign = 'left';
 			context.textBaseline = 'middle';
-			distkm = Math.round(r.getDistance()/100) / 10;
-			context.fillText(distkm + 'km', progressBarInset - 5, progressBarHeight);
-			//target
-			context.textAlign = 'right';
-			var targetdist = Math.round(TRACK_LENGTH/100)/10;
-			context.fillText(targetdist + 'km', canvas.width - progressBarInset + 5, progressBarHeight);
+
+			if(TRACK_LENGTH < Infinity)
+			{
+				//run
+				distkm = Math.round(r.getDistance()/100) / 10;
+				context.fillText(distkm + 'km', progressBarInset - 5, progressBarHeight);
+				//target
+				context.textAlign = 'right';
+				var targetdist = Math.round(TRACK_LENGTH/100)/10;
+				context.fillText(targetdist + 'km', canvas.width - progressBarInset + 5, progressBarHeight);
+
+			}
+			else if(targetTime < Infinity)
+			{
+				//time run
+				var timeString = stringForTimeHHMMSS(r.getDuration());
+				context.textAlign = 'left';
+				context.fillText(timeString, progressBarInset - 5, progressBarHeight);
+				//target
+				context.textAlign = 'right';
+				var targetTimeString = stringForTimeHHMMSS(targetTime);
+				context.fillText(targetTimeString, canvas.width - progressBarInset + 5, progressBarHeight);
+			}
+			else
+			{
+				//show time run on left
+				
+				//show distance run on right
+			}
 
 			
             scale = 10/screenWidthDistance;
