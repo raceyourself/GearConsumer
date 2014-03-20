@@ -36,8 +36,6 @@ define({
                 scrollbar: "bar"
             });
             
-            document.getElementById('boulder-mode-btn').classList.toggle('locked-game', game.isLocked('boulder'));
-            document.getElementById('dino-mode-btn').classList.toggle('locked-game', game.isLocked('dino'));
             e.listen('tizen.back', onBack);
         }
         
@@ -54,8 +52,15 @@ define({
         	 page.addEventListener('pageshow', onPageShow);
              page.addEventListener('pagehide', onPageHide);
              
+             document.getElementById('zombie-tutorial-end-btn').addEventListener('click', onZombieEndClick);
         }
 
+        function onZombieEndClick() {
+        	settings.setZombieTutorial(true);
+        	e.fire('trainingtype.show');
+        }
+        
+        
         function isScrolling() {
             if (!sectionChanger) return false;
             if (Math.abs(sectionChanger.lastTouchPointX - sectionChanger.startTouchPointX) > 5) return true;

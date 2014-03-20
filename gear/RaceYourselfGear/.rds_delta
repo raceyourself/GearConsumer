@@ -2,8 +2,5 @@
 #add
 #modify
 res/wgt/author-signature.xml
-res/wgt/index.html
-res/wgt/js/models/settings.js
-res/wgt/js/views/page/distanceunits.js
-res/wgt/js/views/page/paceunits.js
+res/wgt/css/style.css
 res/wgt/signature1.xml
