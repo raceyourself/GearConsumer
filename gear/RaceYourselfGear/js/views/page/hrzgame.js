@@ -15,8 +15,8 @@ define({
         'models/hrm',
         'models/sprite',
         'models/settings',
-        //'views/page/main',
-
+        'models/settings',
+		'models/game',
     ],
     def: function viewsPageHeartRateZombiesGame(req) {
         'use strict';
@@ -24,6 +24,7 @@ define({
         var e = req.core.event,
             race = req.models.race,
             hrm = req.models.hrm,
+            game = req.models.game,
             settings = req.models.settings,
             Sprite = req.models.sprite.Sprite,
             page = null,
@@ -52,14 +53,31 @@ define({
                     sprinting_red: { name: 'sprinting_red', sprite: null, speedThreshold: 4},
                     zombieDead: { name: 'zombieDead', sprite: null, speedThreshold: -1}
             },
+            notification = {
+            		active: false,
+            		colour: '#fff',
+            		text: 'Achievement Unlocked',
+            		period: 600,
+            		phase: 0,
+            		},
+            notificationTimeout = false,            	
             zombies = [],
+            dino = null,
+            boulder = null,
             zombiesAnimOffset = [],
             numZombies = 0,
             zombieDistance = false,
             zombieInterval = false,
             zombieSpeed = 0,
+            completionSound = null,
             zombieMoan = null,
             zombieGrowl = null,
+            dinoRoar = null,
+            dinoKill = null,
+            boulderBounce = null,
+            boulderKill = null,
+            regularSound = null,
+            killSound = null,
             visible = false,
             changer,
             sectionChanger,
@@ -89,14 +107,40 @@ define({
 			adaptingToRecentZoneShift = false,
 			adaptingTimeout = false,
 			showWarning = false,
-			isDead = false;
-			
+			isDead = false,
+			scale = 1,
+			opponent = 'zombie',
+			green = '#51b848',
+            red = '#cb2027',
+            lightRed = '#dc8080',
+			flashingRed = 'flashingRed',
+			flashingRedParams = { colour: '#fff', period:400, phase: 0 };
 
-            
+			
 
         function show() {
             gear.ui.changePage('#race-game');
         }
+
+		function setNotification(colour, text, duration)
+		{
+			notification.colour = colour;
+			notification.text = text;
+			notification.active = true;
+			if(notificationTimeout != false) 
+			{ clearTimeout(notificationTimeout); }
+			if(duration>0)
+			{
+				notificationTimeout = setTimeout(clearNotification, duration);
+			}
+		}
+		
+		function clearNotification()
+		{
+			notification.active = false;
+			clearTimeout(notificationTimeout);
+			notificationTimeout = false;
+		}
 
         function onPageShow() {
             visible = true;
@@ -115,6 +159,7 @@ define({
                 startCountdown();
             }
             
+            isDead = false;
 			TRACK_LENGTH = settings.getDistance();
             
             canvas.width = canvas.offsetWidth;
@@ -127,10 +172,34 @@ define({
             }, 1000);
             
             animate();
-            
             requestRender();
-            
             hrInterval = setInterval(randomHR, hrChangePeriod);
+            
+            //get opponent type from game
+			setOpponent(game.getCurrentOpponentType());
+        }
+        
+        function setOpponent(type)
+        {
+        	opponent = type;
+        	switch(type)
+        	{
+        		case 'zombie':
+        			regularSound = zombieMoan;
+        			killSound = zombieGrowl;
+					break;
+        		case 'dinosaur':
+        			regularSound = zombieMoan;
+        			killSound = zombieGrowl;
+					break;
+        		case 'boulder':
+        			regularSound = zombieMoan;
+        			killSound = zombieGrowl;
+					break;
+				default:
+					console.error('unrecognised opponent type: ' + game.getCurrentOpponentType());
+					break;
+        	}
         }
         
         function onPageHide() {
@@ -265,6 +334,8 @@ define({
         
         function setCurrentHRZone(zone)
         {
+        	//update heart-rate based logic
+        	handleHRChanged()
         if(zone == currentHRZone)
         {
         	
@@ -393,9 +464,9 @@ define({
             if(!isDead)
             {
 				screenWidthDistance = Math.max( 10, Math.min( -zombieOffset + 15, 100));
-				screenLeftDistance = (zombieDistance + r.getDistance() - screenWidthDistance)/2;
-            }
-			//see if we've finished the current interval
+			}
+			
+			screenLeftDistance = (zombieDistance + r.getDistance() - screenWidthDistance)/2;
 			
         }
 
@@ -440,15 +511,15 @@ define({
 			if (!!r) {
 			    if (hr > maxHeartRate || hr < minHeartRate) r.data.zoned_out = true;
 			}
-
 						
 			//instigate warning
 			if(hr < minHeartRate)
 			{	
+				setNotification(flashingRed, 'Heart Rate too low!', 0);
 				if(!showWarning)
 				{
 					showWarning = true;
-					zombieGrowl.play();
+					regularSound.play();
 					navigator.vibrate([1000, 500, 250, 100]);
 				}
 				if(!adaptingToRecentZoneShift)
@@ -465,6 +536,7 @@ define({
 			}
 			else if(hr > maxHeartRate)
 			{
+				setNotification(flashingRed, 'Heart Rate too high!', 0);
 				if(!showWarning)
 				{
 					showWarning = true;
@@ -482,12 +554,14 @@ define({
 			{
 				//clear warning
 				showWarning = false;
+				clearNotification();
 				clearTimeout(warningTimeout);
 				warningTimeout = false;
 				//stop zombies catching up
 				zombiesCatchingUp = false;
 				//clear runner
-				if(!isDead)
+				if(!isDead)red
+				
 				{
 					runner = runnerAnimations.running;
 				}
@@ -514,7 +588,7 @@ define({
             var r = race.getOngoingRace();
             if (r.getDistance() < zombieDistance && !isDead) {
                 r.data.caught_by = 'zombie';
-                zombieGrowl.play();
+                killSound.play();
                 navigator.vibrate([1000, 500, 250, 100]);
 //                r.stop();
                 e.fire('race.end', r);
@@ -525,11 +599,11 @@ define({
 				runner = runnerAnimations.zombieDead;
                 requestRender();
                 clearTimeout(bannerTimeout);
-                bannerTimeout = setTimeout(nextWave, 5000);
+                bannerTimeout = setTimeout(nextWave, 3000);
                 return;
             }
             if (r.getDistance() >= TRACK_LENGTH) {
-                zombieMoan.play();
+//                zombieMoan.play();
                 navigator.vibrate(1000);
                 e.fire('race.end', r);
                 r.stop();
@@ -589,13 +663,20 @@ define({
             if (!visible) return;
             var dt = 0;
             var trackHeight = 50;
-            var green = '#51b848';
-            var red = '#cb2027';
+
             
             if (lastRender !== null) {
                 dt = Date.now() - lastRender;
                 lastRender = Date.now();
             }
+            
+            //update flashingRed
+			flashingRedParams.phase += dt;
+			flashingRedParams.phase = flashingRedParams.phase % flashingRedParams.period;
+			if(flashingRedParams.phase > flashingRedParams.period/2)
+			{ flashingRedParams.colour = red; }
+			else
+			{ flashingRedParams.colour = lightRed;}
             
             context.clearRect(0, 0, canvas.width, canvas.height);            
             var trackWidth = canvas.width - 0 - runner.sprite.width;
@@ -620,8 +701,8 @@ define({
 			//GPS
 			if(true)
 			{
-				var scale = sweat.height / gps.height;
-				gps.drawscaled(context, canvas.width - gps.width*scale, 0, 0, scale);
+				var GPSscale = sweat.height / gps.height;
+				gps.drawscaled(context, canvas.width - gps.width*GPSscale, 0, 0, GPSscale);
 			}
 
             // Banner
@@ -678,12 +759,12 @@ define({
 				if(hr > maxHeartRate) 
 				{
 					heartIcon = heartBlack; 
-					hrFillColour = red;             	
+					hrFillColour = flashingRedParams.colour;             	
 				}
 				else if(hr < minHeartRate) 
 				{
 					heartIcon = heartRed; 
-					hrFillColour = red;
+					hrFillColour = flashingRedParams.colour;
 				}
 				else { heartIcon = heartGreen; }
 			
@@ -806,73 +887,99 @@ define({
 			context.strokeStyle = "#fff";
 			context.stroke();
 			
-			//Progress bar
-			var progressBarRadius = 10;
-			var progressBarInnerRadius = 8;
-			var progressBarHeight = canvas.height - progressBarRadius - 8;
-			var progressBarInset = progressBarRadius + 10;
-			
-			//white capsule
-			context.beginPath();
-			context.arc(progressBarInset, progressBarHeight, progressBarRadius, Math.PI/2, Math.PI*1.5, false);
-			context.lineTo(canvas.width - progressBarInset, progressBarHeight - progressBarRadius)
-			context.arc(canvas.width - progressBarInset, progressBarHeight, progressBarRadius, -Math.PI/2, Math.PI/2, false);
-			context.closePath();
-			context.fillStyle = '#fff';
-			context.fill();
-			
-			//green fill
-			context.beginPath();
-			var fillProportion = r.getDistance()/TRACK_LENGTH;
-			var fillDistance = (canvas.width - 2*progressBarInset + 2*progressBarRadius) * fillProportion;
-//			console.log(fillDistance);
-			if(fillDistance <= progressBarInnerRadius)
+			if(!notification.active)
 			{
-				//fill partial circle
-//				var fillSegmentProportion = (progressBarInnerRadius - fillDistance)/progressBarInnerRadius;
-				//height in pixels in from edge
-				var h = progressBarInnerRadius - fillDistance;
-				var angle = Math.asin(h/progressBarInnerRadius);
-				context.arc(progressBarInset, progressBarHeight, progressBarInnerRadius, angle + Math.PI/2, 1.5*Math.PI - angle, false);
-
-			}
-			else if(fillDistance >= (canvas.width - 2*progressBarInset) + progressBarInnerRadius )
-			{
-
-				//fill in semicircle, full box, and partial circle
-				context.arc(progressBarInset, progressBarHeight, progressBarInnerRadius, Math.PI/2, 1.5*Math.PI, false);
-				//across and down
-				var straightEnd = canvas.width - progressBarInset;
-				context.lineTo( straightEnd, progressBarHeight - progressBarInnerRadius );
-				context.lineTo( straightEnd, progressBarHeight + progressBarInnerRadius );
+				//Progress bar
+				var progressBarRadius = 10;
+				var progressBarInnerRadius = 8;
+				var progressBarHeight = canvas.height - progressBarRadius - 8;
+				var progressBarInset = progressBarRadius + 10;
+			
+				//white capsule
+				context.beginPath();
+				context.arc(progressBarInset, progressBarHeight, progressBarRadius, Math.PI/2, Math.PI*1.5, false);
+				context.lineTo(canvas.width - progressBarInset, progressBarHeight - progressBarRadius)
+				context.arc(canvas.width - progressBarInset, progressBarHeight, progressBarRadius, -Math.PI/2, Math.PI/2, false);
 				context.closePath();
+				context.fillStyle = '#fff';
+				context.fill();
+			
+				//green fill
+				context.beginPath();
+				var fillProportion = r.getDistance()/TRACK_LENGTH;
+				var fillDistance = (canvas.width - 2*progressBarInset + 2*progressBarRadius) * fillProportion;
+				if(fillDistance <= progressBarInnerRadius)
+				{
+					//fill partial circle
+	//				var fillSegmentProportion = (progressBarInnerRadius - fillDistance)/progressBarInnerRadius;
+					//height in pixels in from edge
+					var h = progressBarInnerRadius - fillDistance;
+					var angle = Math.asin(h/progressBarInnerRadius);
+					context.arc(progressBarInset, progressBarHeight, progressBarInnerRadius, angle + Math.PI/2, 1.5*Math.PI - angle, false);
+
+				}
+				else if(fillDistance >= (canvas.width - 2*progressBarInset) + progressBarInnerRadius )
+				{
+
+					//fill in semicircle, full box, and partial circle
+					context.arc(progressBarInset, progressBarHeight, progressBarInnerRadius, Math.PI/2, 1.5*Math.PI, false);
+					//across and down
+					var straightEnd = canvas.width - progressBarInset;
+					context.lineTo( straightEnd, progressBarHeight - progressBarInnerRadius );
+					context.lineTo( straightEnd, progressBarHeight + progressBarInnerRadius );
+					context.closePath();
+					context.fillStyle = green;
+					context.fill();
+				
+					//partial segment top
+					context.beginPath();
+					var h = fillDistance - (canvas.width - 2*progressBarInset) - progressBarInnerRadius;
+					var angle = Math.asin(h/progressBarInnerRadius);
+				
+					context.moveTo(canvas.width - progressBarInset + h, progressBarHeight - progressBarInnerRadius * Math.cos(angle));
+					context.arc(canvas.width - progressBarInset, progressBarHeight, progressBarInnerRadius, Math.PI/2 - angle, Math.PI/2, false);
+					context.lineTo(canvas.width - progressBarInset, progressBarHeight - progressBarInnerRadius);
+					context.arc(canvas.width - progressBarInset, progressBarHeight, progressBarInnerRadius, 1.5*Math.PI, 1.5*Math.PI + angle, false);
+					context.closePath();
+				}
+				else
+				{
+					//fill in semicircle and box
+					context.arc(progressBarInset, progressBarHeight, progressBarInnerRadius, Math.PI/2, 1.5*Math.PI, false);
+					//across and down
+					var straightEnd = progressBarInset - progressBarInnerRadius + fillDistance;
+					context.lineTo( straightEnd, progressBarHeight - progressBarInnerRadius );
+					context.lineTo( straightEnd, progressBarHeight + progressBarInnerRadius );
+					context.closePath();
+
+				}
 				context.fillStyle = green;
 				context.fill();
-				
-				//partial segment top
-				context.beginPath();
-				var h = fillDistance - (canvas.width - 2*progressBarInset) - progressBarInnerRadius;
-				var angle = Math.asin(h/progressBarInnerRadius);
-				
-				context.moveTo(canvas.width - progressBarInset + h, progressBarHeight - progressBarInnerRadius * Math.cos(angle));
-				context.arc(canvas.width - progressBarInset, progressBarHeight, progressBarInnerRadius, Math.PI/2 - angle, Math.PI/2, false);
-				context.lineTo(canvas.width - progressBarInset, progressBarHeight - progressBarInnerRadius);
-				context.arc(canvas.width - progressBarInset, progressBarHeight, progressBarInnerRadius, 1.5*Math.PI, 1.5*Math.PI + angle, false);
-				context.closePath();
 			}
-			else
+			
+			//notification
+			if(notification.active)
 			{
-				//fill in semicircle and box
-				context.arc(progressBarInset, progressBarHeight, progressBarInnerRadius, Math.PI/2, 1.5*Math.PI, false);
-				//across and down
-				var straightEnd = progressBarInset - progressBarInnerRadius + fillDistance;
-				context.lineTo( straightEnd, progressBarHeight - progressBarInnerRadius );
-				context.lineTo( straightEnd, progressBarHeight + progressBarInnerRadius );
+				var notificationInset = 15;
+				var notificationRadius = 16;
+				var notificationHeight = canvas.height - 16;
+				//draw capsule
+				context.beginPath();
+				context.arc( notificationInset, notificationHeight, notificationRadius, 0.5*Math.PI, 1.5*Math.PI, false);
+				context.lineTo( canvas.width - notificationInset, notificationHeight - notificationRadius);
+				context.arc( canvas.width - notificationInset, notificationHeight, notificationRadius, 1.5*Math.PI, 2.5*Math.PI, false);
 				context.closePath();
-
+				context.fillStyle = notification.colour;
+				if(notification.colour == 'flashingRed')
+					{ context.fillStyle = flashingRedParams.colour; }
+				context.fill();
+				//text
+				context.font = '25px Samsung Sans';
+				context.fillStyle = '#000';
+				context.textAlign = 'center';
+				context.textBaseline = 'middle';
+				context.fillText( notification.text, canvas.width/2, notificationHeight);
 			}
-			context.fillStyle = green;
-			context.fill();
 			
 			//text labels
 			///run
@@ -888,30 +995,55 @@ define({
 			context.fillText(targetdist + 'km', canvas.width - progressBarInset + 5, progressBarHeight);
 
 			
-			
-            //green contents
-            var scale = 10/screenWidthDistance;
+            scale = 10/screenWidthDistance;
             
             var playerXPos = 0 + distanceToTrackPos(r.getDistance())
             
-            // Zombies
-            if (zombieDistance !== false) {
-                for (var i=0;i<numZombies;i++) {
-                    var zombie = zombies[i];
-                    var x_offset = ((i*(zombie.width*0.3))+(i%2)*5 + zombie.width*0.3) * scale;
-                    var y_offset = (-1+(i+1)%2) * 5;
-                    if (i%2==1) context.globalAlpha = 0.5;
-                    else context.globalAlpha = 1;
-                    var zombiePos = 0 + distanceToTrackPos(zombieDistance) - x_offset;
-//                    zombiePos -= screenLeftDistance;
-		    var localDT = dt * (0.9 + zombiesAnimOffset[i]);
-					if(!isDead || zombiePos < playerXPos - 10)
-					{	
-						// if we're dead don't draw them as they join the bundle
-						zombie.drawscaled(context, zombiePos, canvas.height - zombie.height * scale - trackHeight - 5*scale + y_offset, localDT, scale);
+            
+            switch(game.getCurrentOpponentType())
+            {
+	            case 'zombie':
+					// Zombies
+					if (zombieDistance !== false) {
+						for (var i=0;i<numZombies;i++) {
+							var zombie = zombies[i];
+							var x_offset = ((i*(zombie.width*0.3))+(i%2)*5 + zombie.width*0.3) * scale;
+							var y_offset = (-1+(i+1)%2) * 5;
+							if (i%2==1) context.globalAlpha = 0.5;
+							else context.globalAlpha = 1;
+							var zombiePos = 0 + distanceToTrackPos(zombieDistance) - x_offset;
+		//                    zombiePos -= screenLeftDistance;
+					var localDT = dt * (0.9 + zombiesAnimOffset[i]);
+							if(!isDead || zombiePos < playerXPos - 10)
+							{	
+								// if we're dead don't draw them as they join the bundle
+								zombie.drawscaled(context, zombiePos, canvas.height - zombie.height * scale - trackHeight - 5*scale + y_offset, localDT, scale);
+							}
+						}
+						context.globalAlpha = 1;
 					}
-                }
-                context.globalAlpha = 1;
+					break;
+				case 'dinosaur':
+					if(zombieDistance != false) {
+						var dinoPos = 0 + distanceToTrackPos(zombieDistance);
+						dino.drawscaled(context, dinoPos, canvas.height - dino.height * scale - trackHeight - 5*scale, dt, scale);
+					}				
+					break;
+				case 'boulder':
+					if(zombieDistance != false) 
+					{
+						var boulderPos = 0 + distanceToTrackPos(zombieDistance);
+						context.save();
+						boulder.rotation += dt*boulder.rotationSpeed;
+						context.translate(boulderPos, canvas.height - boulder.height * scale - trackHeight - 5*scale);
+						context.rotate(boulder.rotation);
+						boulder.drawscaled(context, 0,0, dt, scale);
+						context.restore();
+					}
+					break;
+				default:
+					console.error('unhandled opponent type: ' + game.getCurrentOpponentType());
+					break;
             }
             
             // Self
@@ -972,6 +1104,7 @@ define({
             frames++;
         }
         
+       
         function distanceToTrackPos(distance)
         {
         	var trackWidth = canvas.width - 0 - runner.sprite.width;
@@ -1140,6 +1273,24 @@ define({
 			}
 			image.onerror = function() { throw "could not load" + this.src; }
 			image.src = 'images/image_skull.png';
+			      
+			//dino image
+			image = new Image();
+			image.onload = function() {
+				dino = new Sprite(this, this.width, 1000);
+			}
+			image.onerror = function() { throw "could not load" + this.src; }
+			image.src = 'images/image_dino_achievement_screen.png';
+			
+			//boulder image
+			image = new Image();
+			image.onload = function() {
+				boulder = new Sprite(this, this.width, 1000);
+				boulder.rotation = 0;
+				boulder.rotationSpeed = 0.2;
+			}
+			image.onerror = function() { throw "could not load" + this.src; }
+			image.src = 'images/image_boulder_achievement_screen.png';			
 			           
            /* if (hrm.isAvailable()) {
                 hrm.start();
