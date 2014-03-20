@@ -77,6 +77,7 @@ define({
         function onZombieBtnClick(event) {
             if (isScrolling()) return;
         	game.setCurrentGame('hrzgame');
+        	game.setCurrentOpponentType('zombie');
         	if(settings.getZombieTutorial()) {
         		e.fire('trainingtype.show');
         	}
@@ -91,6 +92,7 @@ define({
             if (isScrolling()) return;
             if (game.isLocked('boulder')) return;
             game.setCurrentGame('hrzgame');
+            game.setCurrentOpponentType('boulder');
             e.fire('choosegoal.show');
         }
         
@@ -98,6 +100,7 @@ define({
             if (isScrolling()) return;
             if (game.isLocked('dino')) return;
             game.setCurrentGame('hrzgame');
+            game.setCurrentOpponentType('dinosaur');
             e.fire('choosegoal.show');
         }
         
