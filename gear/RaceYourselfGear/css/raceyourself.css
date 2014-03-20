@@ -145,6 +145,19 @@ img {
 	clear: both;
 }
 
+#summary {
+	text-align: center;
+}
+
+.summary-label {
+	font-size: 38px;
+}
+
+.summary-value {
+	font-size: 20px;
+}
+
+
 #error-page {
 	background-color: red;
 	color: white;	
@@ -218,4 +231,16 @@ img {
 #achievement-awarded, #achievement-progress {
 	font-size: 50%;
 	padding-bottom: 10px;
+}
+
+.centeredImage
+    {
+    text-align:center;
+    margin-top:85px;
+    margin-bottom:0px;
+    padding:0px;
+    }
+
+#debug-log {
+	font-size: 15px;
 }

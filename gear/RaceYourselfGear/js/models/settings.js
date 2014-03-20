@@ -9,12 +9,14 @@ define({
     name: 'models/settings',
     requires: [
         'core/storage',
+        'core/event',
         'helpers/units'
     ],
     def: function modelsSettings(req) {
         'use strict';
 
         var s = req.core.storage,
+            e = req.core.event,
             units = req.helpers.units,
             defaults = {
                 unit: units.UNIT_METER,
@@ -25,7 +27,8 @@ define({
                 zombieTutorial: false,
                 firstTimeAge: true,
                 distanceunits: 'KM',
-                paceunits: 'Min/km'
+                paceunits: 'Min/km',
+                currentTarget: ""
             },
             settings = {},
             STORAGE_KEY = 'settings';
@@ -76,6 +79,10 @@ define({
         	return settings.paceunits;
         }
         
+        function getCurrentTarget() {
+        	return settings.currentTarget;
+        }
+        
         function saveSettings() {
             if (s.add(STORAGE_KEY, settings)) {
                 return true;
@@ -100,11 +107,6 @@ define({
         function setTime(time) {
             settings.time = time;
             return saveSettings();
-        }
-        
-        function setPoints(points) {
-        	settings.points = points;
-        	return saveSettings();
         }
         
         function setAgeRange(age) {
@@ -132,8 +134,14 @@ define({
         	return saveSettings();
         }
         
+        function setCurrentTarget(target) {
+        	settings.currentTarget = target;
+        }
+        
         function addPoints(points) {
-            settings.points += points;
+            // TODO: Move points to a separate model?
+            e.fire('points.change', {previous: settings.points, current: settings.points + points, delta: points});
+            settings.points += points;            
             return saveSettings();
         }
         
@@ -157,7 +165,6 @@ define({
             getTime: getTime,
             setTime: setTime,
             getPoints: getPoints,
-            setPoints: setPoints,
             addPoints: addPoints,
             getAgeRange: getAgeRange,
             setAgeRange: setAgeRange,
@@ -168,7 +175,9 @@ define({
             getDistanceUnits: getDistanceUnits,
             setDistanceUnits: setDistanceUnits,
             getPaceUnits: getPaceUnits,
-            setPaceUnits: setPaceUnits
+            setPaceUnits: setPaceUnits,
+            getCurrentTarget: getCurrentTarget,
+            setCurrentTarget: setCurrentTarget
         };
     }
 
