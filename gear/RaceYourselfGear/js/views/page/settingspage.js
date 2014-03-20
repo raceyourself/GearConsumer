@@ -12,7 +12,7 @@ define({
         'models/race',
         'models/settings',
         'views/page/ageselect',
-        'views/page/distanceunits',
+        'views/page/audioactive',
         'views/page/paceunits'
     ],
     def: function viewsPageSettingsPage(req) {
@@ -50,7 +50,7 @@ define({
         }
         
         function onDistanceUnitsBtnClick() {
-        	e.fire('distanceunits.show');
+        	e.fire('audioactive.show');
         }
         
         function onPaceUnitsBtnClick() {
