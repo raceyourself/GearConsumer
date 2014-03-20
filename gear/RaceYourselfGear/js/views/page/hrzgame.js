@@ -532,6 +532,7 @@ define({
 			if(hr < minHeartRate)
 			{	
 				setNotification(flashingRed, 'Heart Rate too low!', 0);
+                ppm = 5; // Standard pts/meter
 				if(!showWarning)
 				{
 					showWarning = true;
@@ -548,11 +549,11 @@ define({
 				if(!isDead)
 				{
 					runner = runnerAnimations.running;
-					ppm = 5;
 				}
 			}
 			else if(hr > maxHeartRate)
 			{
+                ppm = -1; // Negative pts/meter
 				setNotification(flashingRed, 'Heart Rate too high!', 0);
 				if(!showWarning)
 				{
@@ -569,6 +570,7 @@ define({
 			}
 			else
 			{
+                ppm = 5; // Standard pts/meter
 				//clear warning
 				showWarning = false;
 				clearNotification();
@@ -577,8 +579,7 @@ define({
 				//stop zombies catching up
 				zombiesCatchingUp = false;
 				//clear runner
-				if(!isDead)red
-				
+				if(!isDead)				
 				{
 					runner = runnerAnimations.running;
 				}
@@ -598,7 +599,6 @@ define({
         {
         	console.log("Warning up! now losing sweat points");
         	runner = runnerAnimations.running_red;
-        	ppm = -1;
         }
         
         function step() {
