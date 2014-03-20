@@ -51,6 +51,8 @@ define({
             this.goal = _goal;
             this.initialSteps = null;
             this.steps = 0;
+            this.initialCalories = null;
+            this.calories = 0;
             this.track = [];
             this.running = false;
             this.stopped = false;
@@ -121,6 +123,10 @@ define({
                 return this.steps;
             },
             
+            getCalories: function getCalories() {
+                return this.calories;
+            },
+            
             getGoal: function getGoal() {
             	return this.goal;
             },
@@ -137,13 +143,15 @@ define({
 
             if (ongoingRace.initialSteps === null) ongoingRace.initialSteps = pedometerInfo.totalStep;
             if (ongoingRace.initialDistance === null) ongoingRace.initialDistance = pedometerInfo.distance;
+            if (ongoingRace.initialCalories === null) ongoingRace.initialCalories = pedometerInfo.calorie;
             
             var step = false;
             if (pedometerInfo.totalStep !== ongoingRace.steps) step = true;
             
             ongoingRace.steps = pedometerInfo.totalStep - ongoingRace.initialSteps;
             ongoingRace.speed = pedometerInfo.speed;
-            ongoingRace.distance = pedometerInfo.distance - ongoingRace.initialDistance;            
+            ongoingRace.distance = pedometerInfo.distance - ongoingRace.initialDistance;      
+            ongoingRace.calories = pedometerInfo.calorie - ongoingRace.initialCalories;
             
             if (step) {
                 ongoingRace.track.push({distance: ongoingRace.getDistance(), time: ongoingRace.getDuration()});

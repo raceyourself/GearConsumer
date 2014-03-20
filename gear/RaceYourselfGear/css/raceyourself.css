@@ -112,22 +112,37 @@ img {
 }
 
 .stat {
-	margin: 25px;
+	width: 100%;
+	height: 33%;
+	padding: 15px 0px;
 }
 
 .stat-label {
-	font-size: medium;
+	margin-left: 50px;
+	width: 65px;
+	height: 65px;
+	text-align: center;
+	line-height: 65px;
+	float: left;
+	vertical-align: middle;
+}
+
+.stat-label img {
+	vertical-align: middle;
+	display: inline-block;
 }
 
 .stat-value {
-	font-size: larger;
+	font-size: 60px;
+	margin-left: 25px;
+	float: left;
 }
 
-#stats-right .stat {
-	text-align: left;
-}
-#stats-right .stat {
-	text-align: right;
+.stat-sub {
+	font-size: 50%;
+	margin-left: 145px;
+	line-height: 0%;
+	clear: both;
 }
 
 #summary {
@@ -188,22 +203,14 @@ img {
 .setter-value {
 	width: 60%;	
 	float: left;
+	line-height: 75%;
 }
 .setter-ok {
 	padding-top: 15px;
 	text-align: center;
 	float: clear;
 }
-#distance-value {
-	line-height: 75%;
-}
-#distance-units {
-	font-size: 30%;
-}
-#time-value {
-	line-height: 75%;
-}
-#time-units {
+.setter-units {
 	font-size: 30%;
 }
 
