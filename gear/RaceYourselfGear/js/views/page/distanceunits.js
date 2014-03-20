@@ -29,7 +29,7 @@ define({
         function onPageShow() {
             e.listen('tizen.back', onBack);
             
-            var radios = document.getElementsByName('distance-units');
+            var radios = document.getElementsByName('radio-distance-units');
             for(var i=0, length = radios.length; i < length; i++) {
             	if(settings.getDistanceUnits() == radios[i].value)
             	{
@@ -43,7 +43,7 @@ define({
 
         function onPageHide() {
            e.die('tizen.back', onBack);
-           var radios = document.getElementsByName('distance-units');
+           var radios = document.getElementsByName('radio-distance-units');
            for(var i=0, length=radios.length; i<length; i++) {
         	   if(radios[i].checked == true) {
         		   console.log('FOUND MATCHING RADIO - ' + radios[i].value);

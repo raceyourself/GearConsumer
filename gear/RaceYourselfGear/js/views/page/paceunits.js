@@ -29,24 +29,25 @@ define({
         function onPageShow() {
             e.listen('tizen.back', onBack);
             
-            var radios = document.getElementsByName('pace-units');
+            var radios = document.getElementsByName('radio-pace-units');
             for(var i=0, length = radios.length; i < length; i++) {
-            	if(settings.getPaceUnits() == radios[i].id)
+            	if(settings.getPaceUnits() == radios[i].value)
             	{
-            		console.log('FOUND MATCHING RADIO - ' + radios[i].id + ", settings is " + settings.getPaceUnits());
+            		console.log('FOUND MATCHING RADIO - ' + radios[i].value + ", settings is " + settings.getPaceUnits());
             		radios[i].checked = true;
-            		break;
+            	} else {
+                    radios[i].checked = false;            	    
             	}
             }
         }
 
         function onPageHide() {
            e.die('tizen.back', onBack);
-           var radios = document.getElementsByName('pace-units');
+           var radios = document.getElementsByName('radio-pace-units');
            for(var i=0, length=radios.length; i<length; i++) {
         	   if(radios[i].checked) {
-        		   console.log('FOUND MATCHING RADIO - ' + radios[i].id);
-        		   settings.setPaceUnits(radios[i].id);
+        		   console.log('FOUND MATCHING RADIO - ' + radios[i].value);
+        		   settings.setPaceUnits(radios[i].value);
         		   break;
         	   }
            }
