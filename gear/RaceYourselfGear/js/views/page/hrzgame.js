@@ -582,7 +582,10 @@ define({
 					clearNotification()
 					setNotification(flashingRed, 'Heart Rate too low!', 0);
 					showWarningHigh = true;
-					regularSound.play();
+					if(settings.getAudioActive()) {
+						regularSound.play();
+					}
+					
 					navigator.vibrate([1000, 500, 250, 100]);
 				}
 				if(!adaptingToRecentZoneShift)
@@ -735,7 +738,11 @@ define({
                 r.data.times_caught = r.data.times_caught || 0;
                 r.data.times_caught++;
                 r.addPoints(-100);
-                killSound.play();
+                
+                if(settings.getAudioActive()) {
+                	killSound.play();
+                }
+                
                 navigator.vibrate([1000, 500, 250, 100]);
 //                r.stop();
 //                e.fire('race.end', r);

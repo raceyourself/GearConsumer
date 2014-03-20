@@ -39,7 +39,6 @@ define({
                 scrollbar: "bar"
             });
             
-            document.getElementById('boulder-mode-btn').classList.toggle('locked-game', game.isLocked('boulder'));
             document.getElementById('dino-mode-btn').classList.toggle('locked-game', game.isLocked('dino'));
             
             e.listen('tizen.back', onBack);
@@ -56,14 +55,12 @@ define({
         
         function bindEvents() {
         	var zombieBtnEl = document.getElementById('zombie-mode-btn'),
-        		boulderBtnEl = document.getElementById('boulder-mode-btn'),
         		dinoBtnEl = document.getElementById('dino-mode-btn');
         	
         	 page.addEventListener('pageshow', onPageShow);
              page.addEventListener('pagehide', onPageHide);
              
              zombieBtnEl.addEventListener('click', onZombieBtnClick);
-             boulderBtnEl.addEventListener('click', onBoulderBtnClick);
              dinoBtnEl.addEventListener('click', onDinoBtnClick);
         }
 
@@ -86,14 +83,6 @@ define({
         	}
         	
         	
-        }
-        
-        function onBoulderBtnClick(event) {
-            if (isScrolling()) return;
-            if (game.isLocked('boulder')) return;
-            game.setCurrentGame('hrzgame');
-            game.setCurrentOpponentType('boulder');
-            e.fire('choosegoal.show');
         }
         
         function onDinoBtnClick(event) {
