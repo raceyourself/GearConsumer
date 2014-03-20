@@ -40,12 +40,17 @@ define({
             heartGreen = null,
             heartRed = null,
             heartBlack = null,
+            deadImage = null,
+            deadRunnerImage = null,
             gps = null,
             sweat = null,
             runnerAnimations = {
                     idle: { name: 'idle', sprite: null, speedThreshold: 0},
                     running: { name: 'running', sprite: null, speedThreshold: 0.1},
-                    sprinting: { name: 'sprinting', sprite: null, speedThreshold: 4}
+                    running_red: { name: 'running_red', sprite: null, speedThreshold: 0.1},
+                    sprinting: { name: 'sprinting', sprite: null, speedThreshold: 4},
+                    sprinting_red: { name: 'sprinting_red', sprite: null, speedThreshold: 4},
+                    zombieDead: { name: 'zombieDead', sprite: null, speedThreshold: -1}
             },
             zombies = [],
             zombiesAnimOffset = [],
@@ -83,7 +88,8 @@ define({
 			zombiesCatchingUp = false,
 			adaptingToRecentZoneShift = false,
 			adaptingTimeout = false,
-			showWarning = false;
+			showWarning = false,
+			isDead = false;
 			
 
             
@@ -343,6 +349,8 @@ define({
         }
         
         function nextWave() {
+        	isDead = false;
+        	runner = runnerAnimations.running;
             countingdown = true;
             wave++;
             zombieCatchupSpeed += 0.01;
@@ -432,7 +440,6 @@ define({
 						
 			//instigate warning
 			if(hr < minHeartRate)
-		
 			{	
 				if(!showWarning)
 				{
@@ -444,7 +451,26 @@ define({
 				{
 					if(warningTimeout == false)
 					{
-						warningTimeout = setTimeout(warningOver, 10*1000 * timeMultiplier);
+						warningTimeout = setTimeout(warningOver_low, 10*1000 * timeMultiplier);
+					}
+				}
+				if(!isDead)
+				{
+					runner = runnerAnimations.running;
+				}
+			}
+			else if(hr > maxHeartRate)
+			{
+				if(!showWarning)
+				{
+					showWarning = true;
+					navigator.vibrate([1000, 500, 250, 100]);
+				}
+				if(!adaptingToRecentZoneShift)
+				{
+					if(warningTimeout == false)
+					{
+						warningTimeout = setTimeout(warningOver_high, 10*1000 * timeMultiplier);
 					}
 				}
 			}
@@ -456,34 +482,46 @@ define({
 				warningTimeout = false;
 				//stop zombies catching up
 				zombiesCatchingUp = false;
+				//clear runner
+				if(!isDead)
+				{
+					runner = runnerAnimations.running;
+				}
 			}
 			
 							
 			
         }
         
-        function warningOver() 
+        function warningOver_low() 
         {
         	console.log("Warning up! Zombies catching up");
         	zombiesCatchingUp = true;
         	showWarning = false;
         }
+        function warningOver_high()
+        {
+        	console.log("Warning up! now losing sweat points");
+        	runner = runnerAnimations.running_red;
+        	
+        }
         
         function step() {
             var r = race.getOngoingRace();
-            if (r.getDistance() < zombieDistance) {
+            if (r.getDistance() < zombieDistance && !isDead) {
                 r.data.caught_by = 'zombie';
                 zombieGrowl.play();
                 navigator.vibrate([1000, 500, 250, 100]);
 //                r.stop();
                 e.fire('race.end', r);
                 lastRender = null;
-                stopZombies();
+//                stopZombies();
                 r.data.hr_zones = true;
-                banner = 'R.I.P.';
+				isDead = true;
+				runner = runnerAnimations.zombieDead;
                 requestRender();
                 clearTimeout(bannerTimeout);
-                bannerTimeout = setTimeout(nextWave, 500);
+                bannerTimeout = setTimeout(nextWave, 5000);
                 return;
             }
             if (r.getDistance() >= TRACK_LENGTH) {
@@ -498,7 +536,7 @@ define({
                 banner = 'Complete!';
                 requestRender();
                 clearTimeout(bannerTimeout);
-				bannerTimeout = setTimeout(continueToResults, 2000);
+				bannerTimeout = setTimeout(continueToResults, 5000);
 				
                 
 
@@ -575,15 +613,12 @@ define({
 				context.fillText(settings.getPoints(), xpos + sweat.width + 5 + 30, ypos + sweat.height/2);
 			}
 
-			
 			//GPS
 			if(true)
 			{
 				var scale = sweat.height / gps.height;
 				gps.drawscaled(context, canvas.width - gps.width*scale, 0, 0, scale);
 			}
-			
-
 
             // Banner
             if (banner !== false) {
@@ -659,10 +694,8 @@ define({
             
             //how high up the circle as a percentage of diameter 
             var fillProportion = (hr - MinCircleHR)/(MaxCircleHR - MinCircleHR);
-            console.log('fill proportion: ' + fillProportion);
             //height in pixels above centre line
             var h = fillProportion * 2 * radius - radius
-            console.log('h: ' + h);
             var angle = Math.asin(h/radius);
             context.beginPath();
             context.arc(hrXPos, hrYPos, radius, -angle, Math.PI + angle, false);
@@ -688,21 +721,34 @@ define({
             //Ahead/Behind
             var distXPos = 30 + radius;
             var distYPos = 37 + radius;
-            context.beginPath();
-            context.arc(distXPos, distYPos, radius, 0, 360, false);
-            context.fillStyle = green;
-			context.fill();
-			//+
-			context.fillStyle = '#fff';
-			context.font ='25px Samsung Sans';
-			context.fillText('+', distXPos, distYPos - 33);
-			//m
-			context.font = '18px Samsung Sans';
-			context.fillText('m', distXPos, distYPos + 38);
-			//number
-			var delta = Math.round(r.getDistance() - zombieDistance);
-			context.font = '56px Samsung Sans';
-			context.fillText(delta, distXPos, distYPos +4);
+            if(!isDead)
+            {
+				context.beginPath();
+				context.arc(distXPos, distYPos, radius, 0, 360, false);
+				context.fillStyle = green;
+				context.fill();
+				//+
+				context.fillStyle = '#fff';
+				context.font ='25px Samsung Sans';
+				context.fillText('+', distXPos, distYPos - 33);
+				//m
+				context.font = '18px Samsung Sans';
+				context.fillText('m', distXPos, distYPos + 38);
+				//number
+				var delta = Math.round(r.getDistance() - zombieDistance);
+				context.font = '56px Samsung Sans';
+				context.fillText(delta, distXPos, distYPos +4);
+			}
+			else
+			{
+				//dead
+				context.beginPath();
+				context.arc(distXPos, distYPos, radius, 0, 360, false);
+				context.fillStyle = red;
+				context.fill();
+				//image
+				deadImage.draw(context, distXPos - deadImage.width/2, distYPos - deadImage.height/2, 0);
+			}
             
             // Track
             context.beginPath();
@@ -756,8 +802,93 @@ define({
 			context.strokeStyle = "#fff";
 			context.stroke();
 			
-            
+			//Progress bar
+			var progressBarRadius = 10;
+			var progressBarInnerRadius = 8;
+			var progressBarHeight = canvas.height - progressBarRadius - 8;
+			var progressBarInset = progressBarRadius + 10;
+			
+			//white capsule
+			context.beginPath();
+			context.arc(progressBarInset, progressBarHeight, progressBarRadius, Math.PI/2, Math.PI*1.5, false);
+			context.lineTo(canvas.width - progressBarInset, progressBarHeight - progressBarRadius)
+			context.arc(canvas.width - progressBarInset, progressBarHeight, progressBarRadius, -Math.PI/2, Math.PI/2, false);
+			context.closePath();
+			context.fillStyle = '#fff';
+			context.fill();
+			
+			//green fill
+			context.beginPath();
+			var fillProportion = r.getDistance()/TRACK_LENGTH;
+			var fillDistance = (canvas.width - 2*progressBarInset + 2*progressBarRadius) * fillProportion;
+			console.log(fillDistance);
+			if(fillDistance <= progressBarInnerRadius)
+			{
+				//fill partial circle
+//				var fillSegmentProportion = (progressBarInnerRadius - fillDistance)/progressBarInnerRadius;
+				//height in pixels in from edge
+				var h = progressBarInnerRadius - fillDistance;
+				var angle = Math.asin(h/progressBarInnerRadius);
+				context.arc(progressBarInset, progressBarHeight, progressBarInnerRadius, angle + Math.PI/2, 1.5*Math.PI - angle, false);
+
+			}
+			else if(fillDistance >= (canvas.width - 2*progressBarInset) + progressBarInnerRadius )
+			{
+
+				//fill in semicircle, full box, and partial circle
+				context.arc(progressBarInset, progressBarHeight, progressBarInnerRadius, Math.PI/2, 1.5*Math.PI, false);
+				//across and down
+				var straightEnd = canvas.width - progressBarInset;
+				context.lineTo( straightEnd, progressBarHeight - progressBarInnerRadius );
+				context.lineTo( straightEnd, progressBarHeight + progressBarInnerRadius );
+				context.closePath();
+				context.fillStyle = green;
+				context.fill();
+				
+				//partial segment top
+				context.beginPath();
+				var h = fillDistance - (canvas.width - 2*progressBarInset) - progressBarInnerRadius;
+				var angle = Math.asin(h/progressBarInnerRadius);
+				
+				context.moveTo(canvas.width - progressBarInset + h, progressBarHeight - progressBarInnerRadius * Math.cos(angle));
+				context.arc(canvas.width - progressBarInset, progressBarHeight, progressBarInnerRadius, Math.PI/2 - angle, Math.PI/2, false);
+				context.lineTo(canvas.width - progressBarInset, progressBarHeight - progressBarInnerRadius);
+				context.arc(canvas.width - progressBarInset, progressBarHeight, progressBarInnerRadius, 1.5*Math.PI, 1.5*Math.PI + angle, false);
+				context.closePath();
+			}
+			else
+			{
+				//fill in semicircle and box
+				context.arc(progressBarInset, progressBarHeight, progressBarInnerRadius, Math.PI/2, 1.5*Math.PI, false);
+				//across and down
+				var straightEnd = progressBarInset - progressBarInnerRadius + fillDistance;
+				context.lineTo( straightEnd, progressBarHeight - progressBarInnerRadius );
+				context.lineTo( straightEnd, progressBarHeight + progressBarInnerRadius );
+				context.closePath();
+
+			}
+			context.fillStyle = green;
+			context.fill();
+			
+			//text labels
+			///run
+			context.font = '18px Samsung Sans';
+			context.fillStyle = '#000';
+			context.textAlign = 'left';
+			context.textBaseline = 'middle';
+			distkm = Math.round(r.getDistance()/100) / 10;
+			context.fillText(distkm + 'km', progressBarInset - 5, progressBarHeight);
+			//target
+			context.textAlign = 'right';
+			var targetdist = Math.round(TRACK_LENGTH/100)/10;
+			context.fillText(targetdist + 'km', canvas.width - progressBarInset + 5, progressBarHeight);
+
+			
+			
+            //green contents
             var scale = 10/screenWidthDistance;
+            
+            var playerXPos = 0 + distanceToTrackPos(r.getDistance())
             
             // Zombies
             if (zombieDistance !== false) {
@@ -770,16 +901,20 @@ define({
                     var zombiePos = 0 + distanceToTrackPos(zombieDistance) - x_offset;
 //                    zombiePos -= screenLeftDistance;
 		    var localDT = dt * (0.9 + zombiesAnimOffset[i]);
-
-                    zombie.drawscaled(context, zombiePos, canvas.height - zombie.height * scale - trackHeight - 5*scale + y_offset, localDT, scale);
-//                    console.log('screenwidth:' + screenWidthDistance);
-//                    console.log('scale:' + scale);
+					if(!isDead || zombiePos < playerXPos - 10)
+					{	
+						// if we're dead don't draw them as they join the bundle
+						zombie.drawscaled(context, zombiePos, canvas.height - zombie.height * scale - trackHeight - 5*scale + y_offset, localDT, scale);
+					}
                 }
                 context.globalAlpha = 1;
             }
             
             // Self
-            runner.sprite.drawscaled(context, 0 + distanceToTrackPos(r.getDistance()), canvas.height - runner.sprite.height * scale - trackHeight - 5*scale, dt, scale);
+            //temp hack - make player bigger in death 'cloud' form
+            var playerScale = scale;
+            if(isDead) { playerScale *= 1.5; }
+            runner.sprite.drawscaled(context, playerXPos, canvas.height - runner.sprite.height * playerScale - trackHeight - 5 * playerScale, dt, playerScale);
             
             /// DEBUG
             // fps
@@ -850,6 +985,25 @@ define({
                 throw "Could not load " + this.src;
             }
             image.src = 'images/animation_runner_green.png';
+
+			image = new Image();
+            image.onload = function() {
+                runnerAnimations.running_red.sprite = new Sprite(this, this.width / 6, 1000);
+                runnerAnimations.sprinting_red.sprite = new Sprite(this, this.width / 6, 1000);
+            }
+            image.onerror = function() {
+                throw "Could not load " + this.src;
+            }
+            image.src = 'images/animation_runner_red.png';
+
+			image = new Image();
+            image.onload = function() {
+                runnerAnimations.zombieDead.sprite = new Sprite(this, this.width / 2, 1000);
+            }
+            image.onerror = function() {
+                throw "Could not load " + this.src;
+            }
+            image.src = 'images/animation_cloud.png';
 
             /*
             image = new Image();
@@ -931,6 +1085,22 @@ define({
 			image.onerror = function() { throw "could not load" + this.src; }
 			image.src = 'images/image_sweat_point_green.png';
             
+            //dead image
+			image = new Image();
+			image.onload = function() {
+				deadImage = new Sprite(this, this.width, 1000);
+			}
+			image.onerror = function() { throw "could not load" + this.src; }
+			image.src = 'images/image_skull.png';
+                        
+ 			//dead player image
+			image = new Image();
+			image.onload = function() {
+				deadRunnerImage = new Sprite(this, this.width, 1000);
+			}
+			image.onerror = function() { throw "could not load" + this.src; }
+			image.src = 'images/image_skull.png';
+			           
            /* if (hrm.isAvailable()) {
                 hrm.start();
             } else {
