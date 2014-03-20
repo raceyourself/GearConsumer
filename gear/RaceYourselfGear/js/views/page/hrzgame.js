@@ -67,6 +67,8 @@ define({
             zombies = [],
             dino = null,
             boulder = null,
+            dinoGameImage = null,
+            boulderGameImage = null,
             zombiesAnimOffset = [],
             numZombies = 0,
             zombieDistance = false,
@@ -94,6 +96,7 @@ define({
             minHeartRate = 120,
             hrInterval = false,
             hrChangePeriod = 5000,
+            lastHRtime = 0,
             hrColour = '#fff',
             zombieCatchupSpeed = 0.05,
             zombieStartOffset = -25,
@@ -119,7 +122,10 @@ define({
             red = '#cb2027',
             lightRed = '#dc8080',
 			flashingRed = 'flashingRed',
-			flashingRedParams = { colour: '#fff', period:400, phase: 0 };
+			flashingRedParams = { colour: '#fff', period:400, phase: 0 },
+			hrNotFound = false,
+			unlockNotification = null,
+			unlockNotificationTimer = null;
 
 			
 
@@ -145,6 +151,21 @@ define({
 			notification.active = false;
 			clearTimeout(notificationTimeout);
 			notificationTimeout = false;
+		}
+
+		function clearUnlockNotification()
+		{
+			clearTimeout(unlockNotificationTimer);
+			unlockNotification = null;
+		}
+
+		function showUnlockNotification(game)
+		{
+			//vibrate
+			navigator.vibrate([10, 10, 10, 10, 10, 10, 10]);
+			unlockNotifiaction = game;
+			//TODO - have this only disappear 5s after user raises wrist
+			unlockNotificationTimer = setTimeout(clearUnlockNotification, 5*1000);
 		}
 
         function onPageShow() {
@@ -175,6 +196,7 @@ define({
 			if (type == 'time') { targetTime = settings.getTime() * 60 * 1000; }
 			else if (type == 'distance') { TRACK_LENGTH = settings.getDistance(); }
 				
+            lastHRtime = Date.now();
             
             canvas.width = canvas.offsetWidth;
             canvas.height = canvas.offsetHeight;        
@@ -489,6 +511,12 @@ define({
 			
 			screenLeftDistance = (zombieDistance + r.getDistance() - screenWidthDistance)/2;
 			
+			//check how long since heartrate
+			if( Date.now() - lastHRtime > 10*1000 )
+			{
+				hrNotFound = true;			
+			}
+
         }
 
         
@@ -500,6 +528,8 @@ define({
         
         function onHeartRateChange(hrmInfo) {
         	//set heartRate
+        	lastHRtime = Date.now();
+        	hrNotFound = false;
             hr = hrmInfo.detail.heartRate;
         	handleHRChanged();
         }
@@ -514,12 +544,24 @@ define({
         	e.fire('hrm.change', {heartRate: hr});
         }
         
-        function handleHRChanged() {
-			if(hr > maxHeartRate)
+        function handleHRChanged() 
+        {
+        	if(hrNotFound)
+        	{
+				showWarning = false;
+				zombiesCatchingUp = false;
+				runner = runnerAnimations.running;
+				clearNotification();
+				setNotification( '#fff', 'No Heart Rate', 0);
+        	}
+        	else
+        	{
+        
+			if(hr > maxHeartRate && !hrNotFound)
 			{
 				hrColour = '#ff0000';
 			}
-			else if (hr > minHeartRate)
+			else if (hr > minHeartRate && !hrNotFound)
 			{
 				hrColour = '#fff';
 			}
@@ -546,9 +588,9 @@ define({
 			//instigate warning
 			if(hr < minHeartRate)
 			{	
-				setNotification(flashingRed, 'Heart Rate too low!', 0);
 				if(!showWarning)
 				{
+					setNotification(flashingRed, 'Heart Rate too low!', 0);
 					showWarning = true;
 					regularSound.play();
 					navigator.vibrate([1000, 500, 250, 100]);
@@ -568,9 +610,10 @@ define({
 			}
 			else if(hr > maxHeartRate)
 			{
-				setNotification(flashingRed, 'Heart Rate too high!', 0);
+
 				if(!showWarning)
 				{
+					setNotification(flashingRed, 'Heart Rate too high!', 0);
 					showWarning = true;
 					navigator.vibrate([1000, 500, 250, 100]);
 				}
@@ -584,21 +627,24 @@ define({
 			}
 			else
 			{
+				//within heart rate, or no heart rate found
 				//clear warning
-				showWarning = false;
-				clearNotification();
+				if(showWarning)
+				{
+					showWarning = false;
+					clearNotification();
+				}
 				clearTimeout(warningTimeout);
 				warningTimeout = false;
 				//stop zombies catching up
 				zombiesCatchingUp = false;
 				//clear runner
-				if(!isDead)red
-				
+				if(!isDead)
 				{
 					runner = runnerAnimations.running;
 				}
 			}
-			
+			}
 							
 			
         }
@@ -627,7 +673,7 @@ define({
                 navigator.vibrate([1000, 500, 250, 100]);
 //                r.stop();
 //                e.fire('race.end', r);
-                lastRender = null;
+//                lastRender = null;
 //                stopZombies();
 				isDead = true;
 				runner = runnerAnimations.zombieDead;
@@ -813,7 +859,12 @@ define({
 				var heartIcon = null;
 				var hrFillColour = green;
 
-				if(hr > maxHeartRate) 
+				if(hrNotFound)
+				{
+					heartIcon = heartBlack;
+					hrFillColour = '#555';
+				}
+				else if(hr > maxHeartRate)
 				{
 					heartIcon = heartBlack; 
 					hrFillColour = flashingRedParams.colour;             	
@@ -823,6 +874,7 @@ define({
 					heartIcon = heartRed; 
 					hrFillColour = flashingRedParams.colour;
 				}
+
 				else { heartIcon = heartGreen; }
 			
 				var radius = 115/2;
@@ -838,6 +890,7 @@ define({
 			
 				//how high up the circle as a percentage of diameter 
 				var fillProportion = (hr - MinCircleHR)/(MaxCircleHR - MinCircleHR);
+				if(hrNotFound) { fillProportion = 1; }
 				//height in pixels above centre line
 				var h = fillProportion * 2 * radius - radius
 				var angle = Math.asin(h/radius);
@@ -853,7 +906,9 @@ define({
 				context.textAlign = 'center';
 				context.textBaseline = "middle";
 				context.fillStyle = '#000';
-				context.fillText(hr, hrXPos, hrYPos + 10);
+				var hrText = hr;
+				if(hrNotFound) { hrText = '--'; }
+				context.fillText(hrText, hrXPos, hrYPos + 10);
 				//bpm
 				context.font = '18px Samsung Sans';
 				context.fillText('bpm', hrXPos, hrYPos + 38);
@@ -1199,6 +1254,55 @@ define({
             	context.fillText(banner,centreX, centreY);
             }
             
+            //Unlock Notification
+            if(unlockNotification != null)
+            {
+            	var centreX = canvas.width/2;
+            	var centreY = canvas.height/2;
+            	var unlockRadius = 110
+            	//white bg
+            	context.globalAlpha = 0.5;
+            	context.fillStyle = '#fff';
+            	context.fillRect(0,0,canvas.width, canvas.height);
+            	context.globalAlpha = 1;
+            	
+            	//black circle
+            	context.beginPath();
+            	context.arc(centreX, centreY, unlockRadius, 0, 2* Math.PI, false);
+            	context.fillStyle = '#000';
+            	context.fill();
+//            	context.beginPath();
+//            	context.arc(centreX, centreY, unlockRadius, 0, 2* Math.PI, false);
+            	context.strokeStyle = '#fff';
+            	context.stroke();
+            	//image
+            	var unlockSprite = null;
+            	var unlockMessage = '';
+            	switch(unlockNotification)
+            	{
+            		case 'dino':
+            			unlockSprite = dinoGameImage;
+            			unlockMessage = 'Race Dino'
+            			break;
+					case 'boulder':
+						unlockSprite = boulderGameImage;
+						unlockMessage = 'Race Boulder'
+						break;
+					default:
+						console.log('unknown game being unlocked ' + unlockNotification);
+            	}
+            	unlockSprite.draw(context, centreX - unlockSprite.width/2, centreY - unlockSprite.height/2 + 50, 0);
+            	//text
+            	context.font = '25px Samsung Sans';
+            	context.textAlign = "center";
+            	context.textBaseline = "middle";
+            	context.fillStyle = '#fff';
+            	context.fillText('Well Done!', centreX, centreY -69);
+            	context.fillText('You unlocked', centreX, centreY -39);
+            	context.fillText(unlockMessage, centreX, centreY -9 );
+            }
+            
+            
             context.save();
             frames++;
         }
@@ -1390,7 +1494,23 @@ define({
 			}
 			image.onerror = function() { throw "could not load" + this.src; }
 			image.src = 'images/image_boulder_achievement_screen.png';			
-			           
+			
+			//dino game image
+			image = new Image();
+			image.onload = function() {
+				dinoGameImage = new Sprite(this, this.width, 1000);
+			}
+			image.onerror = function() { throw "could not load" + this.src; }
+			image.src = 'images/image_dino_achievement_screen.png';
+			
+			//boulder game image
+			image = new Image();
+			image.onload = function() {
+				boulderGameImage = new Sprite(this, this.width, 1000);
+			}
+			image.onerror = function() { throw "could not load" + this.src; }
+			image.src = 'images/image_boulder_achievement_screen.png';	
+			     
            /* if (hrm.isAvailable()) {
                 hrm.start();
             } else {
