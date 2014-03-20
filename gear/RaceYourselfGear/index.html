@@ -455,29 +455,45 @@
     	<div id="race-summary-sectionchanger" class="ui-content">
     		<div>
     			<section id="summary" class="section-active">
-    				<div >
-    					<div class="summary-label" id="time-stat"><img style="float:left" src="images/icon_time.png"/>0 00</div>
-    					<span class="summary-value">h min</span>
-    				</div>
     				<div>
-    					<div class="summary-label" id="distance-stat"><img style="float:left" src="images/icon_speed.png"/>0</div>
-    					<span class="summary-value">m</span>
-    				</div>
-    				<div >
-    					<div style="float:inherited" class="summary-label" id="calories-stat"><img style="float:left" src="images/icon_distance.png"/>0</div>
-    					<span class="summary-value">kcal</span>
-    				</div>
+		        		<div class="stat-label"><img src="images/icon-time.png" /></div>
+			        	<div id="duration-final" class="stat-value">0 00</div>
+			        	<div class="stat-sub" id="duration-units">hrs&nbsp;&nbsp;&nbsp;min</div>
+			        </div>
+		        	<div class="stat">
+		        		<div class="stat-label"><img src="images/icon-distance.png" /></div>
+		        		<div id="distance-final" class="stat-value">0</div>
+		        		<div class="stat-sub" id="distance-units">meters</div>
+		        	</div>
+		        	<div class="stat">
+		        		<div class="stat-label"><img src="images/icon-kcal.png" /></div>
+			        	<div id="kcal-final" class="stat-value">0</div>
+			        	<div class="stat-sub" id="kcal-units">kcal</div>
+			        </div>
     			</section>
-    			<section>  				
-    				
+    			<section>  
+    				<div class="stat">
+		        		<div class="stat-label"><img src="images/icon-steps.png" /></div>
+			        	<div id="steps-final" class="stat-value">0</div>
+			        	<div class="stat-sub" id="steps-units">steps</div>
+			        </div>		
+    				<div>
+		        		<div class="stat-label"><img src="images/icon-bpm.png" /></div>
+			        	<div id="current-sweat-final" class="stat-value">0</div>
+			        	<div class="stat-sub" id="bpm-units">sweat points</div>
+			        </div>
+		        	<div class="stat">
+		        		<div class="stat-label"><img src="images/icon-kcal.png" /></div>
+			        	<div id="total-sweat-final" class="stat-value">0</div>
+			        	<div class="stat-sub" id="kcal-units">total sweat points</div>
+			        </div>
     			</section>
     			<section>
-    				
-    			</section>
-    			<section>
-    				<a href="#" id="race-summary-end-btn">
-    					
+    			<div class="centeredImage">
+    				<a href="#" id="race-summary-end-btn" >
+    					<img src="images/empty-button.png" />
     				</a>
+    				</div>
     			</section>
     		</div>
     	</div>

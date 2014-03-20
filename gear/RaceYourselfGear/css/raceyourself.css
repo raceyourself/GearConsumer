@@ -232,3 +232,12 @@ img {
 	font-size: 50%;
 	padding-bottom: 10px;
 }
+
+.centeredImage
+    {
+    text-align:center;
+    margin-top:85px;
+    margin-bottom:0px;
+    padding:0px;
+    }
+

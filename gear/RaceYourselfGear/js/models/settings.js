@@ -25,7 +25,8 @@ define({
                 zombieTutorial: false,
                 firstTimeAge: true,
                 distanceunits: 'KM',
-                paceunits: 'Min/km'
+                paceunits: 'Min/km',
+                currentTarget: ""
             },
             settings = {},
             STORAGE_KEY = 'settings';
@@ -74,6 +75,10 @@ define({
         
         function getPaceUnits() {
         	return settings.paceunits;
+        }
+        
+        function getCurrentTarget() {
+        	return settings.currentTarget;
         }
         
         function saveSettings() {
@@ -132,6 +137,10 @@ define({
         	return saveSettings();
         }
         
+        function setCurrentTarget(target) {
+        	settings.currentTarget = target;
+        }
+        
         function addPoints(points) {
             settings.points += points;
             return saveSettings();
@@ -168,7 +177,9 @@ define({
             getDistanceUnits: getDistanceUnits,
             setDistanceUnits: setDistanceUnits,
             getPaceUnits: getPaceUnits,
-            setPaceUnits: setPaceUnits
+            setPaceUnits: setPaceUnits,
+            getCurrentTarget: getCurrentTarget,
+            setCurrentTarget: setCurrentTarget
         };
     }
 

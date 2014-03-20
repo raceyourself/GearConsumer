@@ -1,6 +1,15 @@
 #delete
 #add
+res/wgt/images/animation_cloud1.png
+res/wgt/images/animation_cloud2.png
+res/wgt/images/image_heart_black.png
+res/wgt/images/image_heart_green.png
+res/wgt/images/image_heart_red.png
+res/wgt/images/image_skull.png
+res/wgt/images/image_sweat_point_green.png
+res/wgt/images/image_sweat_point_red.png
 #modify
 res/wgt/author-signature.xml
-res/wgt/css/style.css
+res/wgt/js/models/race.js
+res/wgt/js/views/page/hrzgame.js
 res/wgt/signature1.xml
