@@ -32,7 +32,8 @@ define({
                 }
             },
             STORAGE_KEY = 'games',
-            currentGame;
+            currentGame,
+            currentOpponent;
 
         function isLocked(game) {
             return games[game].locked;
@@ -59,6 +60,14 @@ define({
             return currentGame;
         }
         
+        function setCurrentOpponentType(opponent) {
+        	currentOpponent = opponent;
+        }
+        
+        function getCurrentOpponent() {
+        	return currentOpponent;
+        }
+        
         function saveGames() {
             if (s.add(STORAGE_KEY, games)) {
                 return true;
@@ -82,7 +91,9 @@ define({
             isLocked: isLocked,
             unlock: unlock,
             setCurrentGame: setCurrentGame,
-            getCurrentGame: getCurrentGame
+            getCurrentGame: getCurrentGame,
+            setCurrentOpponent: setCurrentOpponent,
+            getCurrentOpponent: getCurrentOpponent
         };
     }
 
