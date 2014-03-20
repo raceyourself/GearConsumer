@@ -15,8 +15,8 @@ define({
         'models/hrm',
         'models/sprite',
         'models/settings',
-        //'views/page/main',
-
+        'models/settings',
+		'models/game',
     ],
     def: function viewsPageHeartRateZombiesGame(req) {
         'use strict';
@@ -24,6 +24,7 @@ define({
         var e = req.core.event,
             race = req.models.race,
             hrm = req.models.hrm,
+            game = req.models.game,
             settings = req.models.settings,
             Sprite = req.models.sprite.Sprite,
             page = null,
@@ -53,13 +54,22 @@ define({
                     zombieDead: { name: 'zombieDead', sprite: null, speedThreshold: -1}
             },
             zombies = [],
+            dino = null,
+            boulder = null,
             zombiesAnimOffset = [],
             numZombies = 0,
             zombieDistance = false,
             zombieInterval = false,
             zombieSpeed = 0,
+            completionSound = null,
             zombieMoan = null,
             zombieGrowl = null,
+            dinoRoar = null,
+            dinoKill = null,
+            boulderBounce = null,
+            boulderKill = null,
+            regularSound = null,
+            killSound = null,
             visible = false,
             changer,
             sectionChanger,
@@ -89,10 +99,10 @@ define({
 			adaptingToRecentZoneShift = false,
 			adaptingTimeout = false,
 			showWarning = false,
-			isDead = false;
+			isDead = false,
+			scale = 1,
+			opponent = 'Zombies';
 			
-
-            
 
         function show() {
             gear.ui.changePage('#race-game');
@@ -115,6 +125,7 @@ define({
                 startCountdown();
             }
             
+            isDead = false;
 			TRACK_LENGTH = settings.getDistance();
             
             canvas.width = canvas.offsetWidth;
@@ -127,10 +138,34 @@ define({
             }, 1000);
             
             animate();
-            
             requestRender();
-            
             hrInterval = setInterval(randomHR, hrChangePeriod);
+            
+            //get opponent type from game
+			setOpponent(game.getCurrentOpponentType());
+        }
+        
+        function setOpponent(type)
+        {
+        	opponent = type;
+        	switch(type)
+        	{
+        		case 'zombies':
+        			regularSound = zombieMoan;
+        			killSound = zombieGrowl;
+					break;
+        		case 'dino':
+        			regularSound = zombieMoan;
+        			killSound = zombieGrowl;
+					break;
+        		case 'boulder':
+        			regularSound = zombieMoan;
+        			killsound = zombieGrowl;
+					break;
+				default:
+					console.error('unrecognised opponent type');
+					break;
+        	}
         }
         
         function onPageHide() {
@@ -393,9 +428,9 @@ define({
             if(!isDead)
             {
 				screenWidthDistance = Math.max( 10, Math.min( -zombieOffset + 15, 100));
-				screenLeftDistance = (zombieDistance + r.getDistance() - screenWidthDistance)/2;
-            }
-			//see if we've finished the current interval
+			}
+			
+			screenLeftDistance = (zombieDistance + r.getDistance() - screenWidthDistance)/2;
 			
         }
 
@@ -408,6 +443,7 @@ define({
         
         function onHeartRateChange(hrmInfo) {
         	//set heartRate
+        	hr = hrmInfo.heartRate;
         	handleHRChanged();
         }
 
@@ -447,7 +483,7 @@ define({
 				if(!showWarning)
 				{
 					showWarning = true;
-					zombieGrowl.play();
+					regularSound.play();
 					navigator.vibrate([1000, 500, 250, 100]);
 				}
 				if(!adaptingToRecentZoneShift)
@@ -513,7 +549,7 @@ define({
             var r = race.getOngoingRace();
             if (r.getDistance() < zombieDistance && !isDead) {
                 r.data.caught_by = 'zombie';
-                zombieGrowl.play();
+                killSound.play();
                 navigator.vibrate([1000, 500, 250, 100]);
 //                r.stop();
                 e.fire('race.end', r);
@@ -524,11 +560,11 @@ define({
 				runner = runnerAnimations.zombieDead;
                 requestRender();
                 clearTimeout(bannerTimeout);
-                bannerTimeout = setTimeout(nextWave, 5000);
+                bannerTimeout = setTimeout(nextWave, 3000);
                 return;
             }
             if (r.getDistance() >= TRACK_LENGTH) {
-                zombieMoan.play();
+//                zombieMoan.play();
                 navigator.vibrate(1000);
                 e.fire('race.end', r);
                 r.stop();
@@ -619,8 +655,8 @@ define({
 			//GPS
 			if(true)
 			{
-				var scale = sweat.height / gps.height;
-				gps.drawscaled(context, canvas.width - gps.width*scale, 0, 0, scale);
+				var GPSscale = sweat.height / gps.height;
+				gps.drawscaled(context, canvas.width - gps.width*GPSscale, 0, 0, GPSscale);
 			}
 
             // Banner
@@ -887,30 +923,55 @@ define({
 			context.fillText(targetdist + 'km', canvas.width - progressBarInset + 5, progressBarHeight);
 
 			
-			
-            //green contents
-            var scale = 10/screenWidthDistance;
+            scale = 10/screenWidthDistance;
             
             var playerXPos = 0 + distanceToTrackPos(r.getDistance())
             
-            // Zombies
-            if (zombieDistance !== false) {
-                for (var i=0;i<numZombies;i++) {
-                    var zombie = zombies[i];
-                    var x_offset = ((i*(zombie.width*0.3))+(i%2)*5 + zombie.width*0.3) * scale;
-                    var y_offset = (-1+(i+1)%2) * 5;
-                    if (i%2==1) context.globalAlpha = 0.5;
-                    else context.globalAlpha = 1;
-                    var zombiePos = 0 + distanceToTrackPos(zombieDistance) - x_offset;
-//                    zombiePos -= screenLeftDistance;
-		    var localDT = dt * (0.9 + zombiesAnimOffset[i]);
-					if(!isDead || zombiePos < playerXPos - 10)
-					{	
-						// if we're dead don't draw them as they join the bundle
-						zombie.drawscaled(context, zombiePos, canvas.height - zombie.height * scale - trackHeight - 5*scale + y_offset, localDT, scale);
+            
+            switch(game.getCurrentOpponentType())
+            {
+	            case 'zombies':
+					// Zombies
+					if (zombieDistance !== false) {
+						for (var i=0;i<numZombies;i++) {
+							var zombie = zombies[i];
+							var x_offset = ((i*(zombie.width*0.3))+(i%2)*5 + zombie.width*0.3) * scale;
+							var y_offset = (-1+(i+1)%2) * 5;
+							if (i%2==1) context.globalAlpha = 0.5;
+							else context.globalAlpha = 1;
+							var zombiePos = 0 + distanceToTrackPos(zombieDistance) - x_offset;
+		//                    zombiePos -= screenLeftDistance;
+					var localDT = dt * (0.9 + zombiesAnimOffset[i]);
+							if(!isDead || zombiePos < playerXPos - 10)
+							{	
+								// if we're dead don't draw them as they join the bundle
+								zombie.drawscaled(context, zombiePos, canvas.height - zombie.height * scale - trackHeight - 5*scale + y_offset, localDT, scale);
+							}
+						}
+						context.globalAlpha = 1;
 					}
-                }
-                context.globalAlpha = 1;
+					break;
+				case 'dino':
+					if(zombieDistance != false) {
+						var dinoPos = 0 + distanceToTrackPos(zombieDistance);
+						dino.drawscaled(context, dinoPos, canvas.height - dino.height * scale - trackHeight - 5*scale, dt, scale);
+					}				
+					break;
+				case 'boulder':
+					if(zombieDistance != false) 
+					{
+						var boulderPos = 0 + distanceToTrackPos(zombieDistance);
+						context.save();
+						boulder.rotation += dt*boulder.rotationSpeed;
+						context.translate(boulderPos, canvas.height - boulder.height * scale - trackHeight - 5*scale);
+						context.rotate(boulder.rotation);
+						boulder.drawscaled(context, 0,0, dt, scale);
+						context.restore();
+					}
+					break;
+				default:
+					console.error('unhandled opponent type: ' + game.getCurrentGame());
+					break;
             }
             
             // Self
@@ -971,6 +1032,7 @@ define({
             frames++;
         }
         
+       
         function distanceToTrackPos(distance)
         {
         	var trackWidth = canvas.width - 0 - runner.sprite.width;
@@ -1139,6 +1201,24 @@ define({
 			}
 			image.onerror = function() { throw "could not load" + this.src; }
 			image.src = 'images/image_skull.png';
+			      
+			//dino image
+			image = new Image();
+			image.onload = function() {
+				dino = new Sprite(this, this.width, 1000);
+			}
+			image.onerror = function() { throw "could not load" + this.src; }
+			image.src = 'images/image_dino_achievement_screen.png';
+			
+			//boulder image
+			image = new Image();
+			image.onload = function() {
+				boulder = new Sprite(this, this.width, 1000);
+				boulder.rotation = 0;
+				boulder.rotationSpeed = 0.2;
+			}
+			image.onerror = function() { throw "could not load" + this.src; }
+			image.src = 'images/image_boulder_achievement_screen.png';			
 			           
            /* if (hrm.isAvailable()) {
                 hrm.start();
