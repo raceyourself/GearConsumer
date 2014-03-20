@@ -43,14 +43,6 @@ define({
 
         function onPageHide() {
            e.die('tizen.back', onBack);
-           var radios = document.getElementsByName('radio-pace-units');
-           for(var i=0, length=radios.length; i<length; i++) {
-        	   if(radios[i].checked) {
-        		   console.log('FOUND MATCHING RADIO - ' + radios[i].value);
-        		   settings.setPaceUnits(radios[i].value);
-        		   break;
-        	   }
-           }
         }
         
         function onBack() {
@@ -64,7 +56,26 @@ define({
         
         function init() {
             page = document.getElementById('paceunits');
+            
+            var radios = document.getElementsByName('radio-pace-units');
+            for(var i=0, length=radios.length; i<length; i++) {
+            	radios[i].addEventListener('click', onRadioClick);
+            }
+            
             bindEvents();
+        }
+        
+        function onRadioClick() {
+        	var radios = document.getElementsByName('radio-pace-units');
+            for(var i=0, length=radios.length; i<length; i++) {
+         	   if(radios[i].checked == true) {
+         		   console.log('FOUND MATCHING RADIO - ' + radios[i].value);
+         		   settings.setPaceUnits(radios[i].value);
+         		   break;
+         	   }
+         	   
+            }
+            e.fire('settingspage.show');
         }
         
         e.listeners({
