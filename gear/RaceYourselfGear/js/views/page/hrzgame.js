@@ -132,7 +132,15 @@ define({
 			unlockNotification = null,
 			unlockNotificationTimer = null,
 			dottedPattern = null,
-			countDownParams = { radius: 100, outerRadius: 250, outerRadiusMax: 250, shrinkSpeed: 5, stageDuration:1, startTime:0};
+			countDownParams = { radius: 100, outerRadius: 250, outerRadiusMax: 250, shrinkSpeed: 5, stageDuration:1, startTime:0},
+			goodBG = null,
+			badBG = null,
+			timeTurnedGood = 0,
+			timeTurnedBad = 0,
+			crossFadeParametric = 0,
+			crossFadeTime = 1,
+			badFraction = 0;
+
 			
 
 			
@@ -570,6 +578,7 @@ define({
 				ppm = 5; // Standard pts/meter
 				if(!showWarningHigh)
 				{
+					timeTurnedBad = Date.now()
 					clearNotification()
 					setNotification(flashingRed, 'Heart Rate too low!', 0);
 					showWarningHigh = true;
@@ -597,6 +606,7 @@ define({
 				//TODO check if stationary and use stationary red if so
 				if(!showWarningLow)
 				{
+					timeTurnedBad = Date.now();
 					clearNotification();
 					setNotification(flashingRed, 'Heart Rate too high!', 0);
 					showWarningLow = true;
@@ -616,6 +626,7 @@ define({
 				//clear warning
 				if(showWarningLow || showWarningHigh)
 				{
+					timeTurnedGood = Date.now();
 					showWarningLow = false;
 					showWarningHigh = false;
 					clearNotification();
@@ -822,12 +833,38 @@ define({
             if (!visible) return;
             var dt = 0;
             var trackHeight = 63;
+            var trackThickness = 4;
 
             
             if (lastRender !== null) {
                 dt = Date.now() - lastRender;
                 lastRender = Date.now();
             }
+            
+            //BG
+            //draw good bg
+            //draw bad bg with alpha
+			if(showWarningLow || showWarningHigh)
+			{
+				//go more bad
+				if(badFraction < 1)
+				{
+					badFraction += 1 * dt/1000;
+					if(badFraction > 1) { badFraction = 1; }
+				}
+			}
+			else
+			{
+				//go less bad
+				if(badFraction > 0)
+				{
+					badFraction -= 1 * dt/1000;
+					if(badFraction < 0) { badFraction = 0; }
+				}
+			}
+
+			
+            
             
             //update flashingRed
 			flashingRedParams.phase += dt;
@@ -841,6 +878,13 @@ define({
             var trackWidth = canvas.width - 0 - runner.sprite.width;
             var r = race.getOngoingRace();
 
+			
+			//draw good bg
+			context.drawImage(goodBG, 0, 0, canvas.width, canvas.height);
+			context.globalAlpha = badFraction;
+			context.drawImage(badBG, 0, 0, canvas.width, canvas.height);
+			context.globalAlpha = 1;
+
 			//Header
 			//sweat points
 			if(true)
@@ -851,7 +895,7 @@ define({
 				img.draw(context, xpos,ypos,0);
 				context.font = '24px Samsung Sans';
 //				context.fillStyle = ppm > 0 ? '#fff' : flashingRedParams.colour;
-				context.fillStyle = ppm > 0 ? green : red;
+				context.fillStyle = ppm > 0 ? '#fff' : red;
 				context.textBaseline = "middle";
 				context.textAlign = "left";
 				context.fillText('SP', xpos + sweat.width + 5, ypos + sweat.height/2);
@@ -936,7 +980,7 @@ define({
 				else { heartIcon = heartGreen; }
 			
 				var radius = 115/2;
-				var hrXPos = radius;
+				var hrXPos = canvas.width - radius - 4;
 				var hrYPos = 37 + radius;
 				//fill
 				var MaxCircleHR = 200;
@@ -945,6 +989,10 @@ define({
 				context.arc(hrXPos, hrYPos, radius, 0, 2*Math.PI, false);
 				context.fillStyle = '#fff';
 				context.fill();
+				context.strokeStyle = green;
+				if( hr < minHeartRate || hr > maxHeartRate) { context.strokeStyle = red; }
+				context.lineWidth = 5;
+				context.stroke();
 			
 				//how high up the circle as a percentage of diameter 
 				var fillProportion = (hr - MinCircleHR)/(MaxCircleHR - MinCircleHR);
@@ -993,11 +1041,11 @@ define({
 				context.fillText('bpm', hrXPos, hrYPos + 38);
 
 				//Pace
-				var PaceXPosR = canvas.width - radius;
+				var PaceXPosR = 2*radius;
 				context.beginPath();
 				context.arc(PaceXPosR, hrYPos, radius, Math.PI * 1.5, Math.PI * 2.5, false);
-				context.lineTo(PaceXPosR - radius, hrYPos + radius);
-				context.arc(PaceXPosR-radius, hrYPos, radius, Math.PI/2, Math.PI*1.5, false);
+				context.lineTo(PaceXPosR - 2*radius, hrYPos + radius);
+				context.arc(PaceXPosR-2*radius, hrYPos, radius, Math.PI/2, Math.PI*1.5, false);
 				context.closePath();
 				context.fillStyle = '#fff';
 				context.fill();
@@ -1029,110 +1077,50 @@ define({
 				//Ahead/Behind
 				if(false)
 				{
-				var distXPos = 30 + radius;
-				var distYPos = 37 + radius;
-				if(!isDead)
-				{
-					context.beginPath();
-					context.arc(distXPos, distYPos, radius, 0, 360, false);
-					context.fillStyle = green;
-					context.fill();
-					//+
-					context.fillStyle = '#fff';
-					context.font ='24px Samsung Sans';
-					context.fillText('+', distXPos, distYPos - 33);
-					//m
-					context.font = '24px Samsung Sans';
-					context.fillText('m', distXPos, distYPos + 38);
-					//number
-					var delta = Math.round(r.getDistance() - zombieDistance);
-					context.font = '56px Samsung Sans';
-					context.fillText(delta, distXPos, distYPos +4);
-				}
-				else
-				{
-					//dead
-					context.beginPath();
-					context.arc(distXPos, distYPos, radius, 0, 360, false);
-					context.fillStyle = red;
-					context.fill();
-					//image
-					deadImage.draw(context, distXPos - deadImage.width/2, distYPos - deadImage.height/2, 0);
-				}
+					var distXPos = radius;
+					var distYPos = 37 + radius;
+					if(!isDead)
+					{
+						context.beginPath();
+						context.arc(distXPos, distYPos, radius, 0, 360, false);
+						context.fillStyle = green;
+						context.fill();
+						//+
+						context.fillStyle = '#fff';
+						context.font ='24px Samsung Sans';
+						context.fillText('+', distXPos, distYPos - 33);
+						//m
+						context.font = '24px Samsung Sans';
+						context.fillText('m', distXPos, distYPos + 38);
+						//number
+						var delta = Math.round(r.getDistance() - zombieDistance);
+						context.font = '56px Samsung Sans';
+						context.fillText(delta, distXPos, distYPos +4);
+					}
+					else
+					{
+						//dead
+						context.beginPath();
+						context.arc(distXPos, distYPos, radius, 0, 360, false);
+						context.fillStyle = red;
+						context.fill();
+						//image
+						deadImage.draw(context, distXPos - deadImage.width/2, distYPos - deadImage.height/2, 0);
+					}
 				}
             }
             
-            // Track
-            context.beginPath();
-            context.moveTo(15, canvas.height - trackHeight);
-            context.lineTo(canvas.width - 15, canvas.height - trackHeight);
-            context.lineWidth = 1;
-            context.strokeStyle = "#fff";
-            context.stroke();
-            
-            // Track text
-            context.font = '24px Samsung Sans';
-            context.fillStyle = '#fff';
-            context.textBaseline = "top";
-//            context.textAlign = "left";
-//            context.fillText(''+ Math.floor(screenLeftDistance), 10, canvas.height-25);
-//            context.textAlign = "right";
-//            context.fillText(''+ Math.floor(screenWidthDistance + screenLeftDistance), canvas.width - 10, canvas.height-25);
-  			context.textAlign = "center";          
-			
-			//draw distance markers for screen range
-			context.beginPath();
-			var distMarkerSpacing = 10;
-			var distMarkerIndex = Math.floor(screenLeftDistance/distMarkerSpacing);
-			distMarkerIndex = Math.max(distMarkerIndex, 0);
-			while (distMarkerIndex * distMarkerSpacing <= (screenLeftDistance + 2*screenWidthDistance) )
-			{
-				var dist = distMarkerIndex * distMarkerSpacing
-				var screenPosX = distanceToTrackPos(dist);
-				if(dist%500 == 0)
-				{
-					context.textBaseline = "bottom";
-					context.textAlign = "right";
-					context.font = '24px Samsung Sans';
-					var distkm = dist/1000;
-					context.fillText(distkm, distanceToTrackPos(dist), canvas.height-trackHeight + 28);
-					context.textAlign = "left";
-					context.font = "24px Samsung Sans";
-					context.fillText('km', distanceToTrackPos(dist) + 1, canvas.height-trackHeight + 28);
-				}
-				else
-				{
-					var distMarkerHeight = 12;
-					if(dist%100 == 0) { distMarkerHeight = 20; }
-//					context.fillText('' + dist, distanceToTrackPos(dist), canvas.height-25);
-					context.moveTo(screenPosX, canvas.height - trackHeight +3);
-					context.lineTo(screenPosX, canvas.height - (trackHeight -3 - distMarkerHeight*scale));
-				}
-				distMarkerIndex++;
-			}
-			context.lineWidth = 6*scale;
-			context.strokeStyle = "#fff";
-			context.stroke();
-			
+			var progressBarHeight = canvas.height - (trackHeight - trackThickness)/2;
+			var progressBarInset = 0;
+			var notificationInset = 17;
+			var notificationRadius = 16;
+			var notificationHeight = canvas.height - 16;
+			var whiteInset = 8;
 			if(!notification.active)
+//			if(true)
 			{
+
 				//Progress bar
-				var progressBarRadius = 14;
-				var progressBarInnerRadius = 8;
-				var progressBarHeight = canvas.height - progressBarRadius - 8;
-				var progressBarInset = progressBarRadius + 10;
-			
-				//white capsule
-				context.beginPath();
-				context.arc(progressBarInset, progressBarHeight, progressBarRadius, Math.PI/2, Math.PI*1.5, false);
-				context.lineTo(canvas.width - progressBarInset, progressBarHeight - progressBarRadius)
-				context.arc(canvas.width - progressBarInset, progressBarHeight, progressBarRadius, -Math.PI/2, Math.PI/2, false);
-				context.closePath();
-				context.fillStyle = '#fff';
-				context.fill();
-			
-				//green fill
-				context.beginPath();
 				var fillProportion = 0;
 				if(TRACK_LENGTH < Infinity) 
 				{
@@ -1148,6 +1136,26 @@ define({
 					//'just run' mode
 					fillProportion = 0;
 				}
+				
+				if(false)	//old capsule version
+				{
+				var progressBarRadius = 14;
+				var progressBarInnerRadius = 8;
+				progressBarHeight = canvas.height - progressBarRadius - 8;
+				progressBarInset = progressBarRadius + 10;
+			
+				//white capsule
+				context.beginPath();
+				context.arc(progressBarInset, progressBarHeight, progressBarRadius, Math.PI/2, Math.PI*1.5, false);
+				context.lineTo(canvas.width - progressBarInset, progressBarHeight - progressBarRadius)
+				context.arc(canvas.width - progressBarInset, progressBarHeight, progressBarRadius, -Math.PI/2, Math.PI/2, false);
+				context.closePath();
+				context.fillStyle = '#fff';
+				context.fill();
+			
+				//green fill
+				context.beginPath();
+
 					
 				var fillDistance = (canvas.width - 2*progressBarInset + 2*progressBarRadius) * fillProportion;
 				if(fillDistance <= progressBarInnerRadius)
@@ -1195,31 +1203,108 @@ define({
 				}
 				context.fillStyle = green;
 				context.fill();
+				}
+				if(true)	//new box version
+				{
+					context.fillStyle = '#000';
+					context.fillRect( 0, canvas.height - trackHeight + trackThickness/2, canvas.width, canvas.height);
+					context.fillStyle = '#fff';
+					context.fillRect( whiteInset, canvas.height - trackHeight + trackThickness/2 + whiteInset, canvas.width - 2 * whiteInset, trackHeight - trackThickness - 2 * whiteInset);
+					
+					var greenInset = 6 + whiteInset;
+					context.fillStyle = green;
+					var fillDist = fillProportion * (canvas.width - 2*greenInset);
+					context.fillRect( greenInset, canvas.height - trackHeight + trackThickness/2 + greenInset, fillDist, trackHeight - trackThickness - 2*greenInset);
+					progressBarInset = greenInset + 5;
+				}
 			}
 			
 			//notification
 			if(notification.active)
 			{
-				var notificationInset = 17;
-				var notificationRadius = 16;
-				var notificationHeight = canvas.height - 16;
-				//draw capsule
-				context.beginPath();
-				context.arc( notificationInset, notificationHeight, notificationRadius, 0.5*Math.PI, 1.5*Math.PI, false);
-				context.lineTo( canvas.width - notificationInset, notificationHeight - notificationRadius);
-				context.arc( canvas.width - notificationInset, notificationHeight, notificationRadius, 1.5*Math.PI, 2.5*Math.PI, false);
-				context.closePath();
-				context.fillStyle = notification.colour;
-				if(notification.colour == 'flashingRed')
-					{ context.fillStyle = flashingRedParams.colour; }
-				context.fill();
+				if(false)
+				{
+					//draw capsule
+					context.beginPath();
+					context.arc( notificationInset, notificationHeight, notificationRadius, 0.5*Math.PI, 1.5*Math.PI, false);
+					context.lineTo( canvas.width - notificationInset, notificationHeight - notificationRadius);
+					context.arc( canvas.width - notificationInset, notificationHeight, notificationRadius, 1.5*Math.PI, 2.5*Math.PI, false);
+					context.closePath();
+					context.fillStyle = notification.colour;
+					if(notification.colour == 'flashingRed')
+						{ context.fillStyle = flashingRedParams.colour; }
+					context.fill();
+				}
+				if(true)
+				{
+					//draw box
+					context.fillStyle = '#000';
+					context.fillRect( 0, canvas.height - trackHeight + trackThickness/2, canvas.width, canvas.height);
+					context.fillStyle = notification.colour;
+					if(notification.colour == 'flashingRed')
+						{ context.fillStyle = flashingRedParams.colour; }
+					context.fillRect( whiteInset, canvas.height - trackHeight + trackThickness/2 + whiteInset, canvas.width - 2 * whiteInset, trackHeight - trackThickness - 2 * whiteInset);
+				}
 				//text
 				context.font = '24px Samsung Sans';
 				context.fillStyle = '#000';
 				context.textAlign = 'center';
 				context.textBaseline = 'middle';
-				context.fillText( notification.text, canvas.width/2, notificationHeight);
+				context.fillText( notification.text, canvas.width/2, progressBarHeight);
 			}
+			
+			// Track
+            context.beginPath();
+            context.moveTo(0, canvas.height - trackHeight);
+            context.lineTo(canvas.width, canvas.height - trackHeight);
+            context.lineWidth = trackThickness;
+            context.strokeStyle = "#fff";
+            context.stroke();
+            
+            // Track text
+            context.font = '24px Samsung Sans';
+            context.fillStyle = '#fff';
+            context.textBaseline = "top";
+//            context.textAlign = "left";
+//            context.fillText(''+ Math.floor(screenLeftDistance), 10, canvas.height-25);
+//            context.textAlign = "right";
+//            context.fillText(''+ Math.floor(screenWidthDistance + screenLeftDistance), canvas.width - 10, canvas.height-25);
+  			context.textAlign = "center";          
+			
+			//draw distance markers for screen range
+			context.beginPath();
+			var distMarkerSpacing = 10;
+			var distMarkerIndex = Math.floor(screenLeftDistance/distMarkerSpacing);
+			distMarkerIndex = Math.max(distMarkerIndex, 0);
+			while (distMarkerIndex * distMarkerSpacing <= (screenLeftDistance + 2*screenWidthDistance) )
+			{
+				var dist = distMarkerIndex * distMarkerSpacing
+				var screenPosX = distanceToTrackPos(dist);
+//				if(dist%500 == 0)
+				if(false)
+				{
+					context.textBaseline = "bottom";
+					context.textAlign = "right";
+					context.font = '24px Samsung Sans';
+					var distkm = dist/1000;
+					context.fillText(distkm, distanceToTrackPos(dist), canvas.height-trackHeight + 28);
+					context.textAlign = "left";
+					context.font = "24px Samsung Sans";
+					context.fillText('km', distanceToTrackPos(dist) + 1, canvas.height-trackHeight + 28);
+				}
+				else
+				{
+					var distMarkerHeight = 12;
+					if(dist%100 == 0) { distMarkerHeight = 20; }
+//					context.fillText('' + dist, distanceToTrackPos(dist), canvas.height-25);
+					context.moveTo(screenPosX, canvas.height - trackHeight +1);
+					context.lineTo(screenPosX, canvas.height - (trackHeight -3 - distMarkerHeight*scale));
+				}
+				distMarkerIndex++;
+			}
+			context.lineWidth = trackThickness*0.75;
+			context.strokeStyle = "#fff";
+			context.stroke();
 			
 			//text labels
 			///run
@@ -1228,8 +1313,12 @@ define({
 			context.textAlign = 'left';
 			context.textBaseline = 'middle';
 
+if(!notification.active)
+{
+			context.fillStyle = '#000';
 			if(TRACK_LENGTH < Infinity)
 			{
+
 				//run
 				distkm = Math.round(r.getDistance()/100) / 10;
 				context.fillText(distkm + 'km', progressBarInset - 5, progressBarHeight);
@@ -1262,6 +1351,7 @@ define({
 				var distkm = Math.round(r.getDistance()/100) / 10;
 				context.fillText(distkm + 'km', canvas.width - progressBarInset + 5, progressBarHeight);
 			}
+}
 
 			
             scale = 10/screenWidthDistance;
@@ -1675,7 +1765,19 @@ define({
 			image.onerror = function() {throw "could not load" + this.src; }
 			image.src = 'images/icon-speed_whiteBG.png';
 						
+			image = new Image();
+			image.onload = function() {
+				goodBG = this;
+			}
+			image.onerror = function() {throw "could not load" + this.src; }
+			image.src = 'images/bg_good.jpg';
 			
+			image = new Image();
+			image.onload = function() {
+				badBG = this;
+			}
+			image.onerror = function() {throw "could not load" + this.src; }
+			image.src = 'images/bg_bad.jpg';
            /* if (hrm.isAvailable()) {
                 hrm.start();
             } else {
