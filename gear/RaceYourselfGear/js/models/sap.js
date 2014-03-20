@@ -42,6 +42,7 @@ define({
          * @param {object} messageJSON
          */
         function onSendDataSuccess(channel, messageJSON) {
+            console.log(channel + ": " + messageJSON);
             document.getElementById('debug-log').innerHTML = channel + ": " + messageJSON;
             var message = JSON.parse(messageJSON);
 
@@ -116,6 +117,7 @@ define({
 
             if (window.navigator.platform.indexOf('emulated') !== -1) {
                 console.error('SAP works only on Target. Please run this on Target.');
+                document.getElementById('debug-log').innerHTML = 'SAP works only on Target. Please run this on Target.';
                 //tizen.application.getCurrentApplication().exit();
                 return;
             }
@@ -124,6 +126,7 @@ define({
                 webapis.sa.requestSAAgent(onConnectSuccess, onConnectError);
             } catch (e) {
                 console.warn('webapis.sa.requestSAAgent failed: ' + e.message);
+                document.getElementById('debug-log').innerHTML = 'webapis.sa.requestSAAgent failed: ' + e.message;
             }
         }
         
