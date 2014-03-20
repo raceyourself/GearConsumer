@@ -825,7 +825,7 @@ define({
 			context.beginPath();
 			var fillProportion = r.getDistance()/TRACK_LENGTH;
 			var fillDistance = (canvas.width - 2*progressBarInset + 2*progressBarRadius) * fillProportion;
-			console.log(fillDistance);
+//			console.log(fillDistance);
 			if(fillDistance <= progressBarInnerRadius)
 			{
 				//fill partial circle

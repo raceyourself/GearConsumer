@@ -101,7 +101,15 @@ define({
         }        
         
         function speed(kmh) {
-            
+            var speed = kmh;
+            var u = 'km/h';
+            if(settings.getDistanceUnits() == 'Miles') {
+                u = 'mph';
+                speed = units.getMiles(speed);
+            }
+                
+            paceEl.innerHTML = ~~speed;
+            paceUnitsEl.innerHTML = u;
         }
         
         function distance(meters) {
