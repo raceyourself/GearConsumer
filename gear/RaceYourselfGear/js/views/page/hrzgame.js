@@ -588,6 +588,7 @@ define({
 			//instigate warning
 			if(hr < minHeartRate)
 			{	
+                ppm = 5; // Standard pts/meter
 				if(!showWarning)
 				{
 					setNotification(flashingRed, 'Heart Rate too low!', 0);
@@ -605,12 +606,11 @@ define({
 				if(!isDead)
 				{
 					runner = runnerAnimations.running;
-					ppm = 5;
 				}
 			}
 			else if(hr > maxHeartRate)
 			{
-
+                		ppm = -1; // Negative pts/meter
 				if(!showWarning)
 				{
 					setNotification(flashingRed, 'Heart Rate too high!', 0);
@@ -627,7 +627,7 @@ define({
 			}
 			else
 			{
-				//within heart rate, or no heart rate found
+                		ppm = 5; // Standard pts/meter
 				//clear warning
 				if(showWarning)
 				{
@@ -659,7 +659,6 @@ define({
         {
         	console.log("Warning up! now losing sweat points");
         	runner = runnerAnimations.running_red;
-        	ppm = -1;
         }
         
         function step() {

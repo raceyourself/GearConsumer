@@ -61,7 +61,7 @@
 }
 
 .menu-item {
-	margin-top: 5px;
+	margin-top: 35px;
 	width: 50%;
 	display: block;
 	float: left;
@@ -243,4 +243,9 @@ img {
 
 #debug-log {
 	font-size: 15px;
+}
+
+#error-message {
+	font-size: 15px;
+	text-align: center;
 }
