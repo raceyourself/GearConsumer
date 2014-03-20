@@ -9,12 +9,14 @@ define({
     name: 'models/settings',
     requires: [
         'core/storage',
+        'core/event',
         'helpers/units'
     ],
     def: function modelsSettings(req) {
         'use strict';
 
         var s = req.core.storage,
+            e = req.core.event,
             units = req.helpers.units,
             defaults = {
                 unit: units.UNIT_METER,
@@ -107,11 +109,6 @@ define({
             return saveSettings();
         }
         
-        function setPoints(points) {
-        	settings.points = points;
-        	return saveSettings();
-        }
-        
         function setAgeRange(age) {
         	settings.age = age;
         	return saveSettings();
@@ -142,7 +139,9 @@ define({
         }
         
         function addPoints(points) {
-            settings.points += points;
+            // TODO: Move points to a separate model?
+            e.fire('points.change', {previous: settings.points, current: settings.points + points, delta: points});
+            settings.points += points;            
             return saveSettings();
         }
         
@@ -166,7 +165,6 @@ define({
             getTime: getTime,
             setTime: setTime,
             getPoints: getPoints,
-            setPoints: setPoints,
             addPoints: addPoints,
             getAgeRange: getAgeRange,
             setAgeRange: setAgeRange,
