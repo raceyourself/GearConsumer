@@ -27,6 +27,7 @@ define({
         
         function onPageShow() {
             e.listen('tizen.back', onBack);
+            e.fire('newmain.show');
         }
 
         function onPageHide() {

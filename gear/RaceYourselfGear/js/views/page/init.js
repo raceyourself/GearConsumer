@@ -63,7 +63,11 @@ define({
         }
         
         function onError(msg, url, line) {
+            document.getElementById('error-message').innerHTML = '<p><b>' + msg + '</b></p>' + url.substr(url.lastIndexOf('/')+1) + ':' + line;
             gear.ui.changePage('#error-page');
+            document.addEventListener('click', function() {
+                app.closeApplication();                
+            });
         }
 
         function bindEvents() {
