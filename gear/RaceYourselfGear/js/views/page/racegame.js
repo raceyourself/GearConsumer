@@ -8,8 +8,6 @@ define({
     name: 'views/page/racegame',
     requires: [
         'core/event',
-        'views/page/statsleft',
-        'views/page/statsright',
         'models/race'
     ],
     def: function viewsPageRaceGame(req) {

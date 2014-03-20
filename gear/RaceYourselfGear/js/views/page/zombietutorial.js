@@ -56,6 +56,7 @@ define({
         }
 
         function onZombieEndClick() {
+            if (isScrolling()) return;
         	settings.setZombieTutorial(true);
         	e.fire('trainingtype.show');
         }

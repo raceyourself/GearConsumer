@@ -5,27 +5,27 @@
  */
 
 define({
-    name: 'views/page/statsleft',
+    name: 'views/page/gamestats2',
     requires: [
         'core/event',
         'models/game',
         'models/race',
-        'models/timer',
-        'helpers/timer'
+        'models/timer'
     ],
-    def: function viewsPageStatsLeft(req) {
+    def: function viewsPageGameStats2(req) {
         'use strict';
 
         var e = req.core.event,
             race = req.models.race,
             game = req.models.game,
             Timer = req.models.timer.Timer,
-            Time = req.helpers.timer.Time,
             page = null,
             timer = null,
             ongoing = null,
-            distanceEl,
-            durationEl;
+            bpm = 'N/A',
+            bpmEl,
+            kcalEl,
+            stepsEl;
 
         function show() {
         }
@@ -33,6 +33,7 @@ define({
         function onPageShow() {
             e.listen('race.new', reloadRace);
             e.listen('pedometer.step', tick);
+            e.listen('hrm.change', hrmChange);
             
             ongoing = race.getOngoingRace();
             tick();
@@ -42,6 +43,7 @@ define({
         function onPageHide() {
             e.die('race.new', reloadRace);
             e.die('pedometer.step', tick);
+            e.die('hrm.change', hrmChange);
             timer.reset();
         }
         
@@ -49,10 +51,16 @@ define({
             ongoing = race.getOngoingRace();            
         }
         
+        function hrmChange(hrmInfo) {
+            bpm = hrmInfo.detail.heartRate;
+            tick();
+        }
+        
         function tick() {
             if (!ongoing) return;
-            distanceEl.innerHTML = ~~ongoing.getDistance();
-            durationEl.innerHTML = new Time(ongoing.getDuration());
+            bpmEl.innerHTML = bpm;
+            kcalEl.innerHTML = ~~(ongoing.getCalories());
+            stepsEl.innerHTML = ongoing.getSteps();
         }
         
         function bindEvents() {
@@ -62,15 +70,16 @@ define({
 
         function init() {
             page = document.getElementById('race-game');
-            distanceEl = document.getElementById('distance-stat');
-            durationEl = document.getElementById('duration-stat');
-            timer = new Timer(1000, 'views.page.statsleft.tick');
+            bpmEl = document.getElementById('bpm-stat');
+            kcalEl = document.getElementById('kcal-stat');
+            stepsEl = document.getElementById('steps-stat');
+            timer = new Timer(1000, 'views.page.gamestats2.tick');
             bindEvents();
         }
 
         e.listeners({
-            'statsleft.show': show,
-            'views.page.statsleft.tick': tick
+            'statsright.show': show,
+            'views.page.gamestats2.tick' : tick,
         });
 
         return {

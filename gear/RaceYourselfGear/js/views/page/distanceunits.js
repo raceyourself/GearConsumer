@@ -31,11 +31,12 @@ define({
             
             var radios = document.getElementsByName('distance-units');
             for(var i=0, length = radios.length; i < length; i++) {
-            	if(settings.getDistanceUnits() == radios[i].id)
+            	if(settings.getDistanceUnits() == radios[i].value)
             	{
-            		console.log('FOUND MATCHING RADIO - ' + radios[i].id + ", settings is " + settings.getDistanceUnits());
+            		console.log('FOUND MATCHING RADIO - ' + radios[i].value + ", settings is " + settings.getDistanceUnits());
             		radios[i].checked = true;
-            		break;
+            	} else {
+                    radios[i].checked = false;
             	}
             }
         }
@@ -44,9 +45,9 @@ define({
            e.die('tizen.back', onBack);
            var radios = document.getElementsByName('distance-units');
            for(var i=0, length=radios.length; i<length; i++) {
-        	   if(radios[i].checked) {
-        		   console.log('FOUND MATCHING RADIO - ' + radios[i].id);
-        		   settings.setDistanceUnits(radios[i].id);
+        	   if(radios[i].checked == true) {
+        		   console.log('FOUND MATCHING RADIO - ' + radios[i].value);
+        		   settings.setDistanceUnits(radios[i].value);
         		   break;
         	   }
         	   
@@ -64,12 +65,8 @@ define({
         
         function init() {
             page = document.getElementById('distanceunits');
-                       
-            
             
             bindEvents();
-            // Assume we always start in this view
-            onPageShow();
         }
         
         e.listeners({
