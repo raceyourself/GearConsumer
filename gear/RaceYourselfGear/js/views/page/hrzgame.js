@@ -49,6 +49,8 @@ define({
             deadRunnerImage = null,
             gps = null,
             sweat = null,
+            sweat_red = null,
+            paceIcon = null,
             runnerAnimations = {
                     idle: { name: 'idle', sprite: null, speedThreshold: 0},
                     running: { name: 'running', sprite: null, speedThreshold: 0.1},
@@ -66,6 +68,7 @@ define({
             		},
             notificationTimeout = false,            	
             zombies = [],
+            zombieIdle = null,
             dino = null,
             boulder = null,
             dinoGameImage = null,
@@ -128,7 +131,9 @@ define({
 			hrNotFound = false,
 			unlockNotification = null,
 			unlockNotificationTimer = null,
-			dottedPattern = null;
+			dottedPattern = null,
+			countDownParams = { radius: 100, outerRadius: 250, outerRadiusMax: 250, shrinkSpeed: 5, stageDuration:1, startTime:0};
+			
 
 			
 
@@ -230,6 +235,7 @@ define({
             
             //get opponent type from game
 			setOpponent(game.getCurrentOpponentType());
+//			setOpponent('dinosaur');
         }
         
         
@@ -290,21 +296,27 @@ define({
             countingdown = true;
 			banner = 'READY';
             clearTimeout(bannerTimeout);
-            bannerTimeout = setTimeout(ready, 1000);
+            bannerTimeout = setTimeout(ready, countDownParams.stageDuration * 1000);
+			countDownParams.outerRadius = countDownParams.outerRadiusMax;
+			countDownParams.startTime = Date.now();
         }
         
         function ready() {
             banner = 'SET';
             requestRender();
             clearTimeout(bannerTimeout);
-            bannerTimeout = setTimeout(set, 1000);
+            bannerTimeout = setTimeout(set, countDownParams.stageDuration * 1000);
+            countDownParams.outerRadius = countDownParams.outerRadiusMax;
+			countDownParams.startTime = Date.now();
         }
         function set() {
             banner = 'GO';
             requestRender();
             clearTimeout(bannerTimeout);
-            bannerTimeout = setTimeout(go, 1000);
-        }
+            bannerTimeout = setTimeout(go, countDownParams.stageDuration * 1000);
+            countDownParams.outerRadius = countDownParams.outerRadiusMax;
+			countDownParams.startTime = Date.now();
+		}
         function go() {
             race.getOngoingRace().start();
             startZombies();
@@ -312,16 +324,19 @@ define({
             requestRender();
             countingdown = false;
             clearTimeout(bannerTimeout);
-            bannerTimeout = setTimeout(clearbanner, 1000);
+            bannerTimeout = setTimeout(clearbanner, countDownParams.stageDuration * 1000);
             setCurrentHRZone("Recovery");
             warmupTimeout = setTimeout(endWarmup, 5*60*1000 * timeMultiplier);	//5 minutes warmup
+			countDownParams.outerRadius = countDownParams.outerRadiusMax;
+			countDownParams.startTime = Date.now();			
         }
         
         function restart() {
         	countingdown = false;
         	startZombies();
         	clearTimeout(bannerTimeout);
-        	bannerTimeout = setTimeout(clearbanner, 1000);
+        	bannerTimeout = setTimeout(clearbanner, countDownParams.stageDuration * 1000);
+			countDownParams.startTime = Date.now();
         }
         
         function endWarmup() 
@@ -488,7 +503,7 @@ define({
         	runner = runnerAnimations.running;
             countingdown = true;
             wave++;
-            zombieCatchupSpeed += 0.01;
+//            zombieCatchupSpeed += 0.01;
             banner = 'GO';
             zombieOffset = -25;
             requestRender();
@@ -538,8 +553,17 @@ define({
 				hrNotFound = true;			
 			}
 
+			//Update player anim
+			if(r.getSpeed() == 0)
+			{
+				runner = runnerAnimations.idle;
+			}
+			else
+			{
+				runner = runnerAnimations.running;
+			}
 
-			//instigate warning
+			//Update Heart Rate related mechanics
 			if(hr < minHeartRate)
 			{	
 				showWarningLow = false;
@@ -567,7 +591,10 @@ define({
 			else if(hr > maxHeartRate)
 			{
 				showWarningHigh = false;
+				zombiesCatchingUp = false;
 				ppm = -1; // Negative pts/meter
+				runner = runnerAnimations.running_red;
+				//TODO check if stationary and use stationary red if so
 				if(!showWarningLow)
 				{
 					clearNotification();
@@ -794,7 +821,7 @@ define({
         function render() {
             if (!visible) return;
             var dt = 0;
-            var trackHeight = 50;
+            var trackHeight = 63;
 
             
             if (lastRender !== null) {
@@ -820,14 +847,16 @@ define({
 			{
 				var xpos = 0;
 				var ypos = 0;
-				sweat.draw(context, xpos,ypos,0);
-				context.font = '18px Samsung Sans';
-				context.fillStyle = '#fff';
+				var img = ppm > 0 ? sweat : sweat_red;
+				img.draw(context, xpos,ypos,0);
+				context.font = '24px Samsung Sans';
+//				context.fillStyle = ppm > 0 ? '#fff' : flashingRedParams.colour;
+				context.fillStyle = ppm > 0 ? green : red;
 				context.textBaseline = "middle";
 				context.textAlign = "left";
 				context.fillText('SP', xpos + sweat.width + 5, ypos + sweat.height/2);
-				context.fillStyle = green;
-				context.fillText(~~settings.getPoints(), xpos + sweat.width + 5 + 30, ypos + sweat.height/2);
+				context.fillStyle = ppm > 0 ? green : flashingRedParams.colour;
+				context.fillText(~~settings.getPoints(), xpos + sweat.width + 5 + 33, ypos + sweat.height/2);
 			}
 
 			//GPS
@@ -867,7 +896,7 @@ define({
                     context.textBaseline = "top";
                     context.textAlign = "center";
                     context.fillText('+'+delta+'m', 0+columnCenter, 25);
-                    context.font = '25px Samsung Sans';
+                    context.font = '24px Samsung Sans';
                     //context.fillText(postfix, 0+columnCenter, 25+45);
                 }
                 if (false) {
@@ -907,7 +936,7 @@ define({
 				else { heartIcon = heartGreen; }
 			
 				var radius = 115/2;
-				var hrXPos = canvas.width - 30 - radius;
+				var hrXPos = radius;
 				var hrYPos = 37 + radius;
 				//fill
 				var MaxCircleHR = 200;
@@ -960,14 +989,46 @@ define({
 				if(hrNotFound) { hrText = '--'; }
 				context.fillText(hrText, hrXPos, hrYPos + 10);
 				//bpm
-				context.font = '18px Samsung Sans';
+				context.font = '24px Samsung Sans';
 				context.fillText('bpm', hrXPos, hrYPos + 38);
 
+				//Pace
+				var PaceXPosR = canvas.width - radius;
+				context.beginPath();
+				context.arc(PaceXPosR, hrYPos, radius, Math.PI * 1.5, Math.PI * 2.5, false);
+				context.lineTo(PaceXPosR - radius, hrYPos + radius);
+				context.arc(PaceXPosR-radius, hrYPos, radius, Math.PI/2, Math.PI*1.5, false);
+				context.closePath();
+				context.fillStyle = '#fff';
+				context.fill();
+				//text
+				var pace = r.getPace();
+				//minutes part
+				var paceFractional = pace % 1;
+				var paceMinutes = pace - paceFractional;
+				var paceSeconds = Math.floor(paceFractional*60);
+				var paceSecondsString = ''+paceSeconds;
+				if(paceSecondsString.length == 1) { paceSecondsString = '0' + paceSecondsString; }
 
-
+				var paceString = paceMinutes + ':' + paceSecondsString;
+				if(r.getSpeed() == 0) { paceString = '--:--'; }
+				var paceXPos = PaceXPosR - radius/2;
+				context.font = '56px Samsung Sans';
+				context.textAlign = 'center';
+				context.textBaseline = 'middle';
+				context.fillStyle = '#000';
+				context.fillText(paceString, paceXPos, hrYPos + 4);
+				//units
+				context.font = '24px Samsung Sans';
+				context.fillText('min/km', paceXPos, hrYPos + 38);
+				//icon
+				paceIcon.draw(context, paceXPos - paceIcon.width/2, hrYPos - paceIcon.height/2 - 38, 0);
+								
 			
 			
 				//Ahead/Behind
+				if(false)
+				{
 				var distXPos = 30 + radius;
 				var distYPos = 37 + radius;
 				if(!isDead)
@@ -978,10 +1039,10 @@ define({
 					context.fill();
 					//+
 					context.fillStyle = '#fff';
-					context.font ='25px Samsung Sans';
+					context.font ='24px Samsung Sans';
 					context.fillText('+', distXPos, distYPos - 33);
 					//m
-					context.font = '18px Samsung Sans';
+					context.font = '24px Samsung Sans';
 					context.fillText('m', distXPos, distYPos + 38);
 					//number
 					var delta = Math.round(r.getDistance() - zombieDistance);
@@ -998,6 +1059,7 @@ define({
 					//image
 					deadImage.draw(context, distXPos - deadImage.width/2, distYPos - deadImage.height/2, 0);
 				}
+				}
             }
             
             // Track
@@ -1009,7 +1071,7 @@ define({
             context.stroke();
             
             // Track text
-            context.font = '25px Samsung Sans';
+            context.font = '24px Samsung Sans';
             context.fillStyle = '#fff';
             context.textBaseline = "top";
 //            context.textAlign = "left";
@@ -1031,12 +1093,12 @@ define({
 				{
 					context.textBaseline = "bottom";
 					context.textAlign = "right";
-					context.font = '18px Samsung Sans';
+					context.font = '24px Samsung Sans';
 					var distkm = dist/1000;
-					context.fillText(distkm, distanceToTrackPos(dist), canvas.height-trackHeight + 20);
+					context.fillText(distkm, distanceToTrackPos(dist), canvas.height-trackHeight + 28);
 					context.textAlign = "left";
-					context.font = "15px Samsung Sans";
-					context.fillText('km', distanceToTrackPos(dist) + 1, canvas.height-trackHeight + 20);
+					context.font = "24px Samsung Sans";
+					context.fillText('km', distanceToTrackPos(dist) + 1, canvas.height-trackHeight + 28);
 				}
 				else
 				{
@@ -1055,7 +1117,7 @@ define({
 			if(!notification.active)
 			{
 				//Progress bar
-				var progressBarRadius = 10;
+				var progressBarRadius = 14;
 				var progressBarInnerRadius = 8;
 				var progressBarHeight = canvas.height - progressBarRadius - 8;
 				var progressBarInset = progressBarRadius + 10;
@@ -1138,7 +1200,7 @@ define({
 			//notification
 			if(notification.active)
 			{
-				var notificationInset = 15;
+				var notificationInset = 17;
 				var notificationRadius = 16;
 				var notificationHeight = canvas.height - 16;
 				//draw capsule
@@ -1152,7 +1214,7 @@ define({
 					{ context.fillStyle = flashingRedParams.colour; }
 				context.fill();
 				//text
-				context.font = '25px Samsung Sans';
+				context.font = '24px Samsung Sans';
 				context.fillStyle = '#000';
 				context.textAlign = 'center';
 				context.textBaseline = 'middle';
@@ -1161,7 +1223,7 @@ define({
 			
 			//text labels
 			///run
-			context.font = '18px Samsung Sans';
+			context.font = '24px Samsung Sans';
 			context.fillStyle = '#000';
 			context.textAlign = 'left';
 			context.textBaseline = 'middle';
@@ -1206,8 +1268,9 @@ define({
             
             var playerXPos = 0 + distanceToTrackPos(r.getDistance())
             
-            
-            switch(game.getCurrentOpponentType())
+            var opponentType = game.getCurrentOpponentType()
+//            opponentType = 'dinosaur';
+            switch(opponentType)
             {
 	            case 'zombie':
 					// Zombies
@@ -1224,17 +1287,25 @@ define({
 							if(!isDead || zombiePos < playerXPos - 10)
 							{	
 								// if we're dead don't draw them as they join the bundle
-								zombie.drawscaled(context, zombiePos, canvas.height - zombie.height * scale - trackHeight - 5*scale + y_offset, localDT, scale);
+								var pace = r.getSpeed();
+								if(pace > 0)
+								{
+									zombie.drawscaled(context, zombiePos, canvas.height - zombie.height * scale - trackHeight - 5*scale + y_offset, localDT, scale);
+								}
+								else
+								{
+									zombieIdle.drawscaled(context, zombiePos, canvas.height - zombie.height * scale - trackHeight - 5*scale + y_offset, localDT, scale);
+								}
 							}
 						}
 						context.globalAlpha = 1;
 					}
 					break;
 				case 'dinosaur':
-					if(zombieDistance != false) {
+					if(zombieDistance != false && currentHRZone!='Recovery' ) {
 						var dinoPos = 0 + distanceToTrackPos(zombieDistance);
 						dino.drawscaled(context, dinoPos, canvas.height - dino.height * scale - trackHeight - 5*scale, dt, scale);
-					}				
+					}
 					break;
 				case 'boulder':
 					if(zombieDistance != false) 
@@ -1275,36 +1346,46 @@ define({
             //countdown        
             if(countingdown && banner!=false)
             {
+            	//shrink outer ring
+            	var delta = Date.now() - countDownParams.startTime;
+            	var p = delta / (countDownParams.stageDuration * 1000);
+            	var p = p*p*p;
+            	countDownParams.outerRadius = countDownParams.outerRadiusMax -  p * (countDownParams.outerRadiusMax - (countDownParams.radius - 20)) ;
+            	countDownParams.outerRadius = Math.max(0, countDownParams.outerRadius);
             	var centreX = canvas.width/2;
             	var centreY = canvas.height/2;
-            	var countdownRadius = 100;
+//            	var countdownRadius = 100;
+            	
+            	context.lineWidth = 4;
             	
             	//fill screen white
             	context.globalAlpha = 0.5;
             	context.fillStyle = '#fff';
             	context.fillRect(0,0,canvas.width, canvas.height);
             	context.globalAlpha = 1;
-            	
-            	//black circle
+            	            	
+            	//outer ring
             	context.beginPath();
-            	context.arc(centreX, centreY, countdownRadius, 0, 2* Math.PI, false);
+            	context.arc(centreX, centreY, countDownParams.outerRadius, 0, 2*Math.PI, false);
+            	context.stroke(); 
+            	
+				//black circle
+            	context.beginPath();
+            	context.arc(centreX, centreY, countDownParams.radius, 0, 2* Math.PI, false);
             	context.fillStyle = '#000';
             	context.fill();
 //            	context.beginPath();
-//            	context.arc(centreX, centreY, countdownRadius, 0, 2* Math.PI, false);
+//            	context.arc(centreX, centreY, rad, 0, 2* Math.PI, false);
             	context.strokeStyle = '#fff';
             	context.stroke();
-            	//outer ring
-            	context.beginPath();
-            	context.arc(centreX, centreY, countdownRadius + 20, 0, 2*Math.PI, false);
-            	context.stroke(); 
+
             	//text
             	context.font = '56px SamsungSans';
             	context.textAlign = "center";
             	context.textBaseline = "middle";
             	context.fillStyle = '#fff';
             	if(banner == 'GO') {context.fillStyle = green;}
-            	context.fillText(banner,centreX, centreY);
+            	context.fillText(banner, centreX, centreY);
             }
             
             //Unlock Notification
@@ -1346,7 +1427,7 @@ define({
             	}
             	unlockSprite.draw(context, centreX - unlockSprite.width/2, centreY - unlockSprite.height/2 + 50, 0);
             	//text
-            	context.font = '25px Samsung Sans';
+            	context.font = '24px Samsung Sans';
             	context.textAlign = "center";
             	context.textBaseline = "middle";
             	context.fillStyle = '#fff';
@@ -1402,7 +1483,7 @@ define({
             image.onerror = function() {
                 throw "Could not load " + this.src;
             }
-            image.src = 'images/runner-idle-anim.png';
+            image.src = 'images/animation_runner_green_still.png';
 
 
             image = new Image();
@@ -1456,6 +1537,15 @@ define({
             }
             image.src = 'images/animation_zombie1.png';
 
+			//zombie idle
+            image = new Image();
+            image.onload = function() {
+                zombieIdle = new Sprite(this, this.width, 1000);
+            }
+            image.onerror = function() {
+                throw "Could not load " + this.src;
+            }
+            image.src = 'images/animation_zombie_stationary.png';
             
             zombieMoan = new Audio('audio/zombie_moan.wav');
             zombieMoan.onerror = function() {
@@ -1513,7 +1603,14 @@ define({
 			}
 			image.onerror = function() { throw "could not load" + this.src; }
 			image.src = 'images/image_sweat_point_green.png';
-            
+
+			image = new Image();
+			image.onload = function() {
+				sweat_red = new Sprite(this, this.width, 1000);
+			}
+			image.onerror = function() { throw "could not load" + this.src; }
+			image.src = 'images/image_sweat_point_red.png';
+			            
             //dead image
 			image = new Image();
 			image.onload = function() {
@@ -1536,7 +1633,7 @@ define({
 				dino = new Sprite(this, this.width, 1000);
 			}
 			image.onerror = function() { throw "could not load" + this.src; }
-			image.src = 'images/image_dino_achievement_screen.png';
+			image.src = 'images/animation_dino.png';
 			
 			//boulder image
 			image = new Image();
@@ -1559,7 +1656,7 @@ define({
 			//boulder game image
 			image = new Image();
 			image.onload = function() {
-				boulderGameImage = new Sprite(this, this.width, 1000);
+				boulderGameImage = new Sprite(this, this.width/10, 1000);
 			}
 			image.onerror = function() { throw "could not load" + this.src; }
 			image.src = 'images/image_boulder_achievement_screen.png';	
@@ -1568,8 +1665,16 @@ define({
 			image.onload = function() {
 				dottedPattern = context.createPattern(this, "repeat");
 			}
-//			image.onerror = function() {throw "could not load" + this.src; }
+			image.onerror = function() {throw "could not load" + this.src; }
 			image.src = 'images/dashedLine.png';
+			
+			image = new Image();
+			image.onload = function() {
+				paceIcon = new Sprite(this, this.width, 1000);
+			}
+			image.onerror = function() {throw "could not load" + this.src; }
+			image.src = 'images/icon-speed_whiteBG.png';
+						
 			
            /* if (hrm.isAvailable()) {
                 hrm.start();
