@@ -58,6 +58,7 @@ define({
             this.stopped = false;
             this.pointsEarned = 0;
             this.pointsLost = 0;
+            this.achievements = [];
             this.data = {}; // Game-specific race data
         }
         Race.prototype = {
@@ -79,6 +80,7 @@ define({
                 }
                 this.startDate = Date.now();
                 this.running = true;
+                e.fire('race.start');
             },
             
             stop: function stop() {
@@ -156,6 +158,10 @@ define({
                 
                 // TODO: Clamp delta so you don't get below your pre-race points?
                 settings.addPoints(delta); 
+            },
+            
+            getAchievements: function getAchievements() {
+                return this.achievements;
             }
         };
         
@@ -181,9 +187,9 @@ define({
             }            
         }
         
-        function onGpsLocation(e) {
+        function onGpsLocation(event) {
             console.log('gps');
-            var message = e.detail;
+            var message = event.detail;
             console.log(message);
             var distance = message.GPS_DISTANCE;  // cumulative distance covered whilst tracking
             console.log(distance);
@@ -195,6 +201,13 @@ define({
             console.log(state);            
         }
         
+        function onAchievement(event) {
+            if (ongoingRace == null) return;
+            
+            var achievement = event.detail.achievement;
+            ongoingRace.achievements.unshift(achievement);
+        }
+        
         function getGoal() {
         	return _goal;
         }
@@ -203,6 +216,10 @@ define({
         	console.log(goal);
         	_goal = goal;
         }
+        
+        e.listeners({
+            'achievement.awarded': onAchievement
+        });
         
         return {
             newRace: newRace,

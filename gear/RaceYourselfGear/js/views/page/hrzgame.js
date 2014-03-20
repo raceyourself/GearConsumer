@@ -8,6 +8,7 @@ define({
     name: 'views/page/hrzgame',
     requires: [
         'core/event',
+        'views/page/gameachievements',
         'views/page/gamestats1',
         'views/page/gamestats2',
         'views/page/gamestats3',
@@ -32,7 +33,8 @@ define({
             page = null,
             canvas,
             context,
-            TRACK_LENGTH = 500,
+            TRACK_LENGTH = Infinity,
+            targetTime = Infinity,
             lastRender = null,
             bannerTimeout = false,
             raf = false,
@@ -66,6 +68,8 @@ define({
             zombies = [],
             dino = null,
             boulder = null,
+            dinoGameImage = null,
+            boulderGameImage = null,
             zombiesAnimOffset = [],
             numZombies = 0,
             zombieDistance = false,
@@ -93,6 +97,7 @@ define({
             minHeartRate = 120,
             hrInterval = false,
             hrChangePeriod = 5000,
+            lastHRtime = 0,
             hrColour = '#fff',
             zombieCatchupSpeed = 0.05,
             zombieStartOffset = -25,
@@ -100,17 +105,18 @@ define({
             screenWidthDistance = 25,	//'real-world' distance covered by the screen's width
             screenLeftDistance = zombieOffset,		//'real-world' position of left of screen
 			hrZones = [],
-			currentHRZone = "Recovery",
+			currentHRZone = null,
 			currentZone = 0,
 			warmupTimeout = false,
-			timeMultiplier = 0.01,			//hack to test quickly. Set to 1
+			timeMultiplier = 0.1,			//hack to test quickly. Set to 1
 			intervalTimeout = false,
 			zoneAdaptTimeout = false,
 			warningTimeout = false,
 			zombiesCatchingUp = false,
 			adaptingToRecentZoneShift = false,
 			adaptingTimeout = false,
-			showWarning = false,
+			showWarningLow = false,
+			showWarningHigh = false,
 			isDead = false,
 			scale = 1,
 			opponent = 'zombie',
@@ -118,7 +124,11 @@ define({
             red = '#cb2027',
             lightRed = '#dc8080',
 			flashingRed = 'flashingRed',
-			flashingRedParams = { colour: '#fff', period:400, phase: 0 };
+			flashingRedParams = { colour: '#fff', period:400, phase: 0 },
+			hrNotFound = false,
+			unlockNotification = null,
+			unlockNotificationTimer = null,
+			dottedPattern = null;
 
 			
 
@@ -146,6 +156,31 @@ define({
 			notificationTimeout = false;
 		}
 
+		function clearUnlockNotification()
+		{
+			clearTimeout(unlockNotificationTimer);
+			unlockNotification = null;
+		}
+
+		function showUnlockNotification(game)
+		{
+			//vibrate
+			navigator.vibrate([10, 10, 10, 10, 10, 10, 10]);
+			unlockNotifiaction = game;
+			//TODO - have this only disappear 5s after user raises wrist
+			unlockNotificationTimer = setTimeout(clearUnlockNotification, 5*1000);
+		}
+
+		function onUnlockDino()
+		{
+			showUnlockNotification('dino');
+		}
+		
+		function onUnlockBoulder()
+		{
+			showUnlockNotification('boulder');
+		}
+
         function onPageShow() {
             visible = true;
             e.listen('tizen.back', onBack);
@@ -162,11 +197,23 @@ define({
                 r.data.time_in_zone = 0;
                 e.listen('pedometer.step', step);
                 e.listen('hrm.change', onHeartRateChange);
+
                 startCountdown();
             }
             
+			e.listen('game.unlock.dino', onUnlockDino);
+			e.listen('game.unlock.boulder', onUnlockBoulder);
+			
             isDead = false;
-			TRACK_LENGTH = settings.getDistance();
+			var length = settings.getDistance();
+			console.log('target dist = ' + length);
+//			var type = settings.getTargetType();
+			var type = settings.getCurrentTarget();
+			
+			if (type == 'time') { targetTime = settings.getTime() * 60 * 1000; }
+			else if (type == 'distance') { TRACK_LENGTH = settings.getDistance(); }
+				
+            lastHRtime = Date.now();
             
             canvas.width = canvas.offsetWidth;
             canvas.height = canvas.offsetHeight;        
@@ -184,6 +231,8 @@ define({
             //get opponent type from game
 			setOpponent(game.getCurrentOpponentType());
         }
+        
+        
         
         function setOpponent(type)
         {
@@ -229,6 +278,8 @@ define({
             if (!!raf) cancelAnimationFrame(raf);
             clearInterval(zombieInterval);
             clearTimeout(bannerTimeout)
+            e.die('game.unlock.dino', onUnlockDino);
+            e.die('game.unlock.boulder', onUnlockBoulder);
         }        
         
         function onBack() {
@@ -262,8 +313,15 @@ define({
             countingdown = false;
             clearTimeout(bannerTimeout);
             bannerTimeout = setTimeout(clearbanner, 1000);
-            setCurrentHRZone("Light");
+            setCurrentHRZone("Recovery");
             warmupTimeout = setTimeout(endWarmup, 5*60*1000 * timeMultiplier);	//5 minutes warmup
+        }
+        
+        function restart() {
+        	countingdown = false;
+        	startZombies();
+        	clearTimeout(bannerTimeout);
+        	bannerTimeout = setTimeout(clearbanner, 1000);
         }
         
         function endWarmup() 
@@ -435,7 +493,7 @@ define({
             zombieOffset = -25;
             requestRender();
             clearTimeout(bannerTimeout);
-            bannerTimeout = setTimeout(go, 1500);
+            bannerTimeout = setTimeout(restart, 1500);
             startZombies();
         }
         
@@ -474,68 +532,23 @@ define({
 			
 			screenLeftDistance = (zombieDistance + r.getDistance() - screenWidthDistance)/2;
 			
-        }
-
-        
-        function stopZombies() {
-            clearInterval(zombieInterval);
-            zombieDistance = false;            
-        }
-        
-        
-        function onHeartRateChange(hrmInfo) {
-        	//set heartRate
-            hr = hrmInfo.detail.heartRate;
-        	handleHRChanged();
-        }
-
-		function setMinMaxHeartRate() {
-			//to be eventually based on age and user-defined goals. Just use values for 30yo aerobic exercise for now.
-		}
-        
-        //test function to provide random heart rate
-        function randomHR() {
-        	hr = Math.floor( 50 + 150 * (Math.random()) );
-        	e.fire('hrm.change', {heartRate: hr});
-        }
-        
-        function handleHRChanged() {
-			if(hr > maxHeartRate)
+			//check how long since heartrate
+			if( Date.now() - lastHRtime > 10*1000 )
 			{
-				hrColour = '#ff0000';
-			}
-			else if (hr > minHeartRate)
-			{
-				hrColour = '#fff';
-			}
-			else
-			{
-				hrColour = '#5555ff';
+				hrNotFound = true;			
 			}
 
-			var r = race.getOngoingRace();
-			if (!!r) {
-                if (!!r.data.zone_time_start) {
-                    var dt = Date.now() - r.data.zone_time_start;
-                    r.data.time_in_zone = r.data.time_in_zone + dt;
-                }
-			    if (hr > maxHeartRate || hr < minHeartRate) {
-			        r.data.zoned_out = true;
-			        r.data.zone_time_start = null;
-			    } else {
-                    r.data.zone_time_start = Date.now();
-			    }
-			}
 
-						
 			//instigate warning
 			if(hr < minHeartRate)
 			{	
-				setNotification(flashingRed, 'Heart Rate too low!', 0);
-                ppm = 5; // Standard pts/meter
-				if(!showWarning)
+				showWarningLow = false;
+				ppm = 5; // Standard pts/meter
+				if(!showWarningHigh)
 				{
-					showWarning = true;
+					clearNotification()
+					setNotification(flashingRed, 'Heart Rate too low!', 0);
+					showWarningHigh = true;
 					regularSound.play();
 					navigator.vibrate([1000, 500, 250, 100]);
 				}
@@ -553,11 +566,13 @@ define({
 			}
 			else if(hr > maxHeartRate)
 			{
-                ppm = -1; // Negative pts/meter
-				setNotification(flashingRed, 'Heart Rate too high!', 0);
-				if(!showWarning)
+				showWarningHigh = false;
+				ppm = -1; // Negative pts/meter
+				if(!showWarningLow)
 				{
-					showWarning = true;
+					clearNotification();
+					setNotification(flashingRed, 'Heart Rate too high!', 0);
+					showWarningLow = true;
 					navigator.vibrate([1000, 500, 250, 100]);
 				}
 				if(!adaptingToRecentZoneShift)
@@ -570,10 +585,14 @@ define({
 			}
 			else
 			{
-                ppm = 5; // Standard pts/meter
+				ppm = 5; // Standard pts/meter
 				//clear warning
-				showWarning = false;
-				clearNotification();
+				if(showWarningLow || showWarningHigh)
+				{
+					showWarningLow = false;
+					showWarningHigh = false;
+					clearNotification();
+				}
 				clearTimeout(warningTimeout);
 				warningTimeout = false;
 				//stop zombies catching up
@@ -584,7 +603,78 @@ define({
 					runner = runnerAnimations.running;
 				}
 			}
-			
+        }
+
+        
+        function stopZombies() {
+            clearInterval(zombieInterval);
+            zombieDistance = false;            
+        }
+        
+        
+        function onHeartRateChange(hrmInfo) {
+        	//set heartRate
+        	lastHRtime = Date.now();
+        	hrNotFound = false;
+            hr = hrmInfo.detail.heartRate;
+        	handleHRChanged();
+        }
+
+		function setMinMaxHeartRate() {
+			//to be eventually based on age and user-defined goals. Just use values for 30yo aerobic exercise for now.
+		}
+        
+        //test function to provide random heart rate
+        function randomHR() {
+        	hr = Math.floor( 50 + 150 * (Math.random()) );
+        	e.fire('hrm.change', {heartRate: hr});
+        }
+        
+        function handleHRChanged() 
+        {
+        	if(hrNotFound)
+        	{
+				showWarningLow = false;
+				showWarningHigh = false;
+				clearTimeOut(warningTimeout);
+				zombiesCatchingUp = false;
+				runner = runnerAnimations.running;
+				clearNotification();
+				setNotification( '#fff', 'No Heart Rate', 0);
+        	}
+        	else
+        	{
+        
+				if(hr > maxHeartRate && !hrNotFound)
+				{
+					hrColour = '#ff0000';
+				}
+				else if (hr > minHeartRate && !hrNotFound)
+				{
+					hrColour = '#fff';
+				}
+				else
+				{
+					hrColour = '#5555ff';
+				}
+
+				var r = race.getOngoingRace();
+				if (!!r) {
+					if (!!r.data.zone_time_start) {
+						var dt = Date.now() - r.data.zone_time_start;
+						r.data.time_in_zone = r.data.time_in_zone + dt;
+					}
+					if (hr > maxHeartRate || hr < minHeartRate) {
+						r.data.zoned_out = true;
+						r.data.zone_time_start = null;
+					} else {
+						r.data.zone_time_start = Date.now();
+					}
+				}
+
+						
+
+			}
 							
 			
         }
@@ -593,7 +683,6 @@ define({
         {
         	console.log("Warning up! Zombies catching up");
         	zombiesCatchingUp = true;
-        	showWarning = false;
         }
         function warningOver_high()
         {
@@ -604,7 +693,7 @@ define({
         function step() {
             var r = race.getOngoingRace();
             if (r.getDistance() < zombieDistance && !isDead) {
-                r.data.caught_by = 'zombie';
+                r.data.caught_by = game.getCurrentOpponentType();
                 r.data.times_caught = r.data.times_caught || 0;
                 r.data.times_caught++;
                 r.addPoints(-100);
@@ -612,16 +701,17 @@ define({
                 navigator.vibrate([1000, 500, 250, 100]);
 //                r.stop();
 //                e.fire('race.end', r);
-                lastRender = null;
+//                lastRender = null;
 //                stopZombies();
 				isDead = true;
 				runner = runnerAnimations.zombieDead;
                 requestRender();
                 clearTimeout(bannerTimeout);
                 bannerTimeout = setTimeout(nextWave, 3000);
+                e.fire('died', {cause: game.getCurrentOpponentType()});
                 return;
             }
-            if (r.getDistance() >= TRACK_LENGTH) {
+            if (r.getDistance() >= TRACK_LENGTH || r.getDuration() >= targetTime) {
 //                zombieMoan.play();
                 r.addPoints(50);
                 navigator.vibrate(1000);
@@ -634,8 +724,6 @@ define({
                 requestRender();
                 clearTimeout(bannerTimeout);
 				bannerTimeout = setTimeout(continueToResults, 5000);
-				
-                
 
                 return;
             }
@@ -670,7 +758,7 @@ define({
 		function continueToResults()
 		{
 			clearbanner();
-		    e.fire('main.show');
+		    e.fire('racesummary.show');
 
 		}
 
@@ -683,6 +771,26 @@ define({
             if (!raf) render();
         }
         
+        function stringForTimeHHMMSS(milliseconds, showSeconds)
+        {
+			var numSeconds = Math.floor(milliseconds/1000);
+			var numMinutes = Math.floor(numSeconds / 60);
+			var numHours = Math.floor(numMinutes / 60);
+			var timeString = '';
+			
+			var secondsString = '' + numSeconds%60;
+			if (secondsString.length == 1) { secondsString = '0' + secondsString; }
+			
+			var minutesString = '' + numMinutes%60;
+			if (minutesString.length ==1) { minutesString = '0' + minutesString; }
+			
+			if(true) { timeString = timeString + numHours + ':'; }
+			timeString = timeString + minutesString + ':';
+			timeString = timeString + secondsString;
+			return timeString;
+		}
+
+
         function render() {
             if (!visible) return;
             var dt = 0;
@@ -780,7 +888,12 @@ define({
 				var heartIcon = null;
 				var hrFillColour = green;
 
-				if(hr > maxHeartRate) 
+				if(hrNotFound)
+				{
+					heartIcon = heartBlack;
+					hrFillColour = '#555';
+				}
+				else if(hr > maxHeartRate)
 				{
 					heartIcon = heartBlack; 
 					hrFillColour = flashingRedParams.colour;             	
@@ -790,6 +903,7 @@ define({
 					heartIcon = heartRed; 
 					hrFillColour = flashingRedParams.colour;
 				}
+
 				else { heartIcon = heartGreen; }
 			
 				var radius = 115/2;
@@ -805,6 +919,7 @@ define({
 			
 				//how high up the circle as a percentage of diameter 
 				var fillProportion = (hr - MinCircleHR)/(MaxCircleHR - MinCircleHR);
+				if(hrNotFound) { fillProportion = 1; }
 				//height in pixels above centre line
 				var h = fillProportion * 2 * radius - radius
 				var angle = Math.asin(h/radius);
@@ -812,7 +927,28 @@ define({
 				context.arc(hrXPos, hrYPos, radius, -angle, Math.PI + angle, false);
 				context.fillStyle = hrFillColour;
 				context.fill();
-			
+						
+				//water marks
+				context.globalAlpha = 0.5;
+				context.strokeStyle = dottedPattern;
+				var heightProportion = (maxHeartRate - MinCircleHR)/(MaxCircleHR - MinCircleHR);
+				var height = heightProportion * 2 * radius - radius;
+				var a = Math.asin(height/radius);
+				//do an arc to get the pen in the right place
+				context.beginPath();
+				context.moveTo(hrXPos - radius * Math.cos(a), hrYPos - height);
+				context.lineTo(hrXPos + radius * Math.cos(a), hrYPos - height);
+				context.stroke();
+				//lower range
+				heightProportion = (minHeartRate - MinCircleHR)/(MaxCircleHR - MinCircleHR);
+				height = heightProportion * 2 * radius - radius;
+				a = Math.asin(height/radius);
+				context.beginPath();
+				context.moveTo(hrXPos - radius * Math.cos(a), hrYPos - height);
+				context.lineTo(hrXPos + radius * Math.cos(a), hrYPos - height);
+				context.stroke();
+				context.globalAlpha = 1;
+				
 				//icon
 				heartIcon.draw(context, hrXPos-heartIcon.width/2, hrYPos-heartIcon.height/2 - 30, 0);
 				//number
@@ -820,10 +956,15 @@ define({
 				context.textAlign = 'center';
 				context.textBaseline = "middle";
 				context.fillStyle = '#000';
-				context.fillText(hr, hrXPos, hrYPos + 10);
+				var hrText = hr;
+				if(hrNotFound) { hrText = '--'; }
+				context.fillText(hrText, hrXPos, hrYPos + 10);
 				//bpm
 				context.font = '18px Samsung Sans';
 				context.fillText('bpm', hrXPos, hrYPos + 38);
+
+
+
 			
 			
 				//Ahead/Behind
@@ -930,7 +1071,22 @@ define({
 			
 				//green fill
 				context.beginPath();
-				var fillProportion = r.getDistance()/TRACK_LENGTH;
+				var fillProportion = 0;
+				if(TRACK_LENGTH < Infinity) 
+				{
+					fillProportion = r.getDistance()/TRACK_LENGTH;
+				}
+
+				else if(targetTime < Infinity)
+				{
+					fillProportion = r.getDuration()/targetTime;
+				}
+				else
+				{
+					//'just run' mode
+					fillProportion = 0;
+				}
+					
 				var fillDistance = (canvas.width - 2*progressBarInset + 2*progressBarRadius) * fillProportion;
 				if(fillDistance <= progressBarInnerRadius)
 				{
@@ -940,11 +1096,9 @@ define({
 					var h = progressBarInnerRadius - fillDistance;
 					var angle = Math.asin(h/progressBarInnerRadius);
 					context.arc(progressBarInset, progressBarHeight, progressBarInnerRadius, angle + Math.PI/2, 1.5*Math.PI - angle, false);
-
 				}
 				else if(fillDistance >= (canvas.width - 2*progressBarInset) + progressBarInnerRadius )
 				{
-
 					//fill in semicircle, full box, and partial circle
 					context.arc(progressBarInset, progressBarHeight, progressBarInnerRadius, Math.PI/2, 1.5*Math.PI, false);
 					//across and down
@@ -1011,12 +1165,41 @@ define({
 			context.fillStyle = '#000';
 			context.textAlign = 'left';
 			context.textBaseline = 'middle';
-			distkm = Math.round(r.getDistance()/100) / 10;
-			context.fillText(distkm + 'km', progressBarInset - 5, progressBarHeight);
-			//target
-			context.textAlign = 'right';
-			var targetdist = Math.round(TRACK_LENGTH/100)/10;
-			context.fillText(targetdist + 'km', canvas.width - progressBarInset + 5, progressBarHeight);
+
+			if(TRACK_LENGTH < Infinity)
+			{
+				//run
+				distkm = Math.round(r.getDistance()/100) / 10;
+				context.fillText(distkm + 'km', progressBarInset - 5, progressBarHeight);
+				//target
+				context.textAlign = 'right';
+				var targetdist = Math.round(TRACK_LENGTH/100)/10;
+				context.fillText(targetdist + 'km', canvas.width - progressBarInset + 5, progressBarHeight);
+
+			}
+			else if(targetTime < Infinity)
+			{
+				//time run
+				var timeString = stringForTimeHHMMSS(r.getDuration());
+				context.textAlign = 'left';
+				context.fillText(timeString, progressBarInset - 5, progressBarHeight);
+				//target
+				context.textAlign = 'right';
+				var targetTimeString = stringForTimeHHMMSS(targetTime);
+				context.fillText(targetTimeString, canvas.width - progressBarInset + 5, progressBarHeight);
+			}
+			else
+			{
+				//show time run on left
+				var timeString = stringForTimeHHMMSS(r.getDuration());
+				context.textAlign = 'left';
+				context.fillText(timeString, progressBarInset -5, progressBarHeight);
+				
+				//show distance run on right
+				context.textAlign = 'right';
+				var distkm = Math.round(r.getDistance()/100) / 10;
+				context.fillText(distkm + 'km', canvas.width - progressBarInset + 5, progressBarHeight);
+			}
 
 			
             scale = 10/screenWidthDistance;
@@ -1123,6 +1306,55 @@ define({
             	if(banner == 'GO') {context.fillStyle = green;}
             	context.fillText(banner,centreX, centreY);
             }
+            
+            //Unlock Notification
+            if(unlockNotification != null)
+            {
+            	var centreX = canvas.width/2;
+            	var centreY = canvas.height/2;
+            	var unlockRadius = 110
+            	//white bg
+            	context.globalAlpha = 0.5;
+            	context.fillStyle = '#fff';
+            	context.fillRect(0,0,canvas.width, canvas.height);
+            	context.globalAlpha = 1;
+            	
+            	//black circle
+            	context.beginPath();
+            	context.arc(centreX, centreY, unlockRadius, 0, 2* Math.PI, false);
+            	context.fillStyle = '#000';
+            	context.fill();
+//            	context.beginPath();
+//            	context.arc(centreX, centreY, unlockRadius, 0, 2* Math.PI, false);
+            	context.strokeStyle = '#fff';
+            	context.stroke();
+            	//image
+            	var unlockSprite = null;
+            	var unlockMessage = '';
+            	switch(unlockNotification)
+            	{
+            		case 'dino':
+            			unlockSprite = dinoGameImage;
+            			unlockMessage = 'Race Dino'
+            			break;
+					case 'boulder':
+						unlockSprite = boulderGameImage;
+						unlockMessage = 'Race Boulder'
+						break;
+					default:
+						console.log('unknown game being unlocked ' + unlockNotification);
+            	}
+            	unlockSprite.draw(context, centreX - unlockSprite.width/2, centreY - unlockSprite.height/2 + 50, 0);
+            	//text
+            	context.font = '25px Samsung Sans';
+            	context.textAlign = "center";
+            	context.textBaseline = "middle";
+            	context.fillStyle = '#fff';
+            	context.fillText('Well Done!', centreX, centreY -69);
+            	context.fillText('You unlocked', centreX, centreY -39);
+            	context.fillText(unlockMessage, centreX, centreY -9 );
+            }
+            
             
             context.save();
             frames++;
@@ -1315,7 +1547,30 @@ define({
 			}
 			image.onerror = function() { throw "could not load" + this.src; }
 			image.src = 'images/image_boulder_achievement_screen.png';			
-			           
+			
+			//dino game image
+			image = new Image();
+			image.onload = function() {
+				dinoGameImage = new Sprite(this, this.width, 1000);
+			}
+			image.onerror = function() { throw "could not load" + this.src; }
+			image.src = 'images/image_dino_achievement_screen.png';
+			
+			//boulder game image
+			image = new Image();
+			image.onload = function() {
+				boulderGameImage = new Sprite(this, this.width, 1000);
+			}
+			image.onerror = function() { throw "could not load" + this.src; }
+			image.src = 'images/image_boulder_achievement_screen.png';	
+			
+			image = new Image();
+			image.onload = function() {
+				dottedPattern = context.createPattern(this, "repeat");
+			}
+			image.onerror = function() {throw "could not load" + this.src; }
+			image.src = 'images/dashedLine.png';
+			
            /* if (hrm.isAvailable()) {
                 hrm.start();
             } else {
