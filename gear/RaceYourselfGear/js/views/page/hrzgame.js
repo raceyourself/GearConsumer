@@ -8,6 +8,7 @@ define({
     name: 'views/page/hrzgame',
     requires: [
         'core/event',
+        'views/page/gameachievements',
         'views/page/gamestats1',
         'views/page/gamestats2',
         'views/page/gamestats3',
@@ -692,7 +693,7 @@ define({
         function step() {
             var r = race.getOngoingRace();
             if (r.getDistance() < zombieDistance && !isDead) {
-//                r.data.caught_by = 'zombie';
+                r.data.caught_by = game.getCurrentOpponentType();
                 r.data.times_caught = r.data.times_caught || 0;
                 r.data.times_caught++;
                 r.addPoints(-100);
@@ -707,6 +708,7 @@ define({
                 requestRender();
                 clearTimeout(bannerTimeout);
                 bannerTimeout = setTimeout(nextWave, 3000);
+                e.fire('died', {cause: game.getCurrentOpponentType()});
                 return;
             }
             if (r.getDistance() >= TRACK_LENGTH || r.getDuration() >= targetTime) {
