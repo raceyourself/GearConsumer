@@ -44,6 +44,22 @@ define({
                         return '0%';
                     }
                 },
+                'death' : {
+                    title: 'First tussle',
+                    description: 'Had fisticuffs with the evil undead',
+                    points: 10,
+                    uses: 1,
+                    init: function() {
+                        e.listen('died', function(event) {
+                            var cause = event.detail.cause;
+                            achieve('death');
+                        });
+                    },
+                    progress: function() {
+                        if (!!achieved['death']) return '100%';
+                        return '0%';
+                    }
+                },
                 'run_in_zone' : {
                     title: 'Trainer',
                     description: 'Completed a run without leaving target heart rate zone',

@@ -233,6 +233,10 @@ img {
 	padding-bottom: 10px;
 }
 
+.new-achievement {
+	min-height: 100px;
+}
+
 .centeredImage
     {
     text-align:center;
