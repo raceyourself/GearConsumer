@@ -64,7 +64,7 @@ define({
         	currentOpponent = opponent;
         }
         
-        function getCurrentOpponent() {
+        function getCurrentOpponentType() {
         	return currentOpponent;
         }
         
@@ -92,8 +92,8 @@ define({
             unlock: unlock,
             setCurrentGame: setCurrentGame,
             getCurrentGame: getCurrentGame,
-            setCurrentOpponent: setCurrentOpponent,
-            getCurrentOpponent: getCurrentOpponent
+            setCurrentOpponentType: setCurrentOpponentType,
+            getCurrentOpponentType: getCurrentOpponentType
         };
     }
 
