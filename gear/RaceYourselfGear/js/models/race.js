@@ -56,6 +56,8 @@ define({
             this.track = [];
             this.running = false;
             this.stopped = false;
+            this.pointsEarned = 0;
+            this.pointsLost = 0;
             this.data = {}; // Game-specific race data
         }
         Race.prototype = {
@@ -134,6 +136,26 @@ define({
             setGoal: function setGoal(goal) {
             	console.log(goal);
             	this.goal = goal;
+            },
+            
+            getPointsEarned: function getPointsEarned() {
+                return this.pointsEarned;
+            },
+            
+            getPointsLost: function getPointsLost() {
+                return this.pointsLost;
+            },
+            
+            getPoints: function getPoints() {
+                return this.pointsEarned - this.pointsLost;
+            },
+            
+            addPoints: function addPoints(delta) {
+                if (delta > 0) this.pointsEarned += delta;
+                if (delta < 0) this.pointsLost -= delta;
+                
+                // TODO: Clamp delta so you don't get below your pre-race points?
+                settings.addPoints(delta); 
             }
         };
         
@@ -156,7 +178,7 @@ define({
             if (step) {
                 ongoingRace.track.push({distance: ongoingRace.getDistance(), time: ongoingRace.getDuration()});
                 e.fire('pedometer.step');
-            }
+            }            
         }
         
         function onGpsLocation(e) {
@@ -170,7 +192,7 @@ define({
             var speed = message.GPS_SPEED;  // current speed in metres per second
             console.log(speed);
             var state = message.GPS_STATE;  // string describing stopped / accelerating / steady speed etc
-            console.log(state);
+            console.log(state);            
         }
         
         function getGoal() {

@@ -9,6 +9,7 @@ define({
     requires: [
         'core/event',
         'models/application',
+        'models/settings',
         'views/page/setdistance',
         'views/page/settime'
     ],
@@ -17,6 +18,7 @@ define({
 
         var e = req.core.event,
             app = req.models.application,
+            settings = req.models.settings,
             page = null;
 
         function show() {
@@ -49,14 +51,17 @@ define({
         }
         
         function onTimeBtnClick() {
+        	settings.setCurrentTarget('time');
         	e.fire('settime.show');
         }
         
         function onDistanceBtnClick() {
+        	settings.setCurrentTarget('distance');
         	e.fire('setdistance.show');
         }
         
         function onJustRunBtnClick() {
+        	settings.setCurrentTarget('none');
         	e.fire('pregame.show');
         }
 

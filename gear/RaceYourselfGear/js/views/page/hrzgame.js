@@ -10,6 +10,8 @@ define({
         'core/event',
         'views/page/gamestats1',
         'views/page/gamestats2',
+        'views/page/gamestats3',
+        'views/page/gamestats4',
 //        'views/page/gameselect',
         'models/race',
         'models/hrm',
@@ -85,6 +87,8 @@ define({
             fpsInterval = false,
             frames = 0,
             fps = 0,
+            lastDistanceAwarded = 0,
+            ppm = 5, // pts/meter
             hr = 100,
             maxHeartRate = 150,
             minHeartRate = 120,
@@ -154,7 +158,9 @@ define({
             var r = race.getOngoingRace();
             if (r === null || !r.isRunning() || r.hasStopped()) {
                 r = race.newRace();
+                lastDistanceAwarded = 0;
                 r.data.hr_zones = true;
+                r.data.time_in_zone = 0;
                 e.listen('pedometer.step', step);
                 e.listen('hrm.change', onHeartRateChange);
                 startCountdown();
@@ -524,8 +530,18 @@ define({
 
 			var r = race.getOngoingRace();
 			if (!!r) {
-			    if (hr > maxHeartRate || hr < minHeartRate) r.data.zoned_out = true;
+                if (!!r.data.zone_time_start) {
+                    var dt = Date.now() - r.data.zone_time_start;
+                    r.data.time_in_zone = r.data.time_in_zone + dt;
+                }
+			    if (hr > maxHeartRate || hr < minHeartRate) {
+			        r.data.zoned_out = true;
+			        r.data.zone_time_start = null;
+			    } else {
+                    r.data.zone_time_start = Date.now();
+			    }
 			}
+
 						
 			//instigate warning
 			if(hr < minHeartRate)
@@ -547,6 +563,7 @@ define({
 				if(!isDead)
 				{
 					runner = runnerAnimations.running;
+					ppm = 5;
 				}
 			}
 			else if(hr > maxHeartRate)
@@ -596,20 +613,22 @@ define({
         {
         	console.log("Warning up! now losing sweat points");
         	runner = runnerAnimations.running_red;
-        	
+        	ppm = -1;
         }
         
         function step() {
             var r = race.getOngoingRace();
             if (r.getDistance() < zombieDistance && !isDead) {
 //                r.data.caught_by = 'zombie';
+                r.data.times_caught = r.data.times_caught || 0;
+                r.data.times_caught++;
+                r.addPoints(-100);
                 killSound.play();
                 navigator.vibrate([1000, 500, 250, 100]);
 //                r.stop();
 //                e.fire('race.end', r);
                 lastRender = null;
 //                stopZombies();
-//                r.data.hr_zones = true;
 				isDead = true;
 				runner = runnerAnimations.zombieDead;
                 requestRender();
@@ -619,12 +638,12 @@ define({
             }
             if (r.getDistance() >= TRACK_LENGTH || r.getDuration() >= targetTime) {
 //                zombieMoan.play();
+                r.addPoints(50);
                 navigator.vibrate(1000);
                 e.fire('race.end', r);
                 r.stop();
                 lastRender = null;
                 stopZombies();
-                r.data.hr_zones = true;
                 
                 banner = 'Complete!';
                 requestRender();
@@ -634,6 +653,11 @@ define({
                 return;
             }
             
+            if (lastDistanceAwarded < r.getDistance()) {
+                var distance = r.getDistance();
+                r.addPoints((distance - lastDistanceAwarded)*ppm);
+                lastDistanceAwarded = distance;
+            }
             
             
             /*
@@ -728,7 +752,7 @@ define({
 				context.textAlign = "left";
 				context.fillText('SP', xpos + sweat.width + 5, ypos + sweat.height/2);
 				context.fillStyle = green;
-				context.fillText(settings.getPoints(), xpos + sweat.width + 5 + 30, ypos + sweat.height/2);
+				context.fillText(~~settings.getPoints(), xpos + sweat.width + 5 + 30, ypos + sweat.height/2);
 			}
 
 			//GPS

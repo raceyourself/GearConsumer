@@ -31,7 +31,7 @@ define({
 
         function onPageShow() {
             e.listen('race.new', reloadRace);
-            e.listen('pedometer.step', tick);
+            e.listen('points.change', tick);
             
             ongoing = race.getOngoingRace();
             tick();
@@ -40,7 +40,7 @@ define({
         
         function onPageHide() {
             e.die('race.new', reloadRace);
-            e.die('pedometer.step', tick);
+            e.die('points.change', tick);
             timer.reset();
         }
         
@@ -50,7 +50,14 @@ define({
         
         function tick() {
             if (!ongoing) return;
+            earnedEl.innerHTML = numberWithCommas(~~ongoing.getPointsEarned());
+            lostEl.innerHTML = numberWithCommas(~~ongoing.getPointsLost());
+            totalEl.innerHTML = numberWithCommas(~~ongoing.getPoints());
         }
+        
+        function numberWithCommas(x) {
+            return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+        }        
         
         function bindEvents() {
             page.addEventListener('pageshow', onPageShow);

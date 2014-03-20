@@ -50,6 +50,11 @@ define({
         
         function tick() {
             if (!ongoing) return;
+            caughtEl.innerHTML = ongoing.data.times_caught || 0;
+            sspeedEl.innerHTML = ongoing.data.times_sped || 0;
+            var mins = 'N/A';
+            if (isFinite(ongoing.data.time_in_zone)) mins = ~~(ongoing.data.time_in_zone/1000/60);
+            idealEl.innerHTML = mins
         }
         
         function bindEvents() {

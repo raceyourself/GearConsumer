@@ -11,7 +11,8 @@ define({
         'models/application',
         'views/page/gameselect',
         'views/page/achievements',
-        'views/page/settingspage'
+        'views/page/settingspage',
+        'views/page/racesummary'
     ],
     def: function viewsPageNewMain(req) {
         'use strict';
@@ -64,7 +65,7 @@ define({
         }
         
         function onHistoryBtnClick() {
-        	
+        	e.fire('racesummary.show');
         }
 
         function init() {
