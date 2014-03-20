@@ -42,6 +42,7 @@ define({
          * @param {object} messageJSON
          */
         function onSendDataSuccess(channel, messageJSON) {
+            console.log(channel + ": " + messageJSON);
             document.getElementById('debug-log').innerHTML = channel + ": " + messageJSON;
             var message = JSON.parse(messageJSON);
 

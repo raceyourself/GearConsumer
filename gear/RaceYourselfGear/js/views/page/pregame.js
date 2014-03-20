@@ -42,7 +42,7 @@ define({
         }
         
         function onPageHide() {
-            e.die('tizen.back', onBack);            
+            e.die('tizen.back', onBack);
             e.die('gps.status', onGpsStatus);
         }
         
@@ -59,6 +59,13 @@ define({
             waitingEl.classList.toggle('hidden', status != 'enabled');
             lockedEl.classList.toggle('hidden', status != 'ready');
             disabledEl.classList.toggle('hidden', status != 'disabled');
+            
+            if (status === 'enabled') {
+                // Enabled, but not ready yet. Request again after 5s
+                setTimeout(function() {
+                    provider.sendGpsStatusReq(); 
+                }, 5000);
+            }
         }
         
         function onRace(ev) {
