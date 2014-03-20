@@ -49,6 +49,7 @@ define({
             deadRunnerImage = null,
             gps = null,
             sweat = null,
+            sweat_red = null,
             runnerAnimations = {
                     idle: { name: 'idle', sprite: null, speedThreshold: 0},
                     running: { name: 'running', sprite: null, speedThreshold: 0.1},
@@ -128,7 +129,9 @@ define({
 			hrNotFound = false,
 			unlockNotification = null,
 			unlockNotificationTimer = null,
-			dottedPattern = null;
+			dottedPattern = null,
+			countDownParams = { radius: 100, outerRadius: 250, outerRadiusMax: 250, shrinkSpeed: 5, stageDuration:1, startTime:0};
+			
 
 			
 
@@ -290,21 +293,27 @@ define({
             countingdown = true;
 			banner = 'READY';
             clearTimeout(bannerTimeout);
-            bannerTimeout = setTimeout(ready, 1000);
+            bannerTimeout = setTimeout(ready, countDownParams.stageDuration * 1000);
+			countDownParams.outerRadius = countDownParams.outerRadiusMax;
+			countDownParams.startTime = Date.now();
         }
         
         function ready() {
             banner = 'SET';
             requestRender();
             clearTimeout(bannerTimeout);
-            bannerTimeout = setTimeout(set, 1000);
+            bannerTimeout = setTimeout(set, countDownParams.stageDuration * 1000);
+            countDownParams.outerRadius = countDownParams.outerRadiusMax;
+			countDownParams.startTime = Date.now();
         }
         function set() {
             banner = 'GO';
             requestRender();
             clearTimeout(bannerTimeout);
-            bannerTimeout = setTimeout(go, 1000);
-        }
+            bannerTimeout = setTimeout(go, countDownParams.stageDuration * 1000);
+            countDownParams.outerRadius = countDownParams.outerRadiusMax;
+			countDownParams.startTime = Date.now();
+		}
         function go() {
             race.getOngoingRace().start();
             startZombies();
@@ -312,16 +321,19 @@ define({
             requestRender();
             countingdown = false;
             clearTimeout(bannerTimeout);
-            bannerTimeout = setTimeout(clearbanner, 1000);
+            bannerTimeout = setTimeout(clearbanner, countDownParams.stageDuration * 1000);
             setCurrentHRZone("Recovery");
             warmupTimeout = setTimeout(endWarmup, 5*60*1000 * timeMultiplier);	//5 minutes warmup
+			countDownParams.outerRadius = countDownParams.outerRadiusMax;
+			countDownParams.startTime = Date.now();			
         }
         
         function restart() {
         	countingdown = false;
         	startZombies();
         	clearTimeout(bannerTimeout);
-        	bannerTimeout = setTimeout(clearbanner, 1000);
+        	bannerTimeout = setTimeout(clearbanner, countDownParams.stageDuration * 1000);
+			countDownParams.startTime = Date.now();
         }
         
         function endWarmup() 
@@ -488,7 +500,7 @@ define({
         	runner = runnerAnimations.running;
             countingdown = true;
             wave++;
-            zombieCatchupSpeed += 0.01;
+//            zombieCatchupSpeed += 0.01;
             banner = 'GO';
             zombieOffset = -25;
             requestRender();
@@ -538,8 +550,7 @@ define({
 				hrNotFound = true;			
 			}
 
-
-			//instigate warning
+			//Update Heart Rate related mechanics
 			if(hr < minHeartRate)
 			{	
 				showWarningLow = false;
@@ -567,6 +578,7 @@ define({
 			else if(hr > maxHeartRate)
 			{
 				showWarningHigh = false;
+				zombiesCatchingUp = false;
 				ppm = -1; // Negative pts/meter
 				if(!showWarningLow)
 				{
@@ -820,14 +832,15 @@ define({
 			{
 				var xpos = 0;
 				var ypos = 0;
-				sweat.draw(context, xpos,ypos,0);
-				context.font = '18px Samsung Sans';
-				context.fillStyle = '#fff';
+				var img = ppm > 0 ? sweat : sweat_red;
+				img.draw(context, xpos,ypos,0);
+				context.font = '24px Samsung Sans';
+				context.fillStyle = ppm > 0 ? '#fff' : flashingRedParams.colour;
 				context.textBaseline = "middle";
 				context.textAlign = "left";
 				context.fillText('SP', xpos + sweat.width + 5, ypos + sweat.height/2);
-				context.fillStyle = green;
-				context.fillText(~~settings.getPoints(), xpos + sweat.width + 5 + 30, ypos + sweat.height/2);
+				context.fillStyle = ppm > 0 ? green : flashingRedParams.colour;
+				context.fillText(~~settings.getPoints(), xpos + sweat.width + 5 + 33, ypos + sweat.height/2);
 			}
 
 			//GPS
@@ -1275,36 +1288,46 @@ define({
             //countdown        
             if(countingdown && banner!=false)
             {
+            	//shrink outer ring
+            	var delta = Date.now() - countDownParams.startTime;
+            	var p = delta / (countDownParams.stageDuration * 1000);
+            	var p = p*p*p;
+            	countDownParams.outerRadius = countDownParams.outerRadiusMax -  p * (countDownParams.outerRadiusMax - (countDownParams.radius - 20)) ;
+            	countDownParams.outerRadius = Math.max(0, countDownParams.outerRadius);
             	var centreX = canvas.width/2;
             	var centreY = canvas.height/2;
-            	var countdownRadius = 100;
+//            	var countdownRadius = 100;
+            	
+            	context.lineWidth = 4;
             	
             	//fill screen white
             	context.globalAlpha = 0.5;
             	context.fillStyle = '#fff';
             	context.fillRect(0,0,canvas.width, canvas.height);
             	context.globalAlpha = 1;
-            	
-            	//black circle
+            	            	
+            	//outer ring
             	context.beginPath();
-            	context.arc(centreX, centreY, countdownRadius, 0, 2* Math.PI, false);
+            	context.arc(centreX, centreY, countDownParams.outerRadius, 0, 2*Math.PI, false);
+            	context.stroke(); 
+            	
+				//black circle
+            	context.beginPath();
+            	context.arc(centreX, centreY, countDownParams.radius, 0, 2* Math.PI, false);
             	context.fillStyle = '#000';
             	context.fill();
 //            	context.beginPath();
-//            	context.arc(centreX, centreY, countdownRadius, 0, 2* Math.PI, false);
+//            	context.arc(centreX, centreY, rad, 0, 2* Math.PI, false);
             	context.strokeStyle = '#fff';
             	context.stroke();
-            	//outer ring
-            	context.beginPath();
-            	context.arc(centreX, centreY, countdownRadius + 20, 0, 2*Math.PI, false);
-            	context.stroke(); 
+
             	//text
             	context.font = '56px SamsungSans';
             	context.textAlign = "center";
             	context.textBaseline = "middle";
             	context.fillStyle = '#fff';
             	if(banner == 'GO') {context.fillStyle = green;}
-            	context.fillText(banner,centreX, centreY);
+            	context.fillText(banner, centreX, centreY);
             }
             
             //Unlock Notification
@@ -1513,7 +1536,14 @@ define({
 			}
 			image.onerror = function() { throw "could not load" + this.src; }
 			image.src = 'images/image_sweat_point_green.png';
-            
+
+			image = new Image();
+			image.onload = function() {
+				sweat_red = new Sprite(this, this.width, 1000);
+			}
+			image.onerror = function() { throw "could not load" + this.src; }
+			image.src = 'images/image_sweat_point_red.png';
+			            
             //dead image
 			image = new Image();
 			image.onload = function() {
