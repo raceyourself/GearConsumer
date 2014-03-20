@@ -170,7 +170,7 @@ define({
 			var length = settings.getDistance();
 			console.log('target dist = ' + length);
 //			var type = settings.getTargetType();
-			var type = 'time';
+			var type = settings.getCurrentTarget();
 			
 			if (type == 'time') { targetTime = settings.getTime() * 60 * 1000; }
 			else if (type == 'distance') { TRACK_LENGTH = settings.getDistance(); }
@@ -1083,8 +1083,14 @@ define({
 			else
 			{
 				//show time run on left
+				var timeString = stringForTimeHHMMSS(r.getDuration());
+				context.textAlign = 'left';
+				context.fillText(timeString, progressBarInset -5, progressBarHeight);
 				
 				//show distance run on right
+				context.textAlign = 'right';
+				var distkm = Math.round(r.getDistance()/100) / 10;
+				context.fillText(distkm + 'km', canvas.width - progressBarInset + 5, progressBarHeight);
 			}
 
 			
