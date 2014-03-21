@@ -117,7 +117,7 @@ define({
 			currentHRZone = null,
 			currentZone = 0,
 			warmupTimeout = false,
-			timeMultiplier = 0.1,			//hack to test quickly. Set to 1
+			timeMultiplier = 1,			//hack to test quickly. Set to 1
 			intervalTimeout = false,
 			zoneAdaptTimeout = false,
 			warningTimeoutLow = false,
@@ -357,9 +357,12 @@ define({
             clearTimeout(bannerTimeout);
             bannerTimeout = setTimeout(clearbanner, countDownParams.stageDuration * 1000);
             setCurrentHRZone("Recovery");
-            warmupTimeout = setTimeout(endWarmup, 5*60*1000 * timeMultiplier);	//5 minutes warmup
+            var warmupDurationMinutes = 0.5;
+            warmupTimeout = setTimeout(endWarmup, warmupDurationMinutes*60*1000 * timeMultiplier);	//5 minutes warmup
 			countDownParams.outerRadius = countDownParams.outerRadiusMax;
-			countDownParams.startTime = Date.now();			
+			countDownParams.startTime = Date.now();
+			//10 second notification of warming up
+			setNotification(green, '#fff', 'Warm up for ' + warmupDurationMinutes + 'min', 10*1000);
         }
         
         function restart() {
@@ -374,6 +377,7 @@ define({
         {
         	var r = race.getOngoingRace();
         	        	console.log("Warmup over. Goal is: " + r.getGoal());
+        	setNotification(green, '#fff', 'Warmup Over', 5*1000);
 
         	switch(r.getGoal())
         	{
@@ -384,11 +388,11 @@ define({
         			break;
         		case "Endurance":
         		//set light zone, then step up to aerobic later
-        			setCurrentHRZone("Light");
+        			setCurrentHRZone("Aerobic");
         			intervalTimeout = setTimeout(nextHRZone, 3*60*1000 * timeMultiplier);
         			break;
 				case "Strength":
-					setCurrentHRZone("Light");
+					setCurrentHRZone("Aerobic");
 				//set light zone then step up later
 					intervalTimeout = setTimeout(nextHRZone, 3*60*1000 * timeMultiplier);
 					break;
@@ -421,18 +425,28 @@ define({
 					}
 					break;
 				case "Strength":
+					var sprintDuration = 30;
+					var recoverDuration = 30;
 					switch(currentHRZone)
 					{
 						case "Light":
 						case "Anaerobic":
 							//transition to Aerobic for next interval
 							setCurrentHRZone("Aerobic");
-							intervalTimeout = setTimeout(nextHRZone, 1*60*1000 * timeMultiplier);
+							intervalTimeout = setTimeout(nextHRZone, recoverDuration*1000 * timeMultiplier);
+							//vibrate
+							navigator.vibrate([10, 100, 10, 100, 10]);
+							//notify
+							setNotification(green, '#fff', 'Recover for ' + recoverDuration + 's', 5*1000);
 							break;
 						case "Aerobic":
 							//transition up to Anaerobic
 							setCurrentHRZone("Anaerobic");
-							intervalTimeout = setTimeout(nextHRZone, 2*60*1000 * timeMultiplier);
+							intervalTimeout = setTimeout(nextHRZone, sprintDuration*1000 * timeMultiplier);
+							//vibrate
+							navigator.vibrate([100, 10, 100, 10, 100]);
+							//notify
+							setNotification(red, '#fff', 'Sprint for ' + sprintDuration + 's', 5*1000);
 							break;
 						default:
 							console.log("shouldn't be in this zone in Strength training: " + currentHRzone);
@@ -511,7 +525,8 @@ define({
 			console.log("age = " + age + " " + minHeartRate + " " + maxHeartRate);
 			//set that we are currently adapting
 			adaptingToRecentZoneShift = true;
-			adaptingTimeout	= setTimeout(adaptComplete, 1 * 60 * 100 * timeMultiplier);
+			//15 seconds to adapt
+			adaptingTimeout	= setTimeout(adaptComplete, 15 * 100 * timeMultiplier);
 			
 			//vibrate
 			navigator.vibrate([10, 10, 10, 10, 10, 10, 10]);
@@ -627,8 +642,10 @@ define({
 					clearTimeout(warningTimeoutHigh);
 					warningTimeoutHigh = false;
 				}
-				if(!showWarningLow)
+				if(!showWarningLow && !adaptingToRecentZoneShift)
 				{
+					//don't show the warning if we just shifted zones.
+					//colouring and 'speed up' text will still be present
 					timeTurnedBad = Date.now();
 					clearNotification();
 					setNotification(flashingRed, '#fff', 'Heart Rate too low!', 0);
@@ -667,8 +684,10 @@ define({
 				}
 				
 				//TODO check if stationary and use stationary red if so
-				if(!showWarningHigh)
+				if(!showWarningHigh && !adaptingToRecentZoneShift)
 				{
+					//don't show the warning if we just shifted zones.
+					//colouring and 'speed up' text will still be present
 					timeTurnedBad = Date.now();
 					clearNotification();
 					setNotification(flashingRed, '#fff', 'Heart Rate too high!', 0);
@@ -738,6 +757,7 @@ define({
         function randomHR() {
         	hr = Math.floor( 50 + 150 * (Math.random()) );
 //        	hr = Math.floor(minHeartRate + 2);
+			hr = Math.floor( (minHeartRate + maxHeartRate)/2);
         	e.fire('hrm.change', {heartRate: hr});
         }
         
