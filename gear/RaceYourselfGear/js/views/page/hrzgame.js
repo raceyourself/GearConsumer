@@ -78,6 +78,7 @@ define({
             dinoGameImage = null,
             boulderGameImage = null,
             dinoUnlockImageFS = null,
+            finishedImage = null,
             numZombies = 0,
             zombieDistance = false,
             zombieInterval = false,
@@ -185,23 +186,23 @@ define({
 			unlockNotification = null;
 		}
 
-		function showUnlockNotification(game)
+		function showUnlockNotification(game, time)
 		{
 			//vibrate
 			navigator.vibrate([10, 10, 10, 10, 10, 10, 10]);
-			unlockNotifiaction = game;
+			unlockNotification = game;
 			//TODO - have this only disappear 5s after user raises wrist
-			unlockNotificationTimer = setTimeout(clearUnlockNotification, 5*1000);
+			unlockNotificationTimer = setTimeout(clearUnlockNotification, time*1000);
 		}
 
 		function onUnlockDino()
 		{
-			showUnlockNotification('dino');
+			showUnlockNotification('dino', 5);
 		}
 		
 		function onUnlockBoulder()
 		{
-			showUnlockNotification('boulder');
+			showUnlockNotification('boulder', 5);
 		}
 
         function onPageShow() {
@@ -815,6 +816,7 @@ define({
 //                zombieMoan.play();
                 r.addPoints(50);
                 navigator.vibrate(1000);
+                showUnlockNotification('finished', 5);
                 e.fire('race.end', r);
                 r.stop();
                 lastRender = null;
@@ -1634,15 +1636,24 @@ define({
             	switch(unlockNotification)
             	{
             		case 'dino':
-            			unlockSprite = dinoGameImage;
+            			dinoGameImage.draw(context, 0, 0, 0);
             			break;
 					case 'boulder':
-						unlockSprite = boulderGameImage;
+						boulderGameImage.draw(context, 0, 0, 0);
+						break;
+					case 'finished':
+						finishedImage.draw(context, centreX - finishedImage.height/2, centreY - finishedImage.height/2, 0);
+						//also draw text for finished
+						context.font = '25px Samsung Sans';
+						context.textAlign = 'center';
+						context.textBaseline = 'middle';
+						context.fillStyle = '#fff';
+						context.fillText('Training Complete', centreX, 40);
 						break;
 					default:
 						console.log('unknown game being unlocked ' + unlockNotification);
             	}
-            	unlockSprite.draw(context, 0, 0, 0);
+            	
             }
             
             
@@ -1918,6 +1929,15 @@ define({
 			image.onerror = function() { throw "could not load" + this.src; }
 			image.src = 'images/image_boulder_achievement_screen.png';	
 			
+			//finished image
+			image = new Image();
+			image.onload = function() {
+				finishedImage = new Sprite(this, this.width, 1000);
+			}
+			image.onerror = function() { throw "could not load" + this.src; }
+			image.src = 'images/image_ending flag.png';	
+			
+			//dashed pattern
 			image = new Image();
 			image.onload = function() {
 				dottedPattern = context.createPattern(this, "repeat");
@@ -1937,14 +1957,14 @@ define({
 				goodBG = this;
 			}
 			image.onerror = function() {throw "could not load" + this.src; }
-			image.src = 'images/bg_good.png';
+			image.src = 'images/bg_good.jpg';
 			
 			image = new Image();
 			image.onload = function() {
 				badBG = this;
 			}
 			image.onerror = function() {throw "could not load" + this.src; }
-			image.src = 'images/bg_bad.png';
+			image.src = 'images/bg_bad.jpg';
            /* if (hrm.isAvailable()) {
                 hrm.start();
             } else {
