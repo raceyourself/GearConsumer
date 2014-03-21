@@ -94,6 +94,7 @@ define({
                 },
                 onerror: function onerror() {
                     console.error('failed to find peerAgents');
+                    setTimeout(connect, 5000);
                 }
             });
 
