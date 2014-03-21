@@ -1403,16 +1403,15 @@ define({
 				context.fillStyle = '#fff';
 				context.fill();
 				//text
-				var pace = r.getPace();
-				//minutes part
-				var paceFractional = pace % 1;
-				var paceMinutes = pace - paceFractional;
-				var paceSeconds = Math.floor(paceFractional*60);
-				var paceSecondsString = ''+paceSeconds;
-				if(paceSecondsString.length == 1) { paceSecondsString = '0' + paceSecondsString; }
+                var pace = r.getPace();
+                var paceString = mss(pace*60);
+                var paceUnits = 'min/km';
+	            if(settings.getPaceUnits() == 'km/h') {
+	                pace = r.getSpeed();
+	                paceString = ~~pace;
+	                paceUnits = 'km/h';
+	            }
 
-				var paceString = paceMinutes + ':' + paceSecondsString;
-				if(r.getSpeed() == 0) { paceString = '--:--'; }
 				var paceXPos = PaceXPosR - radius/2;
 				context.font = '56px Samsung Sans';
 				context.textAlign = 'center';
@@ -1421,7 +1420,7 @@ define({
 				context.fillText(paceString, paceXPos, hrYPos + 4);
 				//units
 				context.font = '24px Samsung Sans';
-				context.fillText('min/km', paceXPos, hrYPos + 38);
+				context.fillText(paceUnits, paceXPos, hrYPos + 38);
 				//icon
 				paceIcon.draw(context, paceXPos - paceIcon.width/2, hrYPos - paceIcon.height/2 - 38, 0);
 								
@@ -1573,6 +1572,16 @@ define({
             frames++;
         }
         
+        function mss(seconds) {
+            if (!isFinite(seconds)) return '--:--';
+            
+            var mins = ~~(seconds/60);
+            var secs = ~~(seconds - mins*60);
+            
+            if (secs < 10) secs = '0' + secs;
+            
+            return mins + ':' + secs;
+        }
        
         function distanceToTrackPos(distance)
         {
