@@ -87,7 +87,7 @@ define({
         }
         
         function onBack() {
-            history.back();
+            e.fire('newmain.show');
         }
         
         function onPageHide() {

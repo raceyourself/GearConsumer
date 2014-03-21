@@ -47,12 +47,15 @@ define({
             heartBlack = null,
             deadImage = null,
             deadRunnerImage = null,
-            gps = null,
+            gpsDot = null,
+            gpsAvailable = false,
+            gpsRing = null,
             sweat = null,
             sweat_red = null,
             paceIcon = null,
             runnerAnimations = {
                     idle: { name: 'idle', sprite: null, speedThreshold: 0},
+                    idle_red: { name: 'idle_red', sprite: null, speedThreshold: 0},
                     running: { name: 'running', sprite: null, speedThreshold: 0.1},
                     running_red: { name: 'running_red', sprite: null, speedThreshold: 0.1},
                     sprinting: { name: 'sprinting', sprite: null, speedThreshold: 4},
@@ -62,6 +65,7 @@ define({
             notification = {
             		active: false,
             		colour: '#fff',
+            		textColour: '#000',
             		text: 'Achievement Unlocked',
             		period: 600,
             		phase: 0,
@@ -73,7 +77,7 @@ define({
             boulder = null,
             dinoGameImage = null,
             boulderGameImage = null,
-            zombiesAnimOffset = [],
+            dinoUnlockImageFS = null,
             numZombies = 0,
             zombieDistance = false,
             zombieInterval = false,
@@ -87,6 +91,7 @@ define({
             boulderKill = null,
             regularSound = null,
             killSound = null,
+            chime = null,
             visible = false,
             changer,
             sectionChanger,
@@ -102,10 +107,10 @@ define({
             hrChangePeriod = 5000,
             lastHRtime = 0,
             hrColour = '#fff',
-            zombieCatchupSpeed = 0.05,
-            zombieStartOffset = -25,
+            zombieStartOffset = -15,
+            zombieCatchupSpeed = -zombieStartOffset/500,
             zombieOffset = zombieStartOffset,
-            screenWidthDistance = 25,	//'real-world' distance covered by the screen's width
+            screenWidthDistance = -zombieStartOffset,	//'real-world' distance covered by the screen's width
             screenLeftDistance = zombieOffset,		//'real-world' position of left of screen
 			hrZones = [],
 			currentHRZone = null,
@@ -114,7 +119,8 @@ define({
 			timeMultiplier = 0.1,			//hack to test quickly. Set to 1
 			intervalTimeout = false,
 			zoneAdaptTimeout = false,
-			warningTimeout = false,
+			warningTimeoutLow = false,
+			warningTimeoutHigh = false,
 			zombiesCatchingUp = false,
 			adaptingToRecentZoneShift = false,
 			adaptingTimeout = false,
@@ -125,7 +131,10 @@ define({
 			opponent = 'zombie',
 			green = '#51b848',
             red = '#cb2027',
-            lightRed = '#dc8080',
+            amber = '#f7941d',
+            hrWarningPhase = 0,
+            hrWarningPeriod = 3*1000,
+            lightRed = '#731216',
 			flashingRed = 'flashingRed',
 			flashingRedParams = { colour: '#fff', period:400, phase: 0 },
 			hrNotFound = false,
@@ -135,11 +144,12 @@ define({
 			countDownParams = { radius: 100, outerRadius: 250, outerRadiusMax: 250, shrinkSpeed: 5, stageDuration:1, startTime:0},
 			goodBG = null,
 			badBG = null,
-			timeTurnedGood = 0,
+			timeTurnedGood = Date.now(),
 			timeTurnedBad = 0,
 			crossFadeParametric = 0,
 			crossFadeTime = 1,
-			badFraction = 0;
+			badFraction = 0,
+            hasGPSUpdate = false;
 
 			
 
@@ -149,9 +159,10 @@ define({
             gear.ui.changePage('#race-game');
         }
 
-		function setNotification(colour, text, duration)
+		function setNotification(colour, textColour, text, duration)
 		{
 			notification.colour = colour;
+			notification.textColour = textColour;
 			notification.text = text;
 			notification.active = true;
 			if(notificationTimeout != false) 
@@ -201,6 +212,7 @@ define({
                 circular: false,
                 orientation: "horizontal"
             });
+            document.getElementById('quit-confirmation').classList.toggle('hidden', true);
             
             var r = race.getOngoingRace();
             if (r === null || !r.isRunning() || r.hasStopped()) {
@@ -216,7 +228,7 @@ define({
             
 			e.listen('game.unlock.dino', onUnlockDino);
 			e.listen('game.unlock.boulder', onUnlockBoulder);
-			
+			e.listen('achievement.awarded', onAchievementAwarded);
             isDead = false;
 			var length = settings.getDistance();
 			console.log('target dist = ' + length);
@@ -246,7 +258,12 @@ define({
 //			setOpponent('dinosaur');
         }
         
-        
+        function onAchievementAwarded(data)
+        {
+        	setNotification( green, '#fff', 'Achievement Unlocked!', 3*1000);
+			navigator.vibrate([100, 50, 100, 50]);
+			chime.play();
+        }
         
         function setOpponent(type)
         {
@@ -258,8 +275,8 @@ define({
         			killSound = zombieGrowl;
 					break;
         		case 'dinosaur':
-        			regularSound = zombieMoan;
-        			killSound = zombieGrowl;
+        			regularSound = dinoRoar;
+        			killSound = dinoRoar;
 					break;
         		case 'boulder':
         			regularSound = zombieMoan;
@@ -272,15 +289,16 @@ define({
         }
         
         function onPageHide() {
+            e.die('tizen.back', onBack);
             visible = false;
             clearInterval(fpsInterval);
             clearInterval(randomHR);
 			clearTimeout(warmupTimeout);
             clearTimeout(intervalTimeout);
             clearTimeout(adaptingTimeout);
-            clearTimeout(warningTimeout);
+            clearTimeout(warningTimeoutLow);
+			clearTimeout(warningTimeoutHigh)
             if (!!sectionChanger) sectionChanger.destroy();
-            e.die('tizen.back', onBack);
             
             var r = race.getOngoingRace();
             if (r !== null) {
@@ -294,10 +312,15 @@ define({
             clearTimeout(bannerTimeout)
             e.die('game.unlock.dino', onUnlockDino);
             e.die('game.unlock.boulder', onUnlockBoulder);
+            e.die('achievement.awarded', onAchievementAwarded);
         }        
         
         function onBack() {
-            e.fire('gameselect.show');
+            document.getElementById('quit-confirmation').classList.toggle('hidden');
+        }
+        
+        function onQuit() {
+            e.fire('newmain.show');
         }
         
         function startCountdown() {
@@ -513,7 +536,7 @@ define({
             wave++;
 //            zombieCatchupSpeed += 0.01;
             banner = 'GO';
-            zombieOffset = -25;
+            zombieOffset = zombieStartOffset;
             requestRender();
             clearTimeout(bannerTimeout);
             bannerTimeout = setTimeout(restart, 1500);
@@ -522,13 +545,15 @@ define({
         
         function startZombies() {
             clearInterval(zombieInterval);
-            var animDelay = Math.random() * 0.2;
             //4 zombies, we just don't show them all
             while (zombies.length < 4) {
                 zombies.push(zombies[0].clone());
-                zombiesAnimOffset.push(animDelay);
             };
-            for (var i=0;i<zombies.length;i++) zombies[i].reset();
+            for (var i=0;i<zombies.length;i++) {
+                zombies[i].reset();
+                var animDelay = Math.random() * zombies[i].getPeriod();
+                zombies[i].time = animDelay;
+            }
             zombieOffset = zombieStartOffset;
             zombieDistance = zombieOffset;
 //            int intervalTime = Math.min(350, 750-(wave*50));
@@ -538,10 +563,23 @@ define({
         
         function zombieTick() 
         {
+        	//zombies catch up
         	if(zombiesCatchingUp)
         	{
             	zombieOffset += zombieCatchupSpeed;
         	}
+        	
+        	//zombies fall back
+        	if(hr >= minHeartRate && hr <= maxHeartRate)
+        	{
+				var timeGood = Date.now() - timeTurnedGood;
+				if(timeGood > 30*1000)
+				{
+					if(zombieOffset > zombieStartOffset)
+					{ zombieOffset -= zombieCatchupSpeed; }
+				}
+        	}
+        	
         	var r = race.getOngoingRace();
         	zombieDistance = r.getDistance() + zombieOffset;
             requestRender();
@@ -550,7 +588,7 @@ define({
             //general update of track window
             if(!isDead)
             {
-				screenWidthDistance = Math.max( 10, Math.min( -zombieOffset + 15, 100));
+				screenWidthDistance = Math.max( 15, Math.min( -zombieOffset + 5, 50));
 			}
 			
 			screenLeftDistance = (zombieDistance + r.getDistance() - screenWidthDistance)/2;
@@ -560,28 +598,23 @@ define({
 			{
 				hrNotFound = true;			
 			}
-
-			//Update player anim
-			if(r.getSpeed() == 0)
-			{
-				runner = runnerAnimations.idle;
-			}
-			else
-			{
-				runner = runnerAnimations.running;
-			}
-
+	
 			//Update Heart Rate related mechanics
 			if(hr < minHeartRate)
 			{	
 				showWarningLow = false;
 				ppm = 5; // Standard pts/meter
-				if(!showWarningHigh)
+				if(warningTimeoutHigh != false)
 				{
-					timeTurnedBad = Date.now()
-					clearNotification()
-					setNotification(flashingRed, 'Heart Rate too low!', 0);
-					showWarningHigh = true;
+					clearTimeout(warningTimeoutHigh);
+					warningTimeoutHigh = false;
+				}
+				if(!showWarningLow)
+				{
+					timeTurnedBad = Date.now();
+					clearNotification();
+					setNotification(flashingRed, '#fff', 'Heart Rate too low!', 0);
+					showWarningLow = true;
 					if(settings.getAudioActive()) {
 						regularSound.play();
 					}
@@ -590,14 +623,10 @@ define({
 				}
 				if(!adaptingToRecentZoneShift)
 				{
-					if(warningTimeout == false)
+					if(warningTimeoutLow == false)
 					{
-						warningTimeout = setTimeout(warningOver_low, 10*1000 * timeMultiplier);
+						warningTimeoutLow = setTimeout(warningOver_low, 10*1000 * timeMultiplier);
 					}
-				}
-				if(!isDead)
-				{
-					runner = runnerAnimations.running;
 				}
 			}
 			else if(hr > maxHeartRate)
@@ -605,21 +634,26 @@ define({
 				showWarningHigh = false;
 				zombiesCatchingUp = false;
 				ppm = -1; // Negative pts/meter
-				runner = runnerAnimations.running_red;
+				if(warningTimeoutLow != false)
+				{
+					clearTimeout(warningTimeoutLow);
+					warningTimeoutLow = false;
+				}
+				
 				//TODO check if stationary and use stationary red if so
-				if(!showWarningLow)
+				if(!showWarningHigh)
 				{
 					timeTurnedBad = Date.now();
 					clearNotification();
-					setNotification(flashingRed, 'Heart Rate too high!', 0);
-					showWarningLow = true;
+					setNotification(flashingRed, '#fff', 'Heart Rate too high!', 0);
+					showWarningHigh = true;
 					navigator.vibrate([1000, 500, 250, 100]);
 				}
 				if(!adaptingToRecentZoneShift)
 				{
-					if(warningTimeout == false)
+					if(warningTimeoutHigh == false)
 					{
-						warningTimeout = setTimeout(warningOver_high, 10*1000 * timeMultiplier);
+						warningTimeoutHigh = setTimeout(warningOver_high, 10*1000 * timeMultiplier);
 					}
 				}
 			}
@@ -627,6 +661,16 @@ define({
 			{
 				ppm = 5; // Standard pts/meter
 				//clear warning
+				if(warningTimeoutHigh != false)
+				{
+					clearTimeout(warningTimeoutHigh);
+					warningTimeoutHigh = false;
+				}
+				if(warningTimeoutLow != false)
+				{
+					clearTimeout(warningTimeoutLow);
+					warningTimeoutLow = false;
+				}
 				if(showWarningLow || showWarningHigh)
 				{
 					timeTurnedGood = Date.now();
@@ -634,15 +678,8 @@ define({
 					showWarningHigh = false;
 					clearNotification();
 				}
-				clearTimeout(warningTimeout);
-				warningTimeout = false;
 				//stop zombies catching up
 				zombiesCatchingUp = false;
-				//clear runner
-				if(!isDead)
-				{
-					runner = runnerAnimations.running;
-				}
 			}
         }
 
@@ -668,6 +705,7 @@ define({
         //test function to provide random heart rate
         function randomHR() {
         	hr = Math.floor( 50 + 150 * (Math.random()) );
+//        	hr = Math.floor(minHeartRate + 2);
         	e.fire('hrm.change', {heartRate: hr});
         }
         
@@ -677,11 +715,13 @@ define({
         	{
 				showWarningLow = false;
 				showWarningHigh = false;
-				clearTimeOut(warningTimeout);
+				clearTimeOut(warningTimeoutHigh);
+				warningTimeoutHigh = false;
+				clearTimeout(warningTimeoutLow);
+				warningTimeoutLow = false;
 				zombiesCatchingUp = false;
-				runner = runnerAnimations.running;
 				clearNotification();
-				setNotification( '#fff', 'No Heart Rate', 0);
+				setNotification( '#fff', '#000', 'No Heart Rate', 0);
         	}
         	else
         	{
@@ -728,32 +768,38 @@ define({
         function warningOver_high()
         {
         	console.log("Warning up! now losing sweat points");
-        	runner = runnerAnimations.running_red;
         }
         
         function step() {
             var r = race.getOngoingRace();
             if (r.getDistance() < zombieDistance && !isDead) {
+                if(!isDead)
+                {
                 r.data.caught_by = game.getCurrentOpponentType();
                 r.data.times_caught = r.data.times_caught || 0;
                 r.data.times_caught++;
                 r.addPoints(-100);
                 
-                if(settings.getAudioActive()) {
-                	killSound.play();
-                }
-                
+
+					if(settings.getAudioActive()) {
+						killSound.play();
+					}
                 navigator.vibrate([1000, 500, 250, 100]);
 //                r.stop();
 //                e.fire('race.end', r);
 //                lastRender = null;
 //                stopZombies();
 				isDead = true;
-				runner = runnerAnimations.zombieDead;
+                runner.sprite.onEnd(function(dt) {
+                    runner.sprite.onEnd(null);
+                    runner = runnerAnimations.zombieDead;
+                    runner.sprite.time = dt;
+                });
                 requestRender();
                 clearTimeout(bannerTimeout);
                 bannerTimeout = setTimeout(nextWave, 3000);
                 e.fire('died', {cause: game.getCurrentOpponentType()});
+				}
                 return;
             }
             if (r.getDistance() >= TRACK_LENGTH || r.getDuration() >= targetTime) {
@@ -796,6 +842,29 @@ define({
                 });
             }
             */
+            
+            if(!isDead)
+            {
+                //Update player anim
+                if(r.getSpeed() <= 0.01)
+                {
+                    runner.sprite.onEnd(function(dt) {
+                        runner.sprite.onEnd(null);
+                        if (showWarningHigh) runner = runnerAnimations.idle_red;
+                        else runner = runnerAnimations.idle;
+                        runner.sprite.time = dt;
+                    });
+                }
+                else
+                {
+                    runner.sprite.onEnd(function(dt) {
+                        runner.sprite.onEnd(null);
+                        if (showWarningHigh) runner = runnerAnimations.running_red;
+                        else runner = runnerAnimations.running;
+                        runner.sprite.time = dt;
+                    });
+                }
+            }
             
             requestRender();
         }
@@ -896,26 +965,31 @@ define({
 			//sweat points
 			if(true)
 			{
-				var xpos = 0;
-				var ypos = 0;
+				var xpos = 1;
+				var ypos = 1;
 				var img = ppm > 0 ? sweat : sweat_red;
 				img.draw(context, xpos,ypos,0);
 				context.font = '24px Samsung Sans';
-//				context.fillStyle = ppm > 0 ? '#fff' : flashingRedParams.colour;
 				context.fillStyle = ppm > 0 ? '#fff' : red;
 				context.textBaseline = "middle";
 				context.textAlign = "left";
-				context.fillText('SP', xpos + sweat.width + 5, ypos + sweat.height/2);
-				context.fillStyle = ppm > 0 ? green : flashingRedParams.colour;
-				context.fillText(~~settings.getPoints(), xpos + sweat.width + 5 + 33, ypos + sweat.height/2);
+				context.fillText('SP', xpos + sweat.width + 8, ypos + sweat.height/2);
+				context.fillStyle = ppm > 0 ? '#fff' : flashingRedParams.colour;
+				context.fillText(~~settings.getPoints(), xpos + sweat.width + 8 + 36, ypos + sweat.height/2);
 			}
+///////////////////////////
+
 
 			//GPS
-			if(true)
-			{
-				var GPSscale = sweat.height / gps.height;
-				gps.drawscaled(context, canvas.width - gps.width*GPSscale, 0, 0, GPSscale);
-			}
+				var GPSscale = 0.65;
+				context.save();
+				context.translate(canvas.width - gpsRing.width/2 * GPSscale, gpsRing.height/2 * GPSscale);
+				gpsRing.drawscaled(context, - gpsRing.width/2*GPSscale, -gpsRing.height/2 * GPSscale, 0, GPSscale);
+				if(gpsAvailable && hasGPSUpdate)
+				{
+					gpsDot.drawscaled(context, - gpsDot.width/2*GPSscale, -gpsDot.height/2 * GPSscale, 0, GPSscale);
+				}
+				context.restore();
 
             // Banner
             if (false) {
@@ -962,160 +1036,7 @@ define({
                 }
             }
 
-            if(!countingdown)
-            {
-				// Heart Rate
-				var heartIcon = null;
-				var hrFillColour = green;
 
-				if(hrNotFound)
-				{
-					heartIcon = heartBlack;
-					hrFillColour = '#555';
-				}
-				else if(hr > maxHeartRate)
-				{
-					heartIcon = heartBlack; 
-					hrFillColour = flashingRedParams.colour;             	
-				}
-				else if(hr < minHeartRate) 
-				{
-					heartIcon = heartRed; 
-					hrFillColour = flashingRedParams.colour;
-				}
-
-				else { heartIcon = heartGreen; }
-			
-				var radius = 115/2;
-				var hrXPos = canvas.width - radius - 4;
-				var hrYPos = 37 + radius;
-				//fill
-				var MaxCircleHR = 200;
-				var MinCircleHR = 50;
-				context.beginPath();
-				context.arc(hrXPos, hrYPos, radius, 0, 2*Math.PI, false);
-				context.fillStyle = '#fff';
-				context.fill();
-				context.strokeStyle = green;
-				if( hr < minHeartRate || hr > maxHeartRate) { context.strokeStyle = red; }
-				context.lineWidth = 5;
-				context.stroke();
-			
-				//how high up the circle as a percentage of diameter 
-				var fillProportion = (hr - MinCircleHR)/(MaxCircleHR - MinCircleHR);
-				if(hrNotFound) { fillProportion = 1; }
-				//height in pixels above centre line
-				var h = fillProportion * 2 * radius - radius
-				var angle = Math.asin(h/radius);
-				context.beginPath();
-				context.arc(hrXPos, hrYPos, radius, -angle, Math.PI + angle, false);
-				context.fillStyle = hrFillColour;
-				context.fill();
-						
-				//water marks
-				context.globalAlpha = 0.5;
-				context.strokeStyle = dottedPattern;
-				var heightProportion = (maxHeartRate - MinCircleHR)/(MaxCircleHR - MinCircleHR);
-				var height = heightProportion * 2 * radius - radius;
-				var a = Math.asin(height/radius);
-				//do an arc to get the pen in the right place
-				context.beginPath();
-				context.moveTo(hrXPos - radius * Math.cos(a), hrYPos - height);
-				context.lineTo(hrXPos + radius * Math.cos(a), hrYPos - height);
-				context.stroke();
-				//lower range
-				heightProportion = (minHeartRate - MinCircleHR)/(MaxCircleHR - MinCircleHR);
-				height = heightProportion * 2 * radius - radius;
-				a = Math.asin(height/radius);
-				context.beginPath();
-				context.moveTo(hrXPos - radius * Math.cos(a), hrYPos - height);
-				context.lineTo(hrXPos + radius * Math.cos(a), hrYPos - height);
-				context.stroke();
-				context.globalAlpha = 1;
-				
-				//icon
-				heartIcon.draw(context, hrXPos-heartIcon.width/2, hrYPos-heartIcon.height/2 - 30, 0);
-				//number
-				context.font = '56px Samsung Sans';
-				context.textAlign = 'center';
-				context.textBaseline = "middle";
-				context.fillStyle = '#000';
-				var hrText = hr;
-				if(hrNotFound) { hrText = '--'; }
-				context.fillText(hrText, hrXPos, hrYPos + 10);
-				//bpm
-				context.font = '24px Samsung Sans';
-				context.fillText('bpm', hrXPos, hrYPos + 38);
-
-				//Pace
-				var PaceXPosR = 2*radius;
-				context.beginPath();
-				context.arc(PaceXPosR, hrYPos, radius, Math.PI * 1.5, Math.PI * 2.5, false);
-				context.lineTo(PaceXPosR - 2*radius, hrYPos + radius);
-				context.arc(PaceXPosR-2*radius, hrYPos, radius, Math.PI/2, Math.PI*1.5, false);
-				context.closePath();
-				context.fillStyle = '#fff';
-				context.fill();
-				//text
-				var pace = r.getPace();
-				//minutes part
-				var paceFractional = pace % 1;
-				var paceMinutes = pace - paceFractional;
-				var paceSeconds = Math.floor(paceFractional*60);
-				var paceSecondsString = ''+paceSeconds;
-				if(paceSecondsString.length == 1) { paceSecondsString = '0' + paceSecondsString; }
-
-				var paceString = paceMinutes + ':' + paceSecondsString;
-				if(r.getSpeed() == 0) { paceString = '--:--'; }
-				var paceXPos = PaceXPosR - radius/2;
-				context.font = '56px Samsung Sans';
-				context.textAlign = 'center';
-				context.textBaseline = 'middle';
-				context.fillStyle = '#000';
-				context.fillText(paceString, paceXPos, hrYPos + 4);
-				//units
-				context.font = '24px Samsung Sans';
-				context.fillText('min/km', paceXPos, hrYPos + 38);
-				//icon
-				paceIcon.draw(context, paceXPos - paceIcon.width/2, hrYPos - paceIcon.height/2 - 38, 0);
-								
-			
-			
-				//Ahead/Behind
-				if(false)
-				{
-					var distXPos = radius;
-					var distYPos = 37 + radius;
-					if(!isDead)
-					{
-						context.beginPath();
-						context.arc(distXPos, distYPos, radius, 0, 360, false);
-						context.fillStyle = green;
-						context.fill();
-						//+
-						context.fillStyle = '#fff';
-						context.font ='24px Samsung Sans';
-						context.fillText('+', distXPos, distYPos - 33);
-						//m
-						context.font = '24px Samsung Sans';
-						context.fillText('m', distXPos, distYPos + 38);
-						//number
-						var delta = Math.round(r.getDistance() - zombieDistance);
-						context.font = '56px Samsung Sans';
-						context.fillText(delta, distXPos, distYPos +4);
-					}
-					else
-					{
-						//dead
-						context.beginPath();
-						context.arc(distXPos, distYPos, radius, 0, 360, false);
-						context.fillStyle = red;
-						context.fill();
-						//image
-						deadImage.draw(context, distXPos - deadImage.width/2, distYPos - deadImage.height/2, 0);
-					}
-				}
-            }
             
 			var progressBarHeight = canvas.height - (trackHeight - trackThickness)/2;
 			var progressBarInset = 0;
@@ -1254,7 +1175,7 @@ define({
 				}
 				//text
 				context.font = '24px Samsung Sans';
-				context.fillStyle = '#000';
+				context.fillStyle = notification.textColour;
 				context.textAlign = 'center';
 				context.textBaseline = 'middle';
 				context.fillText( notification.text, canvas.width/2, progressBarHeight);
@@ -1320,8 +1241,8 @@ define({
 			context.textAlign = 'left';
 			context.textBaseline = 'middle';
 
-if(!notification.active)
-{
+			if(!notification.active)
+			{
 			context.fillStyle = '#000';
 			if(TRACK_LENGTH < Infinity)
 			{
@@ -1358,7 +1279,7 @@ if(!notification.active)
 				var distkm = Math.round(r.getDistance()/100) / 10;
 				context.fillText(distkm + 'km', canvas.width - progressBarInset + 5, progressBarHeight);
 			}
-}
+			}
 
 			
             scale = 10/screenWidthDistance;
@@ -1376,23 +1297,25 @@ if(!notification.active)
 							var zombie = zombies[i];
 							var x_offset = ((i*(zombie.width*0.3))+(i%2)*5 + zombie.width*0.3) * scale;
 							var y_offset = (-1+(i+1)%2) * 5;
-							if (i%2==1) context.globalAlpha = 0.5;
+							if (i%2==1) context.globalAlpha = 0.75;
 							else context.globalAlpha = 1;
 							var zombiePos = 0 + distanceToTrackPos(zombieDistance) - x_offset;
 		//                    zombiePos -= screenLeftDistance;
-					var localDT = dt * (0.9 + zombiesAnimOffset[i]);
 							if(!isDead || zombiePos < playerXPos - 10)
 							{	
 								// if we're dead don't draw them as they join the bundle
 								var pace = r.getSpeed();
-								if(pace > 0)
+								if(pace > 0 || zombiesCatchingUp)
 								{
-									zombie.drawscaled(context, zombiePos, canvas.height - zombie.height * scale - trackHeight - 5*scale + y_offset, localDT, scale);
+									zombie.drawscaled(context, zombiePos, canvas.height - zombie.height * scale - trackHeight - 5*scale + y_offset, dt, scale);
 								}
 								else
 								{
-									zombieIdle.drawscaled(context, zombiePos, canvas.height - zombie.height * scale - trackHeight - 5*scale + y_offset, localDT, scale);
+									zombieIdle.drawscaled(context, zombiePos, canvas.height - zombie.height * scale - trackHeight - 5*scale + y_offset, dt, scale);
 								}
+							} else {
+							    // Just update the animation time
+							    zombie.time += dt;
 							}
 						}
 						context.globalAlpha = 1;
@@ -1401,7 +1324,8 @@ if(!notification.active)
 				case 'dinosaur':
 					if(zombieDistance != false && currentHRZone!='Recovery' ) {
 						var dinoPos = 0 + distanceToTrackPos(zombieDistance);
-						dino.drawscaled(context, dinoPos, canvas.height - dino.height * scale - trackHeight - 5*scale, dt, scale);
+						var dinoScale = scale * 1.5;
+						dino.drawscaled(context, dinoPos - dino.width * 0.6 * dinoScale, canvas.height - (dino.height - 20) * dinoScale - trackHeight - 5* scale, dt, dinoScale);
 					}
 					break;
 				case 'boulder':
@@ -1428,6 +1352,207 @@ if(!notification.active)
             if(isDead) { playerOffset += 10*playerScale; }
             runner.sprite.drawscaled(context, playerXPos, canvas.height -playerOffset , dt, playerScale);
             
+			if(!countingdown)
+            {
+				// Heart Rate
+				var heartIcon = null;
+				var hrFillColour = green;
+				var hrWarningText = false;
+				hrWarningPhase += dt;
+				hrWarningPhase = hrWarningPhase % hrWarningPeriod;
+								
+				if(hrNotFound)
+				{
+					heartIcon = heartBlack;
+					hrFillColour = '#555';
+				}
+				else if(hr > maxHeartRate)
+				{
+					heartIcon = heartBlack; 
+					hrFillColour = flashingRedParams.colour;             	
+					hrWarningText = 'slow down';
+				}
+				else if(hr > maxHeartRate - 3)
+				{
+					//close to high warning
+					heartIcon = heartBlack;
+					hrFillColour = amber;
+					hrWarningText = 'slow down';
+				}
+				else if(hr < minHeartRate) 
+				{
+					heartIcon = heartRed; 
+					hrFillColour = flashingRedParams.colour;
+					hrWarningText = 'speed up';
+				}
+				else if(hr < minHeartRate + 3)
+				{
+					heartIcon = heartRed;
+					hrFillColour = amber;
+					hrWarningText = 'speed up';
+				}
+				else { heartIcon = heartGreen; }
+			
+				var radius = 115/2;
+				var hrXPos = canvas.width - radius - 10;
+				var hrYPos = 37 + radius;
+
+				//fill
+				var MaxCircleHR = 200;
+				var MinCircleHR = 50;
+				context.beginPath();
+				context.arc(hrXPos, hrYPos, radius, 0, 2*Math.PI, false);
+				context.fillStyle = '#fff';
+				context.fill();
+				context.strokeStyle = hrFillColour;
+				context.lineWidth = 5;
+				context.stroke();
+				if(false)
+				{			
+				//how high up the circle as a percentage of diameter 
+				var fillProportion = (hr - MinCircleHR)/(MaxCircleHR - MinCircleHR);
+				if(hrNotFound) { fillProportion = 1; }
+				//height in pixels above centre line
+				var h = fillProportion * 2 * radius - radius
+				var angle = Math.asin(h/radius);
+				context.beginPath();
+				context.arc(hrXPos, hrYPos, radius, -angle, Math.PI + angle, false);
+				context.fillStyle = hrFillColour;
+				context.fill();
+				}
+				//water marks
+				if(false)
+				{
+				context.globalAlpha = 0.5;
+				context.strokeStyle = dottedPattern;
+				var heightProportion = (maxHeartRate - MinCircleHR)/(MaxCircleHR - MinCircleHR);
+				var height = heightProportion * 2 * radius - radius;
+				var a = Math.asin(height/radius);
+				//do an arc to get the pen in the right place
+				context.beginPath();
+				context.moveTo(hrXPos - radius * Math.cos(a), hrYPos - height);
+				context.lineTo(hrXPos + radius * Math.cos(a), hrYPos - height);
+				context.lineWidth = 2;
+				context.stroke();
+				//lower range
+				heightProportion = (minHeartRate - MinCircleHR)/(MaxCircleHR - MinCircleHR);
+				height = heightProportion * 2 * radius - radius;
+				a = Math.asin(height/radius);
+				context.beginPath();
+				context.moveTo(hrXPos - radius * Math.cos(a), hrYPos - height);
+				context.lineTo(hrXPos + radius * Math.cos(a), hrYPos - height);
+				context.stroke();
+				context.globalAlpha = 1;
+				}
+				if(hrWarningText != false && (hrWarningPhase/hrWarningPeriod > 0.5))
+				{
+					//warning text
+					context.font = '24px Samsung Sans';
+					context.textAlign = 'center';
+					context.textBaseline = 'middle';
+					context.fillStyle = hrFillColour;
+					if(hrWarningText == 'slow down')
+					{
+						context.fillText('SLOW', hrXPos, hrYPos - 15);
+						context.fillText('DOWN', hrXPos, hrYPos + 15);
+					}
+					else if(hrWarningText == 'speed up')
+					{
+						context.fillText('SPEED', hrXPos, hrYPos - 15);
+						context.fillText('UP', hrXPos, hrYPos + 15);
+					}
+					else
+					{
+						console.error('unexpected hrWarning message: ' + hrWarningText);
+					}
+					
+				}
+				else
+				{
+					//show heart rate
+					//icon
+					heartIcon.draw(context, hrXPos-heartIcon.width/2, hrYPos-heartIcon.height/2 - 32, 0);
+					//number
+					context.font = '56px Samsung Sans';
+					context.textAlign = 'center';
+					context.textBaseline = "middle";
+					context.fillStyle = '#000';
+					var hrText = hr;
+					if(hrNotFound) { hrText = '--'; }
+					context.fillText(hrText, hrXPos, hrYPos + 8);
+					//bpm
+					context.font = '24px Samsung Sans';
+					context.fillText('bpm', hrXPos, hrYPos + 38);
+				}
+				//Pace
+				var PaceXPosR = 2*radius;
+				context.beginPath();
+				context.arc(PaceXPosR, hrYPos, radius, Math.PI * 1.5, Math.PI * 2.5, false);
+				context.lineTo(PaceXPosR - 2*radius, hrYPos + radius);
+				context.arc(PaceXPosR-2*radius, hrYPos, radius, Math.PI/2, Math.PI*1.5, false);
+				context.closePath();
+				context.fillStyle = '#fff';
+				context.fill();
+				//text
+                var pace = r.getPace();
+                var paceString = mss(pace*60);
+                var paceUnits = 'min/km';
+	            if(settings.getPaceUnits() == 'km/h') {
+	                pace = r.getSpeed();
+	                paceString = ~~pace;
+	                paceUnits = 'km/h';
+	            }
+
+				var paceXPos = PaceXPosR - radius/2;
+				context.font = '56px Samsung Sans';
+				context.textAlign = 'center';
+				context.textBaseline = 'middle';
+				context.fillStyle = '#000';
+				context.fillText(paceString, paceXPos, hrYPos + 4);
+				//units
+				context.font = '24px Samsung Sans';
+				context.fillText(paceUnits, paceXPos, hrYPos + 38);
+				//icon
+				paceIcon.draw(context, paceXPos - paceIcon.width/2, hrYPos - paceIcon.height/2 - 38, 0);
+								
+			
+			
+				//Ahead/Behind
+				if(false)
+				{
+					var distXPos = radius;
+					var distYPos = 37 + radius;
+					if(!isDead)
+					{
+						context.beginPath();
+						context.arc(distXPos, distYPos, radius, 0, 360, false);
+						context.fillStyle = green;
+						context.fill();
+						//+
+						context.fillStyle = '#fff';
+						context.font ='24px Samsung Sans';
+						context.fillText('+', distXPos, distYPos - 33);
+						//m
+						context.font = '24px Samsung Sans';
+						context.fillText('m', distXPos, distYPos + 38);
+						//number
+						var delta = Math.round(r.getDistance() - zombieDistance);
+						context.font = '56px Samsung Sans';
+						context.fillText(delta, distXPos, distYPos +4);
+					}
+					else
+					{
+						//dead
+						context.beginPath();
+						context.arc(distXPos, distYPos, radius, 0, 360, false);
+						context.fillStyle = red;
+						context.fill();
+						//image
+						deadImage.draw(context, distXPos - deadImage.width/2, distYPos - deadImage.height/2, 0);
+					}
+				}
+            }
+            
             /// DEBUG
             // fps
             if(false)
@@ -1445,7 +1570,7 @@ if(!notification.active)
             {
             	//shrink outer ring
             	var delta = Date.now() - countDownParams.startTime;
-            	var p = delta / (countDownParams.stageDuration * 1000);
+            	var p = 1 - delta / (countDownParams.stageDuration * 1000);
             	var p = p*p*p;
             	countDownParams.outerRadius = countDownParams.outerRadiusMax -  p * (countDownParams.outerRadiusMax - (countDownParams.radius - 20)) ;
             	countDownParams.outerRadius = Math.max(0, countDownParams.outerRadius);
@@ -1477,7 +1602,7 @@ if(!notification.active)
             	context.stroke();
 
             	//text
-            	context.font = '56px SamsungSans';
+            	context.font = '56px Samsung Sans';
             	context.textAlign = "center";
             	context.textBaseline = "middle";
             	context.fillStyle = '#fff';
@@ -1491,46 +1616,26 @@ if(!notification.active)
             	var centreX = canvas.width/2;
             	var centreY = canvas.height/2;
             	var unlockRadius = 110
-            	//white bg
-            	context.globalAlpha = 0.5;
-            	context.fillStyle = '#fff';
+            	//black bg
+            	context.globalAlpha = 0.9;
+            	context.fillStyle = '#000';
             	context.fillRect(0,0,canvas.width, canvas.height);
             	context.globalAlpha = 1;
             	
-            	//black circle
-            	context.beginPath();
-            	context.arc(centreX, centreY, unlockRadius, 0, 2* Math.PI, false);
-            	context.fillStyle = '#000';
-            	context.fill();
-//            	context.beginPath();
-//            	context.arc(centreX, centreY, unlockRadius, 0, 2* Math.PI, false);
-            	context.strokeStyle = '#fff';
-            	context.stroke();
             	//image
             	var unlockSprite = null;
-            	var unlockMessage = '';
             	switch(unlockNotification)
             	{
             		case 'dino':
             			unlockSprite = dinoGameImage;
-            			unlockMessage = 'Race Dino'
             			break;
 					case 'boulder':
 						unlockSprite = boulderGameImage;
-						unlockMessage = 'Race Boulder'
 						break;
 					default:
 						console.log('unknown game being unlocked ' + unlockNotification);
             	}
-            	unlockSprite.draw(context, centreX - unlockSprite.width/2, centreY - unlockSprite.height/2 + 50, 0);
-            	//text
-            	context.font = '24px Samsung Sans';
-            	context.textAlign = "center";
-            	context.textBaseline = "middle";
-            	context.fillStyle = '#fff';
-            	context.fillText('Well Done!', centreX, centreY -69);
-            	context.fillText('You unlocked', centreX, centreY -39);
-            	context.fillText(unlockMessage, centreX, centreY -9 );
+            	unlockSprite.draw(context, 0, 0, 0);
             }
             
             
@@ -1538,6 +1643,16 @@ if(!notification.active)
             frames++;
         }
         
+        function mss(seconds) {
+            if (!isFinite(seconds)) return '--:--';
+            
+            var mins = ~~(seconds/60);
+            var secs = ~~(seconds - mins*60);
+            
+            if (secs < 10) secs = '0' + secs;
+            
+            return mins + ':' + secs;
+        }
        
         function distanceToTrackPos(distance)
         {
@@ -1545,6 +1660,18 @@ if(!notification.active)
         	var pos = trackWidth * (distance - screenLeftDistance) / (screenWidthDistance);
         	return pos;
         }
+
+
+
+        function gpsSymbolOn(){
+             hasGPSUpdate = true;
+
+        }
+        function gpsSymbolOff(){
+             hasGPSUpdate = false;
+            
+        }
+
         
         function attachGame() {
             page.addEventListener('pageshow', onPageShow);
@@ -1555,7 +1682,14 @@ if(!notification.active)
             page.removeEventListener('pagehide', onPageHide);
         }
                 
+        function onGpsStatus(event) {
+            var status = event.detail;
+            gpsAvailable = (status == 'ready');
+        }
+        
         function bindEvents() {
+            document.getElementById('game-yesquit-btn').addEventListener('click', onQuit);
+            document.getElementById('game-noquit-btn').addEventListener('click', onBack);
         }
 
         function init() {
@@ -1585,8 +1719,8 @@ if(!notification.active)
 
             image = new Image();
             image.onload = function() {
-                runnerAnimations.running.sprite = new Sprite(this, this.width / 6, 1000);
-                runnerAnimations.sprinting.sprite = new Sprite(this, this.width / 6, 1000);
+                runnerAnimations.running.sprite = new Sprite(this, this.width / 6, 500);
+                runnerAnimations.sprinting.sprite = new Sprite(this, this.width / 6, 500);
             }
             image.onerror = function() {
                 throw "Could not load " + this.src;
@@ -1595,14 +1729,23 @@ if(!notification.active)
 
 			image = new Image();
             image.onload = function() {
-                runnerAnimations.running_red.sprite = new Sprite(this, this.width / 6, 1000);
-                runnerAnimations.sprinting_red.sprite = new Sprite(this, this.width / 6, 1000);
+                runnerAnimations.running_red.sprite = new Sprite(this, this.width / 6, 500);
+                runnerAnimations.sprinting_red.sprite = new Sprite(this, this.width / 6, 500);
             }
             image.onerror = function() {
                 throw "Could not load " + this.src;
             }
             image.src = 'images/animation_runner_red.png';
 
+			image = new Image();
+            image.onload = function() {
+                runnerAnimations.idle_red.sprite = new Sprite(this, this.width, 500);
+            }
+            image.onerror = function() {
+                throw "Could not load " + this.src;
+            }
+            image.src = 'images/animation_runner_red_stationary.png';
+            
 			image = new Image();
             image.onload = function() {
                 runnerAnimations.zombieDead.sprite = new Sprite(this, this.width / 2, 1000);
@@ -1626,8 +1769,6 @@ if(!notification.active)
             image = new Image();
             image.onload = function() {
                 zombies.push(new Sprite(this, this.width / 6, 1000));
-                var animDelay = Math.random() * 0.2;
-                zombiesAnimOffset.push(animDelay);
             }
             image.onerror = function() {
                 throw "Could not load " + this.src;
@@ -1652,6 +1793,23 @@ if(!notification.active)
             zombieGrowl.onerror = function() {
                 throw "Could not load " + this.src;
             }
+            dinoRoar = new Audio('audio/T Rex Roar.wav');
+            dinoRoar.onerror = function() {
+            	throw "Could not load " + this.src;
+            }           
+            
+			dinoRoar = new Audio('audio/T Rex Roar.wav');
+			dinoRoar.onload = function () {
+				dionKill = this;
+			}
+            dinoRoar.onerror = function() {
+                throw "Could not load " + this.src;
+            }
+            
+            //chime
+            chime = new Audio('audio/Chime.wav');
+            chime.onerror = function() { throw "Could not load " + this.src; }
+            
             
             //heart     
         	image = new Image();
@@ -1688,11 +1846,24 @@ if(!notification.active)
             //gps
             image = new Image();
             image.onload = function() {
-            	gps = new Sprite(this, this.width, 10);
+            	gpsRing = new Sprite(this, this.width, 10);
 			}
 			image.onerror = function() { throw "could not load" + this.src; }
-			image.src = 'images/gps-lock.png';
-			
+			image.src = 'images/image_gps target.png';
+
+
+
+            image = new Image();
+            image.onload = function() {
+            	gpsDot = new Sprite(this, this.width, 10);
+			}
+			image.onerror = function() { throw "could not load" + this.src; }
+			image.src = 'images/image_gps green circle.png';
+
+
+
+
+						
 			//sweat points
 			image = new Image();
 			image.onload = function() {
@@ -1727,7 +1898,7 @@ if(!notification.active)
 			//dino image
 			image = new Image();
 			image.onload = function() {
-				dino = new Sprite(this, this.width, 1000);
+				dino = new Sprite(this, this.width/10, 1000);
 			}
 			image.onerror = function() { throw "could not load" + this.src; }
 			image.src = 'images/animation_dino.png';
@@ -1748,12 +1919,12 @@ if(!notification.active)
 				dinoGameImage = new Sprite(this, this.width, 1000);
 			}
 			image.onerror = function() { throw "could not load" + this.src; }
-			image.src = 'images/image_dino_achievement_screen.png';
+			image.src = 'images/race_dino_unlocked_ingame.png';
 			
 			//boulder game image
 			image = new Image();
 			image.onload = function() {
-				boulderGameImage = new Sprite(this, this.width/10, 1000);
+				boulderGameImage = new Sprite(this, this.width, 1000);
 			}
 			image.onerror = function() { throw "could not load" + this.src; }
 			image.src = 'images/image_boulder_achievement_screen.png';	
@@ -1777,14 +1948,14 @@ if(!notification.active)
 				goodBG = this;
 			}
 			image.onerror = function() {throw "could not load" + this.src; }
-			image.src = 'images/bg_good.jpg';
+			image.src = 'images/bg_good.png';
 			
 			image = new Image();
 			image.onload = function() {
 				badBG = this;
 			}
 			image.onerror = function() {throw "could not load" + this.src; }
-			image.src = 'images/bg_bad.jpg';
+			image.src = 'images/bg_bad.png';
            /* if (hrm.isAvailable()) {
                 hrm.start();
             } else {
@@ -1797,7 +1968,10 @@ if(!notification.active)
         e.listeners({
             'hrzgame.show': show,
             'hrzgame.attach': attachGame,
-            'hrzgame.detach': detachGame
+            'hrzgame.detach': detachGame,
+            'gps.status': onGpsStatus,
+            'gpsUpdateOn': gpsSymbolOn,
+            'gpsUpdateOff': gpsSymbolOff
         });
 
         return {

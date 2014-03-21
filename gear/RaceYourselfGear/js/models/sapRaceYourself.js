@@ -31,9 +31,9 @@ define({
         function sendGpsStatusReq() {
             if (!sap.isAvailable()) {
                 e.fire('gps.status', 'disabled');                
-                return;
+                return false;
             }
-            sap.sendData(
+            return sap.sendData(
                 SAP_CHANNEL,
                 {
                     messageType: GPS_STATUS_REQ
@@ -50,7 +50,7 @@ define({
          * after this method is called and until sendStopTrackingReq is called. 
          */
         function sendStartTrackingReq() {
-            sap.sendData(
+            return sap.sendData(
                 SAP_CHANNEL,
                 {
                     messageType: START_TRACKING_REQ
@@ -66,7 +66,7 @@ define({
          * This will stop recording the user's position and stop sending gps-position-data messages  
          */
         function sendStopTrackingReq() {
-            sap.sendData(
+            return sap.sendData(
                 SAP_CHANNEL,
                 {
                     messageType: STOP_TRACKING_REQ
@@ -82,7 +82,7 @@ define({
          * user to register / authenticate 
          */
         function sendAuthenticationReq() {
-            sap.sendData(
+            return sap.sendData(
                 SAP_CHANNEL,
                 {
                     messageType: AUTHENTICATION_REQ
@@ -98,7 +98,7 @@ define({
          * Parameter is a JS object which will be serialised to JSON and stored. 
          */
         function sendAnalytics(value) {
-            sap.sendData(
+            return sap.sendData(
                 SAP_CHANNEL,
                 {
                     messageType: LOG_ANALYTICS,

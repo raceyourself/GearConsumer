@@ -20,6 +20,8 @@ define({
         var e = req.core.event,
             page = null,
             game = req.models.game,
+            interval = false,
+            timeout = false,
             provider = req.models.sapRaceYourself;
 
         function show() {
@@ -34,14 +36,19 @@ define({
             e.listen('tizen.back', onBack);
             
             lockedEl.classList.toggle('hidden', true);
-            waitingEl.classList.toggle('hidden', false);            
+            waitingEl.classList.toggle('hidden', false);
             disabledEl.classList.toggle('hidden', true);
+            interval = setInterval(function() {
+                document.getElementById('waiting-gps-div').classList.toggle('toggle-on');
+                console.log(document.getElementById('waiting-gps-div').classList);
+            }, 1000);
             
             e.listen('gps.status', onGpsStatus);
             provider.sendGpsStatusReq();
         }
         
         function onPageHide() {
+            clearInterval(interval);
             e.die('tizen.back', onBack);
             e.die('gps.status', onGpsStatus);
         }
@@ -50,8 +57,8 @@ define({
             history.back();
         }
         
-        function onGpsStatus(e) {
-            var status = e.detail;
+        function onGpsStatus(ev) {
+            var status = ev.detail;
             var waitingEl = document.getElementById('pregame-waiting-gps'),
                 lockedEl = document.getElementById('pregame-locked-gps'),
                 disabledEl = document.getElementById('pregame-disabled-gps');
@@ -66,21 +73,26 @@ define({
                     provider.sendGpsStatusReq(); 
                 }, 5000);
             }
+            
+            if (status === 'ready' || status === 'disabled') {
+                timeout = setTimeout(function() {
+                    e.fire(game.getCurrentGame()+'.show');                    
+                }, 1500);
+            }
         }
         
         function onRace(ev) {
+            clearTimeout(timeout);
             e.fire(game.getCurrentGame()+'.show');
             ev.preventDefault();
         }
         
         function bindEvents() {
-            var raceBtnEl = document.getElementById('pregame-race-btn'),
-                raceAnywayBtnEl = document.getElementById('pregame-race-anyway-btn');
-            
             page.addEventListener('pageshow', onPageShow);
             page.addEventListener('pagehide', onPageHide);
-            raceBtnEl.addEventListener('click', onRace);
-            raceAnywayBtnEl.addEventListener('click', onRace);
+            document.getElementById('pregame-disabled-gps').addEventListener('click', onRace);
+            document.getElementById('pregame-locked-gps').addEventListener('click', onRace);
+            document.getElementById('pregame-skip-gps-btn').addEventListener('click', onRace);
         }
 
         function init() {
