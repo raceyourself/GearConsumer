@@ -99,6 +99,7 @@ define({
             valueEl = document.getElementById('time-value');
             
             page.addEventListener('pageshow', onPageShow);
+            page.addEventListener('pagehide', onPageHide);
             minusBtnEl.addEventListener('mousedown', onMinus);
             plusBtnEl.addEventListener('mousedown', onPlus);
             minusBtnEl.addEventListener('mouseup', onHalt);
