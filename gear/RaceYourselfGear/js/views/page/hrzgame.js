@@ -139,7 +139,7 @@ define({
 			flashingRed = 'flashingRed',
 			flashingRedParams = { colour: '#fff', period:400, phase: 0 },
 			hrNotFound = false,
-			unlockNotification = null,
+			unlockNotification = 'dino',
 			unlockNotificationTimer = null,
 			dottedPattern = null,
 			countDownParams = { radius: 100, outerRadius: 250, outerRadiusMax: 250, shrinkSpeed: 5, stageDuration:1, startTime:0},
@@ -1625,46 +1625,26 @@ define({
             	var centreX = canvas.width/2;
             	var centreY = canvas.height/2;
             	var unlockRadius = 110
-            	//white bg
-            	context.globalAlpha = 0.5;
-            	context.fillStyle = '#fff';
+            	//black bg
+            	context.globalAlpha = 0.9;
+            	context.fillStyle = '#000';
             	context.fillRect(0,0,canvas.width, canvas.height);
             	context.globalAlpha = 1;
             	
-            	//black circle
-            	context.beginPath();
-            	context.arc(centreX, centreY, unlockRadius, 0, 2* Math.PI, false);
-            	context.fillStyle = '#000';
-            	context.fill();
-//            	context.beginPath();
-//            	context.arc(centreX, centreY, unlockRadius, 0, 2* Math.PI, false);
-            	context.strokeStyle = '#fff';
-            	context.stroke();
             	//image
             	var unlockSprite = null;
-            	var unlockMessage = '';
             	switch(unlockNotification)
             	{
             		case 'dino':
             			unlockSprite = dinoGameImage;
-            			unlockMessage = 'Race Dino'
             			break;
 					case 'boulder':
 						unlockSprite = boulderGameImage;
-						unlockMessage = 'Race Boulder'
 						break;
 					default:
 						console.log('unknown game being unlocked ' + unlockNotification);
             	}
-            	unlockSprite.draw(context, centreX - unlockSprite.width/2, centreY - unlockSprite.height/2 + 50, 0);
-            	//text
-            	context.font = '24px Samsung Sans';
-            	context.textAlign = "center";
-            	context.textBaseline = "middle";
-            	context.fillStyle = '#fff';
-            	context.fillText('Well Done!', centreX, centreY -69);
-            	context.fillText('You unlocked', centreX, centreY -39);
-            	context.fillText(unlockMessage, centreX, centreY -9 );
+            	unlockSprite.draw(context, 0, 0, 0);
             }
             
             
@@ -1932,7 +1912,7 @@ define({
 				dinoGameImage = new Sprite(this, this.width, 1000);
 			}
 			image.onerror = function() { throw "could not load" + this.src; }
-			image.src = 'images/image_dino_achievement_screen.png';
+			image.src = 'images/race_dino_unlocked_ingame.png';
 			
 			//boulder game image
 			image = new Image();
