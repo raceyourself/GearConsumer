@@ -94,7 +94,7 @@ define({
             if (game.isLocked('dino')) return;
             game.setCurrentGame('hrzgame');
             game.setCurrentOpponentType('dinosaur');
-            e.fire('choosegoal.show');
+            e.fire('trainingtype.show');
         }
         
         function onMoreGames(event) {
