@@ -47,8 +47,9 @@ define({
             heartBlack = null,
             deadImage = null,
             deadRunnerImage = null,
-            gps = null,
+            gpsDot = null,
             gpsAvailable = false,
+            gpsRing = null,
             sweat = null,
             sweat_red = null,
             paceIcon = null,
@@ -138,7 +139,7 @@ define({
 			countDownParams = { radius: 100, outerRadius: 250, outerRadiusMax: 250, shrinkSpeed: 5, stageDuration:1, startTime:0},
 			goodBG = null,
 			badBG = null,
-			timeTurnedGood = 0,
+			timeTurnedGood = Date.now(),
 			timeTurnedBad = 0,
 			crossFadeParametric = 0,
 			crossFadeTime = 1,
@@ -547,10 +548,23 @@ define({
         
         function zombieTick() 
         {
+        	//zombies catch up
         	if(zombiesCatchingUp)
         	{
             	zombieOffset += zombieCatchupSpeed;
         	}
+        	
+        	//zombies fall back
+        	if(hr > minHeartRate)
+        	{
+				var timeGood = Date.now() - timeTurnedGood;
+				if(timeGood > 30*1000 * timeMultiplier);
+				{
+					if(zombieOffset > -25)
+					{ zombieOffset -= zombieCatchupSpeed; }
+				}
+        	}
+        	
         	var r = race.getOngoingRace();
         	zombieDistance = r.getDistance() + zombieOffset;
             requestRender();
@@ -652,6 +666,7 @@ define({
 				{
 					runner = runnerAnimations.running;
 				}
+				
 			}
         }
 
@@ -922,8 +937,12 @@ define({
 			//GPS
 			if(gpsAvailable)
 			{
-				var GPSscale = sweat.height / gps.height;
-				gps.drawscaled(context, canvas.width - gps.width*GPSscale, 0, 0, GPSscale);
+				var GPSscale = 0.65;
+				context.save();
+				context.translate(canvas.width - gpsRing.width/2 * GPSscale, gpsRing.height/2 * GPSscale);
+				gpsRing.drawscaled(context, - gpsRing.width/2*GPSscale, -gpsRing.height/2 * GPSscale, 0, GPSscale);
+				gpsDot.drawscaled(context, - gpsDot.width/2*GPSscale, -gpsDot.height/2 * GPSscale, 0, GPSscale);
+				context.restore();
 			}
 
             // Banner
@@ -971,161 +990,7 @@ define({
                 }
             }
 
-            if(!countingdown)
-            {
-				// Heart Rate
-				var heartIcon = null;
-				var hrFillColour = green;
 
-				if(hrNotFound)
-				{
-					heartIcon = heartBlack;
-					hrFillColour = '#555';
-				}
-				else if(hr > maxHeartRate)
-				{
-					heartIcon = heartBlack; 
-					hrFillColour = flashingRedParams.colour;             	
-				}
-				else if(hr < minHeartRate) 
-				{
-					heartIcon = heartRed; 
-					hrFillColour = flashingRedParams.colour;
-				}
-
-				else { heartIcon = heartGreen; }
-			
-				var radius = 115/2;
-				var hrXPos = canvas.width - radius - 4;
-				var hrYPos = 37 + radius;
-				//fill
-				var MaxCircleHR = 200;
-				var MinCircleHR = 50;
-				context.beginPath();
-				context.arc(hrXPos, hrYPos, radius, 0, 2*Math.PI, false);
-				context.fillStyle = '#fff';
-				context.fill();
-				context.strokeStyle = green;
-				if( hr < minHeartRate || hr > maxHeartRate) { context.strokeStyle = red; }
-				context.lineWidth = 5;
-				context.stroke();
-			
-				//how high up the circle as a percentage of diameter 
-				var fillProportion = (hr - MinCircleHR)/(MaxCircleHR - MinCircleHR);
-				if(hrNotFound) { fillProportion = 1; }
-				//height in pixels above centre line
-				var h = fillProportion * 2 * radius - radius
-				var angle = Math.asin(h/radius);
-				context.beginPath();
-				context.arc(hrXPos, hrYPos, radius, -angle, Math.PI + angle, false);
-				context.fillStyle = hrFillColour;
-				context.fill();
-						
-				//water marks
-				context.globalAlpha = 0.5;
-				context.strokeStyle = dottedPattern;
-				var heightProportion = (maxHeartRate - MinCircleHR)/(MaxCircleHR - MinCircleHR);
-				var height = heightProportion * 2 * radius - radius;
-				var a = Math.asin(height/radius);
-				//do an arc to get the pen in the right place
-				context.beginPath();
-				context.moveTo(hrXPos - radius * Math.cos(a), hrYPos - height);
-				context.lineTo(hrXPos + radius * Math.cos(a), hrYPos - height);
-				context.lineWidth = 2;
-				context.stroke();
-				//lower range
-				heightProportion = (minHeartRate - MinCircleHR)/(MaxCircleHR - MinCircleHR);
-				height = heightProportion * 2 * radius - radius;
-				a = Math.asin(height/radius);
-				context.beginPath();
-				context.moveTo(hrXPos - radius * Math.cos(a), hrYPos - height);
-				context.lineTo(hrXPos + radius * Math.cos(a), hrYPos - height);
-				context.stroke();
-				context.globalAlpha = 1;
-				
-				//icon
-				heartIcon.draw(context, hrXPos-heartIcon.width/2, hrYPos-heartIcon.height/2 - 30, 0);
-				//number
-				context.font = '56px Samsung Sans';
-				context.textAlign = 'center';
-				context.textBaseline = "middle";
-				context.fillStyle = '#000';
-				var hrText = hr;
-				if(hrNotFound) { hrText = '--'; }
-				context.fillText(hrText, hrXPos, hrYPos + 10);
-				//bpm
-				context.font = '24px Samsung Sans';
-				context.fillText('bpm', hrXPos, hrYPos + 38);
-
-				//Pace
-				var PaceXPosR = 2*radius;
-				context.beginPath();
-				context.arc(PaceXPosR, hrYPos, radius, Math.PI * 1.5, Math.PI * 2.5, false);
-				context.lineTo(PaceXPosR - 2*radius, hrYPos + radius);
-				context.arc(PaceXPosR-2*radius, hrYPos, radius, Math.PI/2, Math.PI*1.5, false);
-				context.closePath();
-				context.fillStyle = '#fff';
-				context.fill();
-				//text
-				var pace = r.getPace();
-				//minutes part
-				var paceFractional = pace % 1;
-				var paceMinutes = pace - paceFractional;
-				var paceSeconds = Math.floor(paceFractional*60);
-				var paceSecondsString = ''+paceSeconds;
-				if(paceSecondsString.length == 1) { paceSecondsString = '0' + paceSecondsString; }
-
-				var paceString = paceMinutes + ':' + paceSecondsString;
-				if(r.getSpeed() == 0) { paceString = '--:--'; }
-				var paceXPos = PaceXPosR - radius/2;
-				context.font = '56px Samsung Sans';
-				context.textAlign = 'center';
-				context.textBaseline = 'middle';
-				context.fillStyle = '#000';
-				context.fillText(paceString, paceXPos, hrYPos + 4);
-				//units
-				context.font = '24px Samsung Sans';
-				context.fillText('min/km', paceXPos, hrYPos + 38);
-				//icon
-				paceIcon.draw(context, paceXPos - paceIcon.width/2, hrYPos - paceIcon.height/2 - 38, 0);
-								
-			
-			
-				//Ahead/Behind
-				if(false)
-				{
-					var distXPos = radius;
-					var distYPos = 37 + radius;
-					if(!isDead)
-					{
-						context.beginPath();
-						context.arc(distXPos, distYPos, radius, 0, 360, false);
-						context.fillStyle = green;
-						context.fill();
-						//+
-						context.fillStyle = '#fff';
-						context.font ='24px Samsung Sans';
-						context.fillText('+', distXPos, distYPos - 33);
-						//m
-						context.font = '24px Samsung Sans';
-						context.fillText('m', distXPos, distYPos + 38);
-						//number
-						var delta = Math.round(r.getDistance() - zombieDistance);
-						context.font = '56px Samsung Sans';
-						context.fillText(delta, distXPos, distYPos +4);
-					}
-					else
-					{
-						//dead
-						context.beginPath();
-						context.arc(distXPos, distYPos, radius, 0, 360, false);
-						context.fillStyle = red;
-						context.fill();
-						//image
-						deadImage.draw(context, distXPos - deadImage.width/2, distYPos - deadImage.height/2, 0);
-					}
-				}
-            }
             
 			var progressBarHeight = canvas.height - (trackHeight - trackThickness)/2;
 			var progressBarInset = 0;
@@ -1330,8 +1195,8 @@ define({
 			context.textAlign = 'left';
 			context.textBaseline = 'middle';
 
-if(!notification.active)
-{
+			if(!notification.active)
+			{
 			context.fillStyle = '#000';
 			if(TRACK_LENGTH < Infinity)
 			{
@@ -1368,7 +1233,7 @@ if(!notification.active)
 				var distkm = Math.round(r.getDistance()/100) / 10;
 				context.fillText(distkm + 'km', canvas.width - progressBarInset + 5, progressBarHeight);
 			}
-}
+			}
 
 			
             scale = 10/screenWidthDistance;
@@ -1439,6 +1304,165 @@ if(!notification.active)
             if(isDead) { playerOffset += 10*playerScale; }
             runner.sprite.drawscaled(context, playerXPos, canvas.height -playerOffset , dt, playerScale);
             
+                        if(!countingdown)
+            {
+				// Heart Rate
+				var heartIcon = null;
+				var hrFillColour = green;
+
+				if(hrNotFound)
+				{
+					heartIcon = heartBlack;
+					hrFillColour = '#555';
+				}
+				else if(hr > maxHeartRate)
+				{
+					heartIcon = heartBlack; 
+					hrFillColour = flashingRedParams.colour;             	
+				}
+				else if(hr < minHeartRate) 
+				{
+					heartIcon = heartRed; 
+					hrFillColour = flashingRedParams.colour;
+				}
+
+				else { heartIcon = heartGreen; }
+			
+				var radius = 115/2;
+				var hrXPos = canvas.width - radius - 10;
+				var hrYPos = 37 + radius;
+				//fill
+				var MaxCircleHR = 200;
+				var MinCircleHR = 50;
+				context.beginPath();
+				context.arc(hrXPos, hrYPos, radius, 0, 2*Math.PI, false);
+				context.fillStyle = '#fff';
+				context.fill();
+				context.strokeStyle = green;
+				if( hr < minHeartRate || hr > maxHeartRate) { context.strokeStyle = red; }
+				context.lineWidth = 5;
+				context.stroke();
+			
+				//how high up the circle as a percentage of diameter 
+				var fillProportion = (hr - MinCircleHR)/(MaxCircleHR - MinCircleHR);
+				if(hrNotFound) { fillProportion = 1; }
+				//height in pixels above centre line
+				var h = fillProportion * 2 * radius - radius
+				var angle = Math.asin(h/radius);
+				context.beginPath();
+				context.arc(hrXPos, hrYPos, radius, -angle, Math.PI + angle, false);
+				context.fillStyle = hrFillColour;
+				context.fill();
+				
+				//stroke
+				context.beginPath();
+						
+				//water marks
+				context.globalAlpha = 0.5;
+				context.strokeStyle = dottedPattern;
+				var heightProportion = (maxHeartRate - MinCircleHR)/(MaxCircleHR - MinCircleHR);
+				var height = heightProportion * 2 * radius - radius;
+				var a = Math.asin(height/radius);
+				//do an arc to get the pen in the right place
+				context.beginPath();
+				context.moveTo(hrXPos - radius * Math.cos(a), hrYPos - height);
+				context.lineTo(hrXPos + radius * Math.cos(a), hrYPos - height);
+				context.lineWidth = 2;
+				context.stroke();
+				//lower range
+				heightProportion = (minHeartRate - MinCircleHR)/(MaxCircleHR - MinCircleHR);
+				height = heightProportion * 2 * radius - radius;
+				a = Math.asin(height/radius);
+				context.beginPath();
+				context.moveTo(hrXPos - radius * Math.cos(a), hrYPos - height);
+				context.lineTo(hrXPos + radius * Math.cos(a), hrYPos - height);
+				context.stroke();
+				context.globalAlpha = 1;
+				
+				//icon
+				heartIcon.draw(context, hrXPos-heartIcon.width/2, hrYPos-heartIcon.height/2 - 30, 0);
+				//number
+				context.font = '56px Samsung Sans';
+				context.textAlign = 'center';
+				context.textBaseline = "middle";
+				context.fillStyle = '#000';
+				var hrText = hr;
+				if(hrNotFound) { hrText = '--'; }
+				context.fillText(hrText, hrXPos, hrYPos + 10);
+				//bpm
+				context.font = '24px Samsung Sans';
+				context.fillText('bpm', hrXPos, hrYPos + 38);
+
+				//Pace
+				var PaceXPosR = 2*radius;
+				context.beginPath();
+				context.arc(PaceXPosR, hrYPos, radius, Math.PI * 1.5, Math.PI * 2.5, false);
+				context.lineTo(PaceXPosR - 2*radius, hrYPos + radius);
+				context.arc(PaceXPosR-2*radius, hrYPos, radius, Math.PI/2, Math.PI*1.5, false);
+				context.closePath();
+				context.fillStyle = '#fff';
+				context.fill();
+				//text
+				var pace = r.getPace();
+				//minutes part
+				var paceFractional = pace % 1;
+				var paceMinutes = pace - paceFractional;
+				var paceSeconds = Math.floor(paceFractional*60);
+				var paceSecondsString = ''+paceSeconds;
+				if(paceSecondsString.length == 1) { paceSecondsString = '0' + paceSecondsString; }
+
+				var paceString = paceMinutes + ':' + paceSecondsString;
+				if(r.getSpeed() == 0) { paceString = '--:--'; }
+				var paceXPos = PaceXPosR - radius/2;
+				context.font = '56px Samsung Sans';
+				context.textAlign = 'center';
+				context.textBaseline = 'middle';
+				context.fillStyle = '#000';
+				context.fillText(paceString, paceXPos, hrYPos + 4);
+				//units
+				context.font = '24px Samsung Sans';
+				context.fillText('min/km', paceXPos, hrYPos + 38);
+				//icon
+				paceIcon.draw(context, paceXPos - paceIcon.width/2, hrYPos - paceIcon.height/2 - 38, 0);
+								
+			
+			
+				//Ahead/Behind
+				if(false)
+				{
+					var distXPos = radius;
+					var distYPos = 37 + radius;
+					if(!isDead)
+					{
+						context.beginPath();
+						context.arc(distXPos, distYPos, radius, 0, 360, false);
+						context.fillStyle = green;
+						context.fill();
+						//+
+						context.fillStyle = '#fff';
+						context.font ='24px Samsung Sans';
+						context.fillText('+', distXPos, distYPos - 33);
+						//m
+						context.font = '24px Samsung Sans';
+						context.fillText('m', distXPos, distYPos + 38);
+						//number
+						var delta = Math.round(r.getDistance() - zombieDistance);
+						context.font = '56px Samsung Sans';
+						context.fillText(delta, distXPos, distYPos +4);
+					}
+					else
+					{
+						//dead
+						context.beginPath();
+						context.arc(distXPos, distYPos, radius, 0, 360, false);
+						context.fillStyle = red;
+						context.fill();
+						//image
+						deadImage.draw(context, distXPos - deadImage.width/2, distYPos - deadImage.height/2, 0);
+					}
+				}
+            }
+            
             /// DEBUG
             // fps
             if(false)
@@ -1456,7 +1480,7 @@ if(!notification.active)
             {
             	//shrink outer ring
             	var delta = Date.now() - countDownParams.startTime;
-            	var p = delta / (countDownParams.stageDuration * 1000);
+            	var p = 1 - delta / (countDownParams.stageDuration * 1000);
             	var p = p*p*p;
             	countDownParams.outerRadius = countDownParams.outerRadiusMax -  p * (countDownParams.outerRadiusMax - (countDownParams.radius - 20)) ;
             	countDownParams.outerRadius = Math.max(0, countDownParams.outerRadius);
@@ -1709,11 +1733,18 @@ if(!notification.active)
             //gps
             image = new Image();
             image.onload = function() {
-            	gps = new Sprite(this, this.width, 10);
+            	gpsRing = new Sprite(this, this.width, 10);
 			}
 			image.onerror = function() { throw "could not load" + this.src; }
-			image.src = 'images/gps_locked.png';
-			
+			image.src = 'images/image_gps target.png';
+
+            image = new Image();
+            image.onload = function() {
+            	gpsDot = new Sprite(this, this.width, 10);
+			}
+			image.onerror = function() { throw "could not load" + this.src; }
+			image.src = 'images/image_gps green circle.png';
+						
 			//sweat points
 			image = new Image();
 			image.onload = function() {
