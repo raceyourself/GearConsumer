@@ -206,6 +206,7 @@ define({
                 circular: false,
                 orientation: "horizontal"
             });
+            document.getElementById('quit-confirmation').classList.toggle('hidden', true);
             
             var r = race.getOngoingRace();
             if (r === null || !r.isRunning() || r.hasStopped()) {
@@ -309,7 +310,11 @@ define({
         }        
         
         function onBack() {
-            e.fire('gameselect.show');
+            document.getElementById('quit-confirmation').classList.toggle('hidden');
+        }
+        
+        function onQuit() {
+            e.fire('newmain.show');
         }
         
         function startCountdown() {
@@ -1642,6 +1647,7 @@ define({
         }
         
         function bindEvents() {
+            document.getElementById('quit-confirmation').addEventListener('click', onQuit);
         }
 
         function init() {
