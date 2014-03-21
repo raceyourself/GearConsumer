@@ -130,7 +130,10 @@ define({
 			opponent = 'zombie',
 			green = '#51b848',
             red = '#cb2027',
-            lightRed = '#dc8080',
+            amber = '#f7941d',
+            hrWarningPhase = 0,
+            hrWarningPeriod = 3*1000,
+            lightRed = '#cc6669',
 			flashingRed = 'flashingRed',
 			flashingRedParams = { colour: '#fff', period:400, phase: 0 },
 			hrNotFound = false,
@@ -724,6 +727,7 @@ define({
         //test function to provide random heart rate
         function randomHR() {
         	hr = Math.floor( 50 + 150 * (Math.random()) );
+//        	hr = Math.floor(minHeartRate + 2);
         	e.fire('hrm.change', {heartRate: hr});
         }
         
@@ -1348,12 +1352,15 @@ define({
             if(isDead) { playerOffset += 10*playerScale; }
             runner.sprite.drawscaled(context, playerXPos, canvas.height -playerOffset , dt, playerScale);
             
-                        if(!countingdown)
+			if(!countingdown)
             {
 				// Heart Rate
 				var heartIcon = null;
 				var hrFillColour = green;
-
+				var hrWarningText = false;
+				hrWarningPhase += dt;
+				hrWarningPhase = hrWarningPhase % hrWarningPeriod;
+								
 				if(hrNotFound)
 				{
 					heartIcon = heartBlack;
@@ -1363,13 +1370,27 @@ define({
 				{
 					heartIcon = heartBlack; 
 					hrFillColour = flashingRedParams.colour;             	
+					hrWarningText = 'slow down';
+				}
+				else if(hr > maxHeartRate - 3)
+				{
+					//close to high warning
+					heartIcon = heartBlack;
+					hrFillColour = amber;
+					hrWarningText = 'slow down';
 				}
 				else if(hr < minHeartRate) 
 				{
 					heartIcon = heartRed; 
 					hrFillColour = flashingRedParams.colour;
+					hrWarningText = 'speed up';
 				}
-
+				else if(hr < minHeartRate + 3)
+				{
+					heartIcon = heartRed;
+					hrFillColour = amber;
+					hrWarningText = 'speed up';
+				}
 				else { heartIcon = heartGreen; }
 			
 				var radius = 115/2;
@@ -1383,8 +1404,7 @@ define({
 				context.arc(hrXPos, hrYPos, radius, 0, 2*Math.PI, false);
 				context.fillStyle = '#fff';
 				context.fill();
-				context.strokeStyle = green;
-				if( hr < minHeartRate || hr > maxHeartRate) { context.strokeStyle = flashingRedParams.colour; }
+				context.strokeStyle = hrFillColour;
 				context.lineWidth = 5;
 				context.stroke();
 				if(false)
@@ -1424,20 +1444,46 @@ define({
 				context.stroke();
 				context.globalAlpha = 1;
 				}
-				//icon
-				heartIcon.draw(context, hrXPos-heartIcon.width/2, hrYPos-heartIcon.height/2 - 32, 0);
-				//number
-				context.font = '56px Samsung Sans';
-				context.textAlign = 'center';
-				context.textBaseline = "middle";
-				context.fillStyle = '#000';
-				var hrText = hr;
-				if(hrNotFound) { hrText = '--'; }
-				context.fillText(hrText, hrXPos, hrYPos + 8);
-				//bpm
-				context.font = '24px Samsung Sans';
-				context.fillText('bpm', hrXPos, hrYPos + 38);
-
+				if(hrWarningText != false && (hrWarningPhase/hrWarningPeriod > 0.5))
+				{
+					//warning text
+					context.font = '24px Samsung Sans';
+					context.textAlign = 'center';
+					context.textBaseline = 'middle';
+					context.fillStyle = hrFillColour;
+					if(hrWarningText == 'slow down')
+					{
+						context.fillText('SLOW', hrXPos, hrYPos - 15);
+						context.fillText('DOWN', hrXPos, hrYPos + 15);
+					}
+					else if(hrWarningText == 'speed up')
+					{
+						context.fillText('SPEED', hrXPos, hrYPos - 15);
+						context.fillText('UP', hrXPos, hrYPos + 15);
+					}
+					else
+					{
+						console.error('unexpected hrWarning message: ' + hrWarningText);
+					}
+					
+				}
+				else
+				{
+					//show heart rate
+					//icon
+					heartIcon.draw(context, hrXPos-heartIcon.width/2, hrYPos-heartIcon.height/2 - 32, 0);
+					//number
+					context.font = '56px Samsung Sans';
+					context.textAlign = 'center';
+					context.textBaseline = "middle";
+					context.fillStyle = '#000';
+					var hrText = hr;
+					if(hrNotFound) { hrText = '--'; }
+					context.fillText(hrText, hrXPos, hrYPos + 8);
+					//bpm
+					context.font = '24px Samsung Sans';
+					context.fillText('bpm', hrXPos, hrYPos + 38);
+				}
 				//Pace
 				var PaceXPosR = 2*radius;
 				context.beginPath();
