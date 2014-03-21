@@ -627,27 +627,6 @@ define({
 						warningTimeoutLow = setTimeout(warningOver_low, 10*1000 * timeMultiplier);
 					}
 				}
-				if(!isDead)
-				{
-	                //Update player anim
-	                if(r.getSpeed() <= 0.01)
-	                {
-	                    runner.sprite.onEnd(function(dt) {
-	                        runner.sprite.onEnd(null);
-	                        runner = runnerAnimations.idle;
-	                        runner.sprite.time = dt;
-	                    });
-	                }
-	                else
-	                {
-	                    runner.sprite.onEnd(function(dt) {
-	                        runner.sprite.onEnd(null);
-	                        if (showWarningHigh) runner = runnerAnimations.running;
-	                        else runner = runnerAnimations.running_red;
-	                        runner.sprite.time = dt;
-	                    });
-	                }
-				}
 			}
 			else if(hr > maxHeartRate)
 			{
@@ -870,7 +849,8 @@ define({
                 {
                     runner.sprite.onEnd(function(dt) {
                         runner.sprite.onEnd(null);
-                        runner = runnerAnimations.idle;
+                        if (showWarningHigh) runner = runnerAnimations.idle_red;
+                        else runner = runnerAnimations.idle;
                         runner.sprite.time = dt;
                     });
                 }
@@ -878,7 +858,8 @@ define({
                 {
                     runner.sprite.onEnd(function(dt) {
                         runner.sprite.onEnd(null);
-                        runner = runnerAnimations.running;
+                        if (showWarningHigh) runner = runnerAnimations.running_red;
+                        else runner = runnerAnimations.running;
                         runner.sprite.time = dt;
                     });
                 }
