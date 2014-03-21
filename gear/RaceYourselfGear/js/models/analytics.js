@@ -16,13 +16,21 @@ define({
 
         var e = req.core.event,
             provider = req.models.sapRaceYourself,
-//            queue = {},
+            queue = [],
             launchTime = Date.now(),
             pageShowTime = Date.now(); // initial view
         
         
         function log(event) {
-            provider.sendAnalytics(event);
+            queue.push(event);
+            if (queue.length > 1) console.warn('Analytics queue has ' + queue.length + ' events');
+            var queued;
+            while (queued = queue.shift()) {
+                if (!provider.sendAnalytics(queued)) {
+                    queue.unshift(queued);
+                    return;
+                }
+            }
         }        
         
         function onAnyPageShow(event) {

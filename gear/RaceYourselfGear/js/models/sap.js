@@ -32,8 +32,13 @@ define({
                 return false;
             }
 
-            // TODO: try..catch IOError: Connection closed
-            socket.sendData(channel, JSON.stringify(params));
+            try {
+                socket.sendData(channel, JSON.stringify(params));
+            } catch (e) {
+                console.error(e);
+                return false;
+            }
+            return true;
         }
 
         /**
