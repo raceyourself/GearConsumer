@@ -55,6 +55,7 @@ define({
             paceIcon = null,
             runnerAnimations = {
                     idle: { name: 'idle', sprite: null, speedThreshold: 0},
+                    idle_red: { name: 'idle_red', sprite: null, speedThreshold: 0},
                     running: { name: 'running', sprite: null, speedThreshold: 0.1},
                     running_red: { name: 'running_red', sprite: null, speedThreshold: 0.1},
                     sprinting: { name: 'sprinting', sprite: null, speedThreshold: 4},
@@ -601,7 +602,14 @@ define({
 				//Update player anim
 				if(r.getSpeed() == 0)
 				{
-					runner = runnerAnimations.idle;
+					if(hr > maxHeartRate)
+					{
+						runner = runnerAnimations.idle_red;
+					}
+					else
+					{
+						runner = runnerAnimations.idle;
+					}
 				}
 				else
 				{
@@ -1748,6 +1756,15 @@ define({
 
 			image = new Image();
             image.onload = function() {
+                runnerAnimations.idle_red.sprite = new Sprite(this, this.width, 500);
+            }
+            image.onerror = function() {
+                throw "Could not load " + this.src;
+            }
+            image.src = 'images/animation_runner_red_stationary.png';
+            
+			image = new Image();
+            image.onload = function() {
                 runnerAnimations.zombieDead.sprite = new Sprite(this, this.width / 2, 1000);
             }
             image.onerror = function() {
@@ -1944,14 +1961,14 @@ define({
 				goodBG = this;
 			}
 			image.onerror = function() {throw "could not load" + this.src; }
-			image.src = 'images/bg_good.jpg';
+			image.src = 'images/bg_good.png';
 			
 			image = new Image();
 			image.onload = function() {
 				badBG = this;
 			}
 			image.onerror = function() {throw "could not load" + this.src; }
-			image.src = 'images/bg_bad.jpg';
+			image.src = 'images/bg_bad.png';
            /* if (hrm.isAvailable()) {
                 hrm.start();
             } else {
