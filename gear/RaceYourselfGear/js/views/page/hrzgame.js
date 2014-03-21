@@ -76,7 +76,6 @@ define({
             dinoGameImage = null,
             boulderGameImage = null,
             dinoUnlockImageFS = null,
-            zombiesAnimOffset = [],
             numZombies = 0,
             zombieDistance = false,
             zombieInterval = false,
@@ -542,13 +541,15 @@ define({
         
         function startZombies() {
             clearInterval(zombieInterval);
-            var animDelay = Math.random() * 0.2;
             //4 zombies, we just don't show them all
             while (zombies.length < 4) {
                 zombies.push(zombies[0].clone());
-                zombiesAnimOffset.push(animDelay);
             };
-            for (var i=0;i<zombies.length;i++) zombies[i].reset();
+            for (var i=0;i<zombies.length;i++) {
+                zombies[i].reset();
+                var animDelay = Math.random() * zombies[i].getPeriod();
+                zombies[i].time = animDelay;
+            }
             zombieOffset = zombieStartOffset;
             zombieDistance = zombieOffset;
 //            int intervalTime = Math.min(350, 750-(wave*50));
@@ -594,19 +595,6 @@ define({
 				hrNotFound = true;			
 			}
 	
-			if(!isDead)
-			{
-				//Update player anim
-				if(r.getSpeed() == 0)
-				{
-					runner = runnerAnimations.idle;
-				}
-				else
-				{
-					runner = runnerAnimations.running;
-				}
-			}
-
 			//Update Heart Rate related mechanics
 			if(hr < minHeartRate)
 			{	
@@ -638,7 +626,24 @@ define({
 				}
 				if(!isDead)
 				{
-					runner = runnerAnimations.running;
+	                //Update player anim
+	                if(r.getSpeed() <= 0.01)
+	                {
+	                    runner.sprite.onEnd(function(dt) {
+	                        runner.sprite.onEnd(null);
+	                        runner = runnerAnimations.idle;
+	                        runner.sprite.time = dt;
+	                    });
+	                }
+	                else
+	                {
+	                    runner.sprite.onEnd(function(dt) {
+	                        runner.sprite.onEnd(null);
+	                        if (showWarningHigh) runner = runnerAnimations.running;
+	                        else runner = runnerAnimations.running_red;
+	                        runner.sprite.time = dt;
+	                    });
+	                }
 				}
 			}
 			else if(hr > maxHeartRate)
@@ -646,10 +651,6 @@ define({
 				showWarningHigh = false;
 				zombiesCatchingUp = false;
 				ppm = -1; // Negative pts/meter
-				if(!isDead)
-				{
-					runner = runnerAnimations.running_red;
-				}
 				if(warningTimeoutLow != false)
 				{
 					clearTimeout(warningTimeoutLow);
@@ -696,12 +697,6 @@ define({
 				}
 				//stop zombies catching up
 				zombiesCatchingUp = false;
-				//clear runner
-				if(!isDead)
-				{
-					runner = runnerAnimations.running;
-				}
-				
 			}
         }
 
@@ -742,10 +737,6 @@ define({
 				clearTimeout(warningTimeoutLow);
 				warningTimeoutLow = false;
 				zombiesCatchingUp = false;
-				if(!isDead)
-				{
-					runner = runnerAnimations.running;
-				}
 				clearNotification();
 				setNotification( '#fff', 'No Heart Rate', 0);
         	}
@@ -794,10 +785,6 @@ define({
         function warningOver_high()
         {
         	console.log("Warning up! now losing sweat points");
-        	if(!isDead)
-        	{
-				runner = runnerAnimations.running_red;
-			}
         }
         
         function step() {
@@ -820,7 +807,11 @@ define({
 //                lastRender = null;
 //                stopZombies();
 				isDead = true;
-				runner = runnerAnimations.zombieDead;
+                runner.sprite.onEnd(function(dt) {
+                    runner.sprite.onEnd(null);
+                    runner = runnerAnimations.zombieDead;
+                    runner.sprite.time = dt;
+                });
                 requestRender();
                 clearTimeout(bannerTimeout);
                 bannerTimeout = setTimeout(nextWave, 3000);
@@ -868,6 +859,27 @@ define({
                 });
             }
             */
+            
+            if(!isDead)
+            {
+                //Update player anim
+                if(r.getSpeed() <= 0.01)
+                {
+                    runner.sprite.onEnd(function(dt) {
+                        runner.sprite.onEnd(null);
+                        runner = runnerAnimations.idle;
+                        runner.sprite.time = dt;
+                    });
+                }
+                else
+                {
+                    runner.sprite.onEnd(function(dt) {
+                        runner.sprite.onEnd(null);
+                        runner = runnerAnimations.running;
+                        runner.sprite.time = dt;
+                    });
+                }
+            }
             
             requestRender();
         }
@@ -1303,19 +1315,21 @@ define({
 							else context.globalAlpha = 1;
 							var zombiePos = 0 + distanceToTrackPos(zombieDistance) - x_offset;
 		//                    zombiePos -= screenLeftDistance;
-					var localDT = dt * (0.9 + zombiesAnimOffset[i]);
 							if(!isDead || zombiePos < playerXPos - 10)
 							{	
 								// if we're dead don't draw them as they join the bundle
 								var pace = r.getSpeed();
 								if(pace > 0 || zombiesCatchingUp)
 								{
-									zombie.drawscaled(context, zombiePos, canvas.height - zombie.height * scale - trackHeight - 5*scale + y_offset, localDT, scale);
+									zombie.drawscaled(context, zombiePos, canvas.height - zombie.height * scale - trackHeight - 5*scale + y_offset, dt, scale);
 								}
 								else
 								{
-									zombieIdle.drawscaled(context, zombiePos, canvas.height - zombie.height * scale - trackHeight - 5*scale + y_offset, localDT, scale);
+									zombieIdle.drawscaled(context, zombiePos, canvas.height - zombie.height * scale - trackHeight - 5*scale + y_offset, dt, scale);
 								}
+							} else {
+							    // Just update the animation time
+							    zombie.time += dt;
 							}
 						}
 						context.globalAlpha = 1;
@@ -1768,8 +1782,6 @@ define({
             image = new Image();
             image.onload = function() {
                 zombies.push(new Sprite(this, this.width / 6, 1000));
-                var animDelay = Math.random() * 0.2;
-                zombiesAnimOffset.push(animDelay);
             }
             image.onerror = function() {
                 throw "Could not load " + this.src;

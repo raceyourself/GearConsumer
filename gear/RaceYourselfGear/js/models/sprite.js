@@ -59,6 +59,9 @@ define({
                     this.animationPeriod = milliseconds;
                     this.frameDelay = this.animationPeriod/this.frames;
                 },
+                getPeriod: function getPeriod() {
+                    return this.animationPeriod;
+                },
                 onEnd: function onEnd(callback) {
                     this.endCallback = callback;
                 },
