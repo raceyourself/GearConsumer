@@ -73,6 +73,7 @@ define({
             boulder = null,
             dinoGameImage = null,
             boulderGameImage = null,
+            dinoUnlockImageFS = null,
             zombiesAnimOffset = [],
             numZombies = 0,
             zombieDistance = false,
@@ -87,6 +88,7 @@ define({
             boulderKill = null,
             regularSound = null,
             killSound = null,
+            chime = null,
             visible = false,
             changer,
             sectionChanger,
@@ -216,7 +218,7 @@ define({
             
 			e.listen('game.unlock.dino', onUnlockDino);
 			e.listen('game.unlock.boulder', onUnlockBoulder);
-			
+			e.listen('achievement.awarded', onAchievementAwarded);
             isDead = false;
 			var length = settings.getDistance();
 			console.log('target dist = ' + length);
@@ -246,7 +248,12 @@ define({
 //			setOpponent('dinosaur');
         }
         
-        
+        function onAchievementAwarded(data)
+        {
+        	setNotification( green, 'Achievement Unlocked!', 3*1000);
+			navigator.vibrate([100, 50, 100, 50]);
+			chime.play();
+        }
         
         function setOpponent(type)
         {
@@ -294,6 +301,7 @@ define({
             clearTimeout(bannerTimeout)
             e.die('game.unlock.dino', onUnlockDino);
             e.die('game.unlock.boulder', onUnlockBoulder);
+            e.die('achievement.awarded', onAchievementAwarded);
         }        
         
         function onBack() {
@@ -896,8 +904,8 @@ define({
 			//sweat points
 			if(true)
 			{
-				var xpos = 0;
-				var ypos = 0;
+				var xpos = 1;
+				var ypos = 1;
 				var img = ppm > 0 ? sweat : sweat_red;
 				img.draw(context, xpos,ypos,0);
 				context.font = '24px Samsung Sans';
@@ -905,9 +913,9 @@ define({
 				context.fillStyle = ppm > 0 ? '#fff' : red;
 				context.textBaseline = "middle";
 				context.textAlign = "left";
-				context.fillText('SP', xpos + sweat.width + 5, ypos + sweat.height/2);
+				context.fillText('SP', xpos + sweat.width + 8, ypos + sweat.height/2);
 				context.fillStyle = ppm > 0 ? green : flashingRedParams.colour;
-				context.fillText(~~settings.getPoints(), xpos + sweat.width + 5 + 33, ypos + sweat.height/2);
+				context.fillText(~~settings.getPoints(), xpos + sweat.width + 8 + 36, ypos + sweat.height/2);
 			}
 
 			//GPS
@@ -1022,6 +1030,7 @@ define({
 				context.beginPath();
 				context.moveTo(hrXPos - radius * Math.cos(a), hrYPos - height);
 				context.lineTo(hrXPos + radius * Math.cos(a), hrYPos - height);
+				context.lineWidth = 2;
 				context.stroke();
 				//lower range
 				heightProportion = (minHeartRate - MinCircleHR)/(MaxCircleHR - MinCircleHR);
@@ -1401,7 +1410,8 @@ if(!notification.active)
 				case 'dinosaur':
 					if(zombieDistance != false && currentHRZone!='Recovery' ) {
 						var dinoPos = 0 + distanceToTrackPos(zombieDistance);
-						dino.drawscaled(context, dinoPos, canvas.height - dino.height * scale - trackHeight - 5*scale, dt, scale);
+						var dinoScale = scale * 1.5;
+						dino.drawscaled(context, dinoPos - dino.width * dinoScale, canvas.height - (dino.height + 5) * dinoScale - trackHeight - 5* scale, dt, dinoScale);
 					}
 					break;
 				case 'boulder':
@@ -1585,8 +1595,8 @@ if(!notification.active)
 
             image = new Image();
             image.onload = function() {
-                runnerAnimations.running.sprite = new Sprite(this, this.width / 6, 1000);
-                runnerAnimations.sprinting.sprite = new Sprite(this, this.width / 6, 1000);
+                runnerAnimations.running.sprite = new Sprite(this, this.width / 6, 500);
+                runnerAnimations.sprinting.sprite = new Sprite(this, this.width / 6, 500);
             }
             image.onerror = function() {
                 throw "Could not load " + this.src;
@@ -1595,8 +1605,8 @@ if(!notification.active)
 
 			image = new Image();
             image.onload = function() {
-                runnerAnimations.running_red.sprite = new Sprite(this, this.width / 6, 1000);
-                runnerAnimations.sprinting_red.sprite = new Sprite(this, this.width / 6, 1000);
+                runnerAnimations.running_red.sprite = new Sprite(this, this.width / 6, 500);
+                runnerAnimations.sprinting_red.sprite = new Sprite(this, this.width / 6, 500);
             }
             image.onerror = function() {
                 throw "Could not load " + this.src;
@@ -1652,6 +1662,11 @@ if(!notification.active)
             zombieGrowl.onerror = function() {
                 throw "Could not load " + this.src;
             }
+            
+            //chime
+            chime = new Audio('audio/Chime.wav');
+            chime.onerror = function() { throw "Could not load " + this.src; }
+            
             
             //heart     
         	image = new Image();
@@ -1727,7 +1742,7 @@ if(!notification.active)
 			//dino image
 			image = new Image();
 			image.onload = function() {
-				dino = new Sprite(this, this.width, 1000);
+				dino = new Sprite(this, this.width/10, 1000);
 			}
 			image.onerror = function() { throw "could not load" + this.src; }
 			image.src = 'images/animation_dino.png';
@@ -1753,7 +1768,7 @@ if(!notification.active)
 			//boulder game image
 			image = new Image();
 			image.onload = function() {
-				boulderGameImage = new Sprite(this, this.width/10, 1000);
+				boulderGameImage = new Sprite(this, this.width, 1000);
 			}
 			image.onerror = function() { throw "could not load" + this.src; }
 			image.src = 'images/image_boulder_achievement_screen.png';	
