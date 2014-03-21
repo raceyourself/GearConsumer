@@ -970,9 +970,9 @@ define({
 
 			
 			//draw good bg
-			context.drawImage(goodBG, 0, 0, canvas.width, canvas.height);
+			context.drawImage(goodBG, 0, 0, canvas.width, canvas.height - trackHeight);
 			context.globalAlpha = badFraction;
-			context.drawImage(badBG, 0, 0, canvas.width, canvas.height);
+			context.drawImage(badBG, 0, 0, canvas.width, canvas.height - trackHeight);
 			context.globalAlpha = 1;
 
 			//Header
@@ -1468,13 +1468,13 @@ define({
 					context.fillStyle = hrFillColour;
 					if(hrWarningText == 'slow down')
 					{
-						context.fillText('SLOW', hrXPos, hrYPos - 15);
-						context.fillText('DOWN', hrXPos, hrYPos + 15);
+						context.fillText('SLOW', hrXPos, hrYPos - 13);
+						context.fillText('DOWN', hrXPos, hrYPos + 13);
 					}
 					else if(hrWarningText == 'speed up')
 					{
-						context.fillText('SPEED', hrXPos, hrYPos - 15);
-						context.fillText('UP', hrXPos, hrYPos + 15);
+						context.fillText('SPEED', hrXPos, hrYPos - 10);
+						context.fillText('UP', hrXPos, hrYPos + 16);
 					}
 					else
 					{
