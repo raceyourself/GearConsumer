@@ -1487,7 +1487,7 @@ if(!notification.active)
             	context.stroke();
 
             	//text
-            	context.font = '56px SamsungSans';
+            	context.font = '56px Samsung Sans';
             	context.textAlign = "center";
             	context.textBaseline = "middle";
             	context.fillStyle = '#fff';
