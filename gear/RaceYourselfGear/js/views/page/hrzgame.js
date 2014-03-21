@@ -419,8 +419,8 @@ define({
 				case "Endurance":
 					break;
 				case "Strength":
-					var sprintDuration = 30;
-					var recoverDuration = 30;
+					var sprintDuration = 30;	//seconds
+					var recoverDuration = 30;	//seconds
 					switch(currentHRZone)
 					{
 						case "Recovery":
@@ -521,7 +521,7 @@ define({
 			//set that we are currently adapting
 			adaptingToRecentZoneShift = true;
 			//15 seconds to adapt
-			adaptingTimeout	= setTimeout(adaptComplete, 15 * 100 * timeMultiplier);
+			adaptingTimeout	= setTimeout(adaptComplete, 10 * 1000 * timeMultiplier);
 			
 			//vibrate
 			navigator.vibrate([10, 10, 10, 10, 10, 10, 10]);
