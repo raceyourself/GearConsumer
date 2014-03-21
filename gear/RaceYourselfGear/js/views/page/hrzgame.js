@@ -117,7 +117,7 @@ define({
 			currentHRZone = null,
 			currentZone = 0,
 			warmupTimeout = false,
-			timeMultiplier = 1,			//hack to test quickly. Set to 1
+			timeMultiplier = 0.01,			//hack to test quickly. Set to 1
 			intervalTimeout = false,
 			zoneAdaptTimeout = false,
 			warningTimeoutLow = false,
@@ -236,6 +236,8 @@ define({
 //			var type = settings.getTargetType();
 			var type = settings.getCurrentTarget();
 			
+			TRACK_LENGTH = Infinity;
+			targetTime = Infinity;
 			if (type == 'time') { targetTime = settings.getTime() * 60 * 1000; }
 			else if (type == 'distance') { TRACK_LENGTH = settings.getDistance(); }
 				
@@ -358,7 +360,7 @@ define({
             clearTimeout(bannerTimeout);
             bannerTimeout = setTimeout(clearbanner, countDownParams.stageDuration * 1000);
             setCurrentHRZone("Recovery");
-            var warmupDurationMinutes = 0.5;
+            var warmupDurationMinutes = 5;
             warmupTimeout = setTimeout(endWarmup, warmupDurationMinutes*60*1000 * timeMultiplier);	//5 minutes warmup
 			countDownParams.outerRadius = countDownParams.outerRadiusMax;
 			countDownParams.startTime = Date.now();
@@ -810,7 +812,7 @@ define({
                 });
                 requestRender();
                 clearTimeout(bannerTimeout);
-                bannerTimeout = setTimeout(nextWave, 3000);
+                bannerTimeout = setTimeout(nextWave, 10000);
                 e.fire('died', {cause: game.getCurrentOpponentType()});
 				}
                 return;
@@ -922,10 +924,9 @@ define({
         function render() {
             if (!visible) return;
             var dt = 0;
-            var trackHeight = 63;
+            var trackHeight = canvas.height - badBG.height;
             var trackThickness = 4;
 
-            
             if (lastRender !== null) {
                 dt = Date.now() - lastRender;
                 lastRender = Date.now();
@@ -943,6 +944,7 @@ define({
 					if(badFraction > 1) { badFraction = 1; }
 				}
 			}
+			
 			else
 			{
 				//go less bad
@@ -1364,7 +1366,12 @@ define({
             //temp hack - make player bigger in death 'cloud' form
             var playerScale = scale;
             var playerOffset = runner.sprite.height * playerScale + trackHeight - 6*scale; 
-            if(isDead) { playerOffset += 10*playerScale; }
+            if(isDead)
+            {
+             	playerScale *=1.6;	
+             	playerOffset += 30*playerScale; 
+             	runner = runnerAnimations.zombieDead;
+            }
             runner.sprite.drawscaled(context, playerXPos, canvas.height -playerOffset , dt, playerScale);
             
 			if(!countingdown)
