@@ -352,32 +352,31 @@
     
     <div class="ui-page" id="pregame">
         	<div id="pregame-waiting-gps" class="fill hidden">
-	        	<div class="center-container">
-		        	<div class="center gps-screen">		        	
-		        		<img src="images/gps-waiting.png" />
+	        	<div class="">
+		        	<div class="center gps-screen binary-toggle toggle-on" id="waiting-gps-div">
+		        		<img src="images/gps_waiting.png" class="on" />
+		        		<img src="images/gps_locked.png" class="off" />
         				<p>Waiting on GPS lock from phone</p>
+		           		<div class="skip-btn" id="pregame-skip-gps-btn">
+			        		<p>SKIP</p>
+			        		*use only pedometer
+			        	</div>
 	        		</div>
 	        	</div>
         	</div>
         	<div id="pregame-locked-gps" class="fill hidden">
             	<div class="center-container">
 		        	<div class="center gps-screen">
-	    				<img src="images/gps-lock.png" />
-	    				<p>GPS locked!</p>
-		           		<a href="#" class="race-btn" id="pregame-race-btn">
-			        		Start Race
-			        	</a>
+	    				<img src="images/gps_locked.png" />
+	    				<p>GPS lock ready</p>
 	        		</div>
 	        	</div>
         	</div>
         	<div id="pregame-disabled-gps" class="fill hidden">
             	<div class="center-container">
 		        	<div class="center gps-screen">
-	    				<img src="images/gps-lock.png" />
+	    				<img src="images/gps_locked.png" />
 	    				<p>GPS disabled</p>
-		           		<a href="#" class="race-btn" id="pregame-race-anyway-btn">
-			        		Start Race
-			        	</a>
 	        		</div>
 	        	</div>
         	</div>
