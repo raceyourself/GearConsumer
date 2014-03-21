@@ -14,14 +14,17 @@ define({
         'models/settings',
         'helpers/units',
         'views/page/pregame',
-        'views/page/trainingtype'
+        'views/page/trainingtype',
+        'core/template'
     ],
     def: function viewsPageRaceSummary(req) {
         'use strict';
 
         var e = req.core.event,
+            t = req.core.template,
          	app = req.models.application,
          	page = null,
+         	list = null,
          	game = req.models.game,
          	race = req.models.race,
          	settings = req.models.settings,
@@ -63,6 +66,24 @@ define({
             document.getElementById('current-sweat-final').innerHTML = ~~(r.getPointsEarned());
             document.getElementById('total-sweat-final').innerHTML = ~~(r.getPoints());
             
+            generateAwards();
+        }
+        
+        function generateAwards() {
+            var as = r.getAchievements();
+            var items = [];
+            var clazz = '';
+            for (var key in as) {
+                var a = as[key];
+                items.push(t.get('achievementRow', {
+                            key: a.key,
+                            title: a.title,
+                            subtitle: a.points + ' sweat points',
+                            classes: clazz
+                }));
+                clazz = '';
+            }
+            list.innerHTML = items.join('');
         }
         
         function onBack() {
@@ -78,27 +99,37 @@ define({
         	 page.addEventListener('pageshow', onPageShow);
              page.addEventListener('pagehide', onPageHide);
              
-             document.getElementById('race-summary-end-btn').addEventListener('click', onSummaryEndClick);
-             
-            
+             page.addEventListener('click', onSummaryEndClick);
+             list.addEventListener('click', onItemTap);
         }
 
         function onSummaryEndClick() {
+            if (isScrolling()) return;
         	e.fire('newmain.show');
-        }
+        }        
         
+        function onItemTap(event) {
+            var a = event.target;
+            while (a && a.tagName && a.tagName.toLowerCase() !== 'a') {
+                a = a.parentElement;
+            }
+            if (!a) return;
+            event.preventDefault();
+            event.stopPropagation();
+            e.fire('achievement.show', a.getAttribute('data-achievement'));
+        }
         
         function isScrolling() {
             if (!sectionChanger) return false;
             if (Math.abs(sectionChanger.lastTouchPointX - sectionChanger.startTouchPointX) > 5) return true;
             if (Math.abs(sectionChanger.lastTouchPointY - sectionChanger.startTouchPointY) > 5) return true;
             return false;
-        }
-        
+        }        
         
         
         function init() {
             page = document.getElementById('racesummary');
+            list = document.getElementById('summary-achievements-list');
             changer = document.getElementById("race-summary-sectionchanger");
             bindEvents();
         }
@@ -133,7 +164,7 @@ define({
             }
             
             document.getElementById('distance-final').innerHTML = Number(value).toFixed(decimals);
-            document.getElementById('distance-units').innerHTML = u;
+            document.getElementById('s-distance-units').innerHTML = u;
         }
 
         return {
