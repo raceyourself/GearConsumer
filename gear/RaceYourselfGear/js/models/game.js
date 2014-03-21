@@ -42,8 +42,8 @@ define({
         function unlock(game) {
             if (games[game].locked === false) return;
             games[game].locked = false;
-            return saveGames();
             e.fire('game.unlock.' + game);
+            return saveGames();
         }
         
         /**

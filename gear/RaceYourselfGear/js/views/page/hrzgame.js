@@ -397,7 +397,9 @@ define({
 					intervalTimeout = setTimeout(nextHRZone, 30*1000 * timeMultiplier);
 					break;
 				default:
+					setCurrentHRZone("Aerobic");
 					console.error("Unknown goal type: " + r.getGoal());
+					break;
         	}
         	console.log("Ended warmup. Now in zone " + currentHRZone);
         }
@@ -624,7 +626,7 @@ define({
 					setNotification(flashingRed, '#fff', 'Heart Rate too low!', 0);
 					showWarningLow = true;
 					if(settings.getAudioActive()) {
-						regularSound.play();
+						//regularSound.play();
 					}
 					
 					navigator.vibrate([1000, 500, 250, 100]);
@@ -1308,9 +1310,10 @@ define({
 						for (var i=0;i<numZombies;i++) {
 							var zombie = zombies[i];
 							var x_offset = ((i*(zombie.width*0.3))+(i%2)*5 + zombie.width*0.3) * scale;
-							var y_offset = (-1+(i+1)%2) * 5;
-							if (i%2==1) context.globalAlpha = 0.75;
-							else context.globalAlpha = 1;
+							var y_offset = 7*scale;
+//							if (i%2==1) context.globalAlpha = 0.75;
+//							else context.globalAlpha = 1;
+							context.globalAlpha = 1;
 							var zombiePos = 0 + distanceToTrackPos(zombieDistance) - x_offset;
 		//                    zombiePos -= screenLeftDistance;
 							if(!isDead || zombiePos < playerXPos - 10)
@@ -1319,11 +1322,11 @@ define({
 								var pace = r.getSpeed();
 								if(pace > 0 || zombiesCatchingUp)
 								{
-									zombie.drawscaled(context, zombiePos, canvas.height - zombie.height * scale - trackHeight - 5*scale + y_offset, dt, scale);
+									zombie.drawscaled(context, zombiePos, canvas.height - zombie.height * scale - trackHeight + y_offset, dt, scale);
 								}
 								else
 								{
-									zombieIdle.drawscaled(context, zombiePos, canvas.height - zombie.height * scale - trackHeight - 5*scale + y_offset, dt, scale);
+									zombieIdle.drawscaled(context, zombiePos, canvas.height - zombie.height * scale - trackHeight + y_offset, dt, scale);
 								}
 							} else {
 							    // Just update the animation time
@@ -1337,7 +1340,7 @@ define({
 					if(zombieDistance != false && currentHRZone!='Recovery' ) {
 						var dinoPos = 0 + distanceToTrackPos(zombieDistance);
 						var dinoScale = scale * 1.5;
-						dino.drawscaled(context, dinoPos - dino.width * 0.6 * dinoScale, canvas.height - (dino.height - 20) * dinoScale - trackHeight - 5* scale, dt, dinoScale);
+						dino.drawscaled(context, dinoPos - dino.width * 0.6 * dinoScale, canvas.height - (dino.height - 25) * dinoScale - trackHeight - 5* scale, dt, dinoScale);
 					}
 					break;
 				case 'boulder':
@@ -1360,7 +1363,7 @@ define({
             // Self
             //temp hack - make player bigger in death 'cloud' form
             var playerScale = scale;
-            var playerOffset = runner.sprite.height * playerScale + trackHeight + 5 * playerScale 
+            var playerOffset = runner.sprite.height * playerScale + trackHeight - 6*scale; 
             if(isDead) { playerOffset += 10*playerScale; }
             runner.sprite.drawscaled(context, playerXPos, canvas.height -playerOffset , dt, playerScale);
             
