@@ -189,6 +189,7 @@ define({
             sendStartTrackingReq: sendStartTrackingReq,
             sendStopTrackingReq: sendStopTrackingReq,
             sendAuthenticationReq: sendAuthenticationReq,
+            sendWebLinkReq: sendWebLinkReq,
             sendAnalytics: sendAnalytics,
             isAvailable: isAvailable
         };
