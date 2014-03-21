@@ -63,8 +63,10 @@ define({
         	touch_start = null;
         }
         
-        function onError(msg, url, line) {
-            document.getElementById('error-message').innerHTML = '<p><b>' + msg + '</b></p>' + url.substr(url.lastIndexOf('/')+1) + ':' + line;
+        function onError(msg, url, line, column, error) {
+            var html = '<p><b>' + msg + '</b></p>' + url.substr(url.lastIndexOf('/')+1) + ':' + line;
+            if (error !== undefined) html = '<p>' + error.stack + '</p>';
+            document.getElementById('error-message').innerHTML = html;
             gear.ui.changePage('#error-page');
             document.getElementById('error-page').addEventListener('click', function() {
                 app.closeApplication();                
