@@ -83,7 +83,7 @@ define({
                     init: function() {
                         e.listen('race.end', function(event) {
                             var race = event.detail;
-                            if (race.data.hr_zones === true && race.data.zoned_out !== true) achieve('run_in_zone');
+                            if (race.data.hr_zones === true && !race.data.zoned_out) achieve('run_in_zone');
                         });
                     },
                     progress: function() {
@@ -99,11 +99,11 @@ define({
                     init: function() {
                         e.listen('race.end', function(event) {
                             var race = event.detail;
-                            if (race.data.hr_zones === true && race.data.caught_by !== true) achieve('run_in_zone');
+                            if (race.data.hr_zones === true && !race.data.caught_by) achieve('survived');
                         });
                     },
                     progress: function() {
-                        if (!!achieved['run_in_zone']) return 'Achievable';
+                        if (!!achieved['survived']) return 'Achievable';
                         return 'Not yet achieved';
                     }
                 },
@@ -263,7 +263,9 @@ define({
             }
             
             var times = achieved[achievement] || [];            
-            if (a.uses <= times.length) return;
+            if (a.uses <= times.length) {
+                return;
+            }
             
             var now = new Date();
             times.push(now);
