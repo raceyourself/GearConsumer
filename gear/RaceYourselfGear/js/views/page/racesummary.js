@@ -109,6 +109,7 @@ define({
         }        
         
         function onItemTap(event) {
+            if (isScrolling()) return;
             var a = event.target;
             while (a && a.tagName && a.tagName.toLowerCase() !== 'a') {
                 a = a.parentElement;
