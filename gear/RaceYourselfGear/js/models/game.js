@@ -43,6 +43,7 @@ define({
             if (games[game].locked === false) return;
             games[game].locked = false;
             return saveGames();
+            e.fire('game.unlock.' + game);
         }
         
         /**

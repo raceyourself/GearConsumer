@@ -106,10 +106,10 @@ define({
             hrChangePeriod = 5000,
             lastHRtime = 0,
             hrColour = '#fff',
-            zombieCatchupSpeed = 0.05,
-            zombieStartOffset = -25,
+            zombieStartOffset = -15,
+            zombieCatchupSpeed = -zombieStartOffset/500,
             zombieOffset = zombieStartOffset,
-            screenWidthDistance = 25,	//'real-world' distance covered by the screen's width
+            screenWidthDistance = -zombieStartOffset,	//'real-world' distance covered by the screen's width
             screenLeftDistance = zombieOffset,		//'real-world' position of left of screen
 			hrZones = [],
 			currentHRZone = null,
@@ -118,7 +118,8 @@ define({
 			timeMultiplier = 0.1,			//hack to test quickly. Set to 1
 			intervalTimeout = false,
 			zoneAdaptTimeout = false,
-			warningTimeout = false,
+			warningTimeoutLow = false,
+			warningTimeoutHigh = false,
 			zombiesCatchingUp = false,
 			adaptingToRecentZoneShift = false,
 			adaptingTimeout = false,
@@ -287,7 +288,8 @@ define({
 			clearTimeout(warmupTimeout);
             clearTimeout(intervalTimeout);
             clearTimeout(adaptingTimeout);
-            clearTimeout(warningTimeout);
+            clearTimeout(warningTimeoutLow);
+			clearTimeout(warningTimeoutHigh)
             if (!!sectionChanger) sectionChanger.destroy();
             e.die('tizen.back', onBack);
             
@@ -523,7 +525,7 @@ define({
             wave++;
 //            zombieCatchupSpeed += 0.01;
             banner = 'GO';
-            zombieOffset = -25;
+            zombieOffset = zombieStartOffset;
             requestRender();
             clearTimeout(bannerTimeout);
             bannerTimeout = setTimeout(restart, 1500);
@@ -555,12 +557,12 @@ define({
         	}
         	
         	//zombies fall back
-        	if(hr > minHeartRate)
+        	if(hr >= minHeartRate && hr <= maxHeartRate)
         	{
 				var timeGood = Date.now() - timeTurnedGood;
-				if(timeGood > 30*1000 * timeMultiplier);
+				if(timeGood > 30*1000);
 				{
-					if(zombieOffset > -25)
+					if(zombieOffset > zombieStartOffset)
 					{ zombieOffset -= zombieCatchupSpeed; }
 				}
         	}
@@ -573,7 +575,7 @@ define({
             //general update of track window
             if(!isDead)
             {
-				screenWidthDistance = Math.max( 10, Math.min( -zombieOffset + 15, 100));
+				screenWidthDistance = Math.max( 15, Math.min( -zombieOffset + 5, 50));
 			}
 			
 			screenLeftDistance = (zombieDistance + r.getDistance() - screenWidthDistance)/2;
@@ -583,15 +585,18 @@ define({
 			{
 				hrNotFound = true;			
 			}
-
-			//Update player anim
-			if(r.getSpeed() == 0)
+	
+			if(!isDead)
 			{
-				runner = runnerAnimations.idle;
-			}
-			else
-			{
-				runner = runnerAnimations.running;
+				//Update player anim
+				if(r.getSpeed() == 0)
+				{
+					runner = runnerAnimations.idle;
+				}
+				else
+				{
+					runner = runnerAnimations.running;
+				}
 			}
 
 			//Update Heart Rate related mechanics
@@ -599,12 +604,17 @@ define({
 			{	
 				showWarningLow = false;
 				ppm = 5; // Standard pts/meter
-				if(!showWarningHigh)
+				if(warningTimeoutHigh != false)
+				{
+					clearTimeout(warningTimeoutHigh);
+					warningTimeoutHigh = false;
+				}
+				if(!showWarningLow)
 				{
 					timeTurnedBad = Date.now()
 					clearNotification()
 					setNotification(flashingRed, 'Heart Rate too low!', 0);
-					showWarningHigh = true;
+					showWarningLow = true;
 					if(settings.getAudioActive()) {
 						regularSound.play();
 					}
@@ -613,9 +623,9 @@ define({
 				}
 				if(!adaptingToRecentZoneShift)
 				{
-					if(warningTimeout == false)
+					if(warningTimeoutLow == false)
 					{
-						warningTimeout = setTimeout(warningOver_low, 10*1000 * timeMultiplier);
+						warningTimeoutLow = setTimeout(warningOver_low, 10*1000 * timeMultiplier);
 					}
 				}
 				if(!isDead)
@@ -628,21 +638,30 @@ define({
 				showWarningHigh = false;
 				zombiesCatchingUp = false;
 				ppm = -1; // Negative pts/meter
-				runner = runnerAnimations.running_red;
+				if(!isDead)
+				{
+					runner = runnerAnimations.running_red;
+				}
+				if(warningTimeoutLow != false)
+				{
+					clearTimeout(warningTimeoutLow);
+					warningTimeoutLow = false;
+				}
+				
 				//TODO check if stationary and use stationary red if so
-				if(!showWarningLow)
+				if(!showWarningHigh)
 				{
 					timeTurnedBad = Date.now();
 					clearNotification();
 					setNotification(flashingRed, 'Heart Rate too high!', 0);
-					showWarningLow = true;
+					showWarningHigh = true;
 					navigator.vibrate([1000, 500, 250, 100]);
 				}
 				if(!adaptingToRecentZoneShift)
 				{
-					if(warningTimeout == false)
+					if(warningTimeoutHigh == false)
 					{
-						warningTimeout = setTimeout(warningOver_high, 10*1000 * timeMultiplier);
+						warningTimeoutHigh = setTimeout(warningOver_high, 10*1000 * timeMultiplier);
 					}
 				}
 			}
@@ -650,6 +669,16 @@ define({
 			{
 				ppm = 5; // Standard pts/meter
 				//clear warning
+				if(warningTimeoutHigh != false)
+				{
+					clearTimeout(warningTimeoutHigh);
+					warningTimeoutHigh = false;
+				}
+				if(warningTimeoutLow != false)
+				{
+					clearTimeout(warningTimeoutLow);
+					warningTimeoutLow = false;
+				}
 				if(showWarningLow || showWarningHigh)
 				{
 					timeTurnedGood = Date.now();
@@ -657,8 +686,6 @@ define({
 					showWarningHigh = false;
 					clearNotification();
 				}
-				clearTimeout(warningTimeout);
-				warningTimeout = false;
 				//stop zombies catching up
 				zombiesCatchingUp = false;
 				//clear runner
@@ -701,9 +728,15 @@ define({
         	{
 				showWarningLow = false;
 				showWarningHigh = false;
-				clearTimeOut(warningTimeout);
+				clearTimeOut(warningTimeoutHigh);
+				warningTimeoutHigh = false;
+				clearTimeout(warningTimeoutLow);
+				warningTimeoutLow = false;
 				zombiesCatchingUp = false;
-				runner = runnerAnimations.running;
+				if(!isDead)
+				{
+					runner = runnerAnimations.running;
+				}
 				clearNotification();
 				setNotification( '#fff', 'No Heart Rate', 0);
         	}
@@ -752,7 +785,10 @@ define({
         function warningOver_high()
         {
         	console.log("Warning up! now losing sweat points");
-        	runner = runnerAnimations.running_red;
+        	if(!isDead)
+        	{
+				runner = runnerAnimations.running_red;
+			}
         }
         
         function step() {
@@ -935,15 +971,15 @@ define({
 			}
 
 			//GPS
-			if(gpsAvailable)
-			{
 				var GPSscale = 0.65;
 				context.save();
 				context.translate(canvas.width - gpsRing.width/2 * GPSscale, gpsRing.height/2 * GPSscale);
 				gpsRing.drawscaled(context, - gpsRing.width/2*GPSscale, -gpsRing.height/2 * GPSscale, 0, GPSscale);
-				gpsDot.drawscaled(context, - gpsDot.width/2*GPSscale, -gpsDot.height/2 * GPSscale, 0, GPSscale);
+				if(gpsAvailable)
+				{
+					gpsDot.drawscaled(context, - gpsDot.width/2*GPSscale, -gpsDot.height/2 * GPSscale, 0, GPSscale);
+				}
 				context.restore();
-			}
 
             // Banner
             if (false) {
@@ -1251,7 +1287,7 @@ define({
 							var zombie = zombies[i];
 							var x_offset = ((i*(zombie.width*0.3))+(i%2)*5 + zombie.width*0.3) * scale;
 							var y_offset = (-1+(i+1)%2) * 5;
-							if (i%2==1) context.globalAlpha = 0.5;
+							if (i%2==1) context.globalAlpha = 0.75;
 							else context.globalAlpha = 1;
 							var zombiePos = 0 + distanceToTrackPos(zombieDistance) - x_offset;
 		//                    zombiePos -= screenLeftDistance;
@@ -1260,7 +1296,7 @@ define({
 							{	
 								// if we're dead don't draw them as they join the bundle
 								var pace = r.getSpeed();
-								if(pace > 0)
+								if(pace > 0 || zombiesCatchingUp)
 								{
 									zombie.drawscaled(context, zombiePos, canvas.height - zombie.height * scale - trackHeight - 5*scale + y_offset, localDT, scale);
 								}
@@ -1331,6 +1367,7 @@ define({
 				var radius = 115/2;
 				var hrXPos = canvas.width - radius - 10;
 				var hrYPos = 37 + radius;
+
 				//fill
 				var MaxCircleHR = 200;
 				var MinCircleHR = 50;
@@ -1339,10 +1376,11 @@ define({
 				context.fillStyle = '#fff';
 				context.fill();
 				context.strokeStyle = green;
-				if( hr < minHeartRate || hr > maxHeartRate) { context.strokeStyle = red; }
+				if( hr < minHeartRate || hr > maxHeartRate) { context.strokeStyle = flashingRedParams.colour; }
 				context.lineWidth = 5;
 				context.stroke();
-			
+				if(false)
+				{			
 				//how high up the circle as a percentage of diameter 
 				var fillProportion = (hr - MinCircleHR)/(MaxCircleHR - MinCircleHR);
 				if(hrNotFound) { fillProportion = 1; }
@@ -1353,11 +1391,10 @@ define({
 				context.arc(hrXPos, hrYPos, radius, -angle, Math.PI + angle, false);
 				context.fillStyle = hrFillColour;
 				context.fill();
-				
-				//stroke
-				context.beginPath();
-						
+				}
 				//water marks
+				if(false)
+				{
 				context.globalAlpha = 0.5;
 				context.strokeStyle = dottedPattern;
 				var heightProportion = (maxHeartRate - MinCircleHR)/(MaxCircleHR - MinCircleHR);
@@ -1378,9 +1415,9 @@ define({
 				context.lineTo(hrXPos + radius * Math.cos(a), hrYPos - height);
 				context.stroke();
 				context.globalAlpha = 1;
-				
+				}
 				//icon
-				heartIcon.draw(context, hrXPos-heartIcon.width/2, hrYPos-heartIcon.height/2 - 30, 0);
+				heartIcon.draw(context, hrXPos-heartIcon.width/2, hrYPos-heartIcon.height/2 - 32, 0);
 				//number
 				context.font = '56px Samsung Sans';
 				context.textAlign = 'center';
@@ -1388,7 +1425,7 @@ define({
 				context.fillStyle = '#000';
 				var hrText = hr;
 				if(hrNotFound) { hrText = '--'; }
-				context.fillText(hrText, hrXPos, hrYPos + 10);
+				context.fillText(hrText, hrXPos, hrYPos + 8);
 				//bpm
 				context.font = '24px Samsung Sans';
 				context.fillText('bpm', hrXPos, hrYPos + 38);
