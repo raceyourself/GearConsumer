@@ -45,7 +45,9 @@ define({
         function Race() {
             this.startDate = null;
             this.duration = null;
-            this.initialDistance = null;
+            this.lastPedometerDistance = null;
+            this.lastGpsDistance = null;
+            this.lastGpsTimestamp = null;
             this.distance = 0; // meters
             this.speed = 0; // km/h
             this.goal = _goal;
@@ -170,16 +172,23 @@ define({
             var pedometerInfo = param.detail;
 
             if (ongoingRace.initialSteps === null) ongoingRace.initialSteps = pedometerInfo.totalStep;
-            if (ongoingRace.initialDistance === null) ongoingRace.initialDistance = pedometerInfo.distance;
+            if (ongoingRace.lastPedometerDistance === null) ongoingRace.lastPedometerDistance = pedometerInfo.distance;
             if (ongoingRace.initialCalories === null) ongoingRace.initialCalories = pedometerInfo.calorie;
             
             var step = false;
             if (pedometerInfo.totalStep !== ongoingRace.steps) step = true;
             
             ongoingRace.steps = pedometerInfo.totalStep - ongoingRace.initialSteps;
-            ongoingRace.speed = pedometerInfo.speed;
-            ongoingRace.distance = pedometerInfo.distance - ongoingRace.initialDistance;      
             ongoingRace.calories = pedometerInfo.calorie - ongoingRace.initialCalories;
+            
+            // only update speed and distance if we've not had a GPS fix for at least 2000ms
+            if (ongoingRace.lastGpsTimestamp == null || (new Date().getTime() - ongoingRace.lastGpsTimestamp) > 2000) {
+                ongoingRace.speed = pedometerInfo.speed;
+                var positionDelta = (pedometerInfo.distance - ongoingRace.lastPedometerDistance);
+                if (positionDelta < 0) positionDelta = 0;
+                ongoingRace.distance += positionDelta;
+            }
+            ongoingRace.lastPedometerDistance = pedometerInfo.distance; // update for next loop
             
             if (step) {
                 ongoingRace.track.push({distance: ongoingRace.getDistance(), time: ongoingRace.getDuration()});
@@ -198,7 +207,27 @@ define({
             var speed = message.GPS_SPEED;  // current speed in metres per second
             console.log(speed);
             var state = message.GPS_STATE;  // string describing stopped / accelerating / steady speed etc
-            console.log(state);            
+            console.log(state);
+            
+            if (ongoingRace == null || !ongoingRace.isRunning()) return;
+
+            // init on first loop
+            var currentTimestamp = new Date().getTime();
+            if (ongoingRace.lastGpsDistance === null) ongoingRace.lastGpsDistance = distance;
+            if (ongoingRace.lastGpsTimestamp == null) ongoingRace.lastGpsTimestamp = currentTimestamp;
+            
+            // if we're getting regular GPS updates, use them for speed and distance:
+            if (currentTimestamp - ongoingRace.lastGpsTimestamp <= 2000) {
+                ongoingRace.speed = speed;
+                var positionDelta = (distance - ongoingRace.lastGpsDistance);
+                ongoingRace.distance += positionDelta;
+                
+                // fire pedometer.step to update UI
+                ongoingRace.track.push({distance: ongoingRace.getDistance(), time: ongoingRace.getDuration()});
+                e.fire('pedometer.step');  
+            }
+            ongoingRace.lastGpsTimestamp = currentTimestamp;
+            
         }
         
         function onAchievement(event) {
