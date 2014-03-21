@@ -389,12 +389,11 @@ define({
         		case "Endurance":
         		//set light zone, then step up to aerobic later
         			setCurrentHRZone("Aerobic");
-        			intervalTimeout = setTimeout(nextHRZone, 3*60*1000 * timeMultiplier);
         			break;
 				case "Strength":
 					setCurrentHRZone("Aerobic");
 				//set light zone then step up later
-					intervalTimeout = setTimeout(nextHRZone, 3*60*1000 * timeMultiplier);
+					intervalTimeout = setTimeout(nextHRZone, 30*1000 * timeMultiplier);
 					break;
 				default:
 					console.error("Unknown goal type: " + r.getGoal());
@@ -413,22 +412,13 @@ define({
 			switch(r.getGoal())
 			{
 				case "Endurance":
-					switch(currentHRZone)
-					{
-						case "Light":
-							//step up to aerobic and stay there
-							setCurrentHRZone("Aerobic");
-							break;
-						default:
-							console.log("shouldn't be in this zone in Endurance training: " + currentHRZone);
-							break;
-					}
 					break;
 				case "Strength":
 					var sprintDuration = 30;
 					var recoverDuration = 30;
 					switch(currentHRZone)
 					{
+						case "Recovery":
 						case "Light":
 						case "Anaerobic":
 							//transition to Aerobic for next interval
