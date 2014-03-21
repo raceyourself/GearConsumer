@@ -70,7 +70,8 @@ define({
             if (!a) return;
             event.preventDefault();
             event.stopPropagation();
-            e.fire('achievement.show', a.getAttribute('data-achievement'));
+//            e.fire('achievement.show', a.getAttribute('data-achievement'));
+//            TODO: Fix hrzgames.onPageHide/onPageShow so this works            
         }
                 
         function bindEvents() {

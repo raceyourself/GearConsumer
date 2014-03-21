@@ -11,6 +11,7 @@ define({
         'use strict';
 
         var listeners = {};
+        var singletons = {};
 
         /**
          * Gets listeners name for event.
@@ -71,6 +72,7 @@ define({
          */
         function addEventListener(eventName, handler) {
             listeners[eventName] = listeners[eventName] || [];
+            if (singletons[eventName] === true && listeners[eventName].length !== 0) throw new Error('Singleton event ' + eventName + ' already has a listener!');
             listeners[eventName].push(handler);
             window.addEventListener(eventName, handler);
         }
@@ -124,6 +126,11 @@ define({
             }
         }
 
+        
+        function addSingleton(name) {
+            singletons[name] = true;
+        }
+        
         return {
 
             fire: dispatchEvent,
@@ -136,7 +143,9 @@ define({
 
             listeners: addEventListeners,
 
-            getListeners: getListeners
+            getListeners: getListeners,
+            
+            addSingleton: addSingleton
         };
     }
 });
