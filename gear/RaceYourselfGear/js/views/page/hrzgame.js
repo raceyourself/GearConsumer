@@ -283,6 +283,7 @@ define({
         }
         
         function onPageHide() {
+            e.die('tizen.back', onBack);
             visible = false;
             clearInterval(fpsInterval);
             clearInterval(randomHR);
@@ -292,7 +293,6 @@ define({
             clearTimeout(warningTimeoutLow);
 			clearTimeout(warningTimeoutHigh)
             if (!!sectionChanger) sectionChanger.destroy();
-            e.die('tizen.back', onBack);
             
             var r = race.getOngoingRace();
             if (r !== null) {
@@ -565,7 +565,7 @@ define({
         	if(hr >= minHeartRate && hr <= maxHeartRate)
         	{
 				var timeGood = Date.now() - timeTurnedGood;
-				if(timeGood > 30*1000);
+				if(timeGood > 30*1000)
 				{
 					if(zombieOffset > zombieStartOffset)
 					{ zombieOffset -= zombieCatchupSpeed; }
@@ -1650,7 +1650,8 @@ define({
         }
         
         function bindEvents() {
-            document.getElementById('quit-confirmation').addEventListener('click', onQuit);
+            document.getElementById('game-yesquit-btn').addEventListener('click', onQuit);
+            document.getElementById('game-noquit-btn').addEventListener('click', onBack);
         }
 
         function init() {

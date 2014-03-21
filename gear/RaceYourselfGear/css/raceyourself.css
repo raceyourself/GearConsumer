@@ -300,6 +300,36 @@ img {
 	margin: 5px 5px;
 }
 
+.left-btn {
+	width: 50%;
+	color: black;
+	background-color: white;
+	position: absolute;
+	left: 0px;
+	bottom: 0px;
+	font-size: 32px;
+	font-weight: bold;	
+	padding: 15px 15px;
+	border-right: 1px solid rgba(0,0,0,0.1);
+}
+.right-btn {
+	width: 50%;
+	color: black;
+	background-color: white;
+	position: absolute;
+	right: 0px;
+	bottom: 0px;
+	font-size: 32px;
+	font-weight: bold;	
+	padding: 15px 15px;
+	border-left: 1px solid rgba(0,0,0,0.1);
+}
+
+.left-btn:active,.right-btn:active {
+	background-color: #3db44a;		
+}
+
+
 .overlay {
 	position: fixed;
 	top: 0px;
@@ -307,4 +337,12 @@ img {
 	width: 320px;
 	height: 320px;
 	z-index: 999;
+	text-align: center;
+	background-color: rgba(0, 0, 0, 0.6);
+	padding: 10px 30px;
+	font-size: 24px;
+}
+
+.overlay p {
+	font-size: 28px;
 }
