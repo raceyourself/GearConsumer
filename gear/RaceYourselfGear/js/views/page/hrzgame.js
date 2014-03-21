@@ -1499,7 +1499,7 @@ define({
                 var paceUnits = 'min/km';
 	            if(settings.getPaceUnits() == 'km/h') {
 	                pace = r.getSpeed();
-	                paceString = ~~pace;
+	                paceString = Number(pace).toFixed(1);
 	                paceUnits = 'km/h';
 	            }
 
