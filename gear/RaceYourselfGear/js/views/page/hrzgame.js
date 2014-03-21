@@ -64,6 +64,7 @@ define({
             notification = {
             		active: false,
             		colour: '#fff',
+            		textColour: '#000',
             		text: 'Achievement Unlocked',
             		period: 600,
             		phase: 0,
@@ -133,7 +134,7 @@ define({
             amber = '#f7941d',
             hrWarningPhase = 0,
             hrWarningPeriod = 3*1000,
-            lightRed = '#cc6669',
+            lightRed = '#731216',
 			flashingRed = 'flashingRed',
 			flashingRedParams = { colour: '#fff', period:400, phase: 0 },
 			hrNotFound = false,
@@ -157,9 +158,10 @@ define({
             gear.ui.changePage('#race-game');
         }
 
-		function setNotification(colour, text, duration)
+		function setNotification(colour, textColour, text, duration)
 		{
 			notification.colour = colour;
+			notification.textColour = textColour;
 			notification.text = text;
 			notification.active = true;
 			if(notificationTimeout != false) 
@@ -257,7 +259,7 @@ define({
         
         function onAchievementAwarded(data)
         {
-        	setNotification( green, 'Achievement Unlocked!', 3*1000);
+        	setNotification( green, '#fff', 'Achievement Unlocked!', 3*1000);
 			navigator.vibrate([100, 50, 100, 50]);
 			chime.play();
         }
@@ -619,9 +621,9 @@ define({
 				}
 				if(!showWarningLow)
 				{
-					timeTurnedBad = Date.now()
-					clearNotification()
-					setNotification(flashingRed, 'Heart Rate too low!', 0);
+					timeTurnedBad = Date.now();
+					clearNotification();
+					setNotification(flashingRed, '#fff', 'Heart Rate too low!', 0);
 					showWarningLow = true;
 					if(settings.getAudioActive()) {
 						regularSound.play();
@@ -661,7 +663,7 @@ define({
 				{
 					timeTurnedBad = Date.now();
 					clearNotification();
-					setNotification(flashingRed, 'Heart Rate too high!', 0);
+					setNotification(flashingRed, '#fff', 'Heart Rate too high!', 0);
 					showWarningHigh = true;
 					navigator.vibrate([1000, 500, 250, 100]);
 				}
@@ -747,7 +749,7 @@ define({
 					runner = runnerAnimations.running;
 				}
 				clearNotification();
-				setNotification( '#fff', 'No Heart Rate', 0);
+				setNotification( '#fff', '#000', 'No Heart Rate', 0);
         	}
         	else
         	{
@@ -973,12 +975,11 @@ define({
 				var img = ppm > 0 ? sweat : sweat_red;
 				img.draw(context, xpos,ypos,0);
 				context.font = '24px Samsung Sans';
-//				context.fillStyle = ppm > 0 ? '#fff' : flashingRedParams.colour;
 				context.fillStyle = ppm > 0 ? '#fff' : red;
 				context.textBaseline = "middle";
 				context.textAlign = "left";
 				context.fillText('SP', xpos + sweat.width + 8, ypos + sweat.height/2);
-				context.fillStyle = ppm > 0 ? green : flashingRedParams.colour;
+				context.fillStyle = ppm > 0 ? '#fff' : flashingRedParams.colour;
 				context.fillText(~~settings.getPoints(), xpos + sweat.width + 8 + 36, ypos + sweat.height/2);
 			}
 
@@ -1177,7 +1178,7 @@ define({
 				}
 				//text
 				context.font = '24px Samsung Sans';
-				context.fillStyle = '#000';
+				context.fillStyle = notification.textColour;
 				context.textAlign = 'center';
 				context.textBaseline = 'middle';
 				context.fillText( notification.text, canvas.width/2, progressBarHeight);
