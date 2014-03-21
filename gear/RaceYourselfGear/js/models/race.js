@@ -170,7 +170,7 @@ define({
             },
             
             getAchievements: function getAchievements() {
-                return this.achievements;
+                return this.achievements.slice(0);
             },
             
             triggerProgress: function triggerProgress() {
