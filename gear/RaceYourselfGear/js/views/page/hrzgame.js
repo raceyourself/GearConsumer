@@ -55,6 +55,7 @@ define({
             paceIcon = null,
             runnerAnimations = {
                     idle: { name: 'idle', sprite: null, speedThreshold: 0},
+                    idle_red: { name: 'idle_red', sprite: null, speedThreshold: 0},
                     running: { name: 'running', sprite: null, speedThreshold: 0.1},
                     running_red: { name: 'running_red', sprite: null, speedThreshold: 0.1},
                     sprinting: { name: 'sprinting', sprite: null, speedThreshold: 4},
@@ -64,6 +65,7 @@ define({
             notification = {
             		active: false,
             		colour: '#fff',
+            		textColour: '#000',
             		text: 'Achievement Unlocked',
             		period: 600,
             		phase: 0,
@@ -132,7 +134,7 @@ define({
             amber = '#f7941d',
             hrWarningPhase = 0,
             hrWarningPeriod = 3*1000,
-            lightRed = '#cc6669',
+            lightRed = '#731216',
 			flashingRed = 'flashingRed',
 			flashingRedParams = { colour: '#fff', period:400, phase: 0 },
 			hrNotFound = false,
@@ -156,9 +158,10 @@ define({
             gear.ui.changePage('#race-game');
         }
 
-		function setNotification(colour, text, duration)
+		function setNotification(colour, textColour, text, duration)
 		{
 			notification.colour = colour;
+			notification.textColour = textColour;
 			notification.text = text;
 			notification.active = true;
 			if(notificationTimeout != false) 
@@ -256,7 +259,7 @@ define({
         
         function onAchievementAwarded(data)
         {
-        	setNotification( green, 'Achievement Unlocked!', 3*1000);
+        	setNotification( green, '#fff', 'Achievement Unlocked!', 3*1000);
 			navigator.vibrate([100, 50, 100, 50]);
 			chime.play();
         }
@@ -607,9 +610,9 @@ define({
 				}
 				if(!showWarningLow)
 				{
-					timeTurnedBad = Date.now()
-					clearNotification()
-					setNotification(flashingRed, 'Heart Rate too low!', 0);
+					timeTurnedBad = Date.now();
+					clearNotification();
+					setNotification(flashingRed, '#fff', 'Heart Rate too low!', 0);
 					showWarningLow = true;
 					if(settings.getAudioActive()) {
 						regularSound.play();
@@ -662,7 +665,7 @@ define({
 				{
 					timeTurnedBad = Date.now();
 					clearNotification();
-					setNotification(flashingRed, 'Heart Rate too high!', 0);
+					setNotification(flashingRed, '#fff', 'Heart Rate too high!', 0);
 					showWarningHigh = true;
 					navigator.vibrate([1000, 500, 250, 100]);
 				}
@@ -738,7 +741,7 @@ define({
 				warningTimeoutLow = false;
 				zombiesCatchingUp = false;
 				clearNotification();
-				setNotification( '#fff', 'No Heart Rate', 0);
+				setNotification( '#fff', '#000', 'No Heart Rate', 0);
         	}
         	else
         	{
@@ -985,12 +988,11 @@ define({
 				var img = ppm > 0 ? sweat : sweat_red;
 				img.draw(context, xpos,ypos,0);
 				context.font = '24px Samsung Sans';
-//				context.fillStyle = ppm > 0 ? '#fff' : flashingRedParams.colour;
 				context.fillStyle = ppm > 0 ? '#fff' : red;
 				context.textBaseline = "middle";
 				context.textAlign = "left";
 				context.fillText('SP', xpos + sweat.width + 8, ypos + sweat.height/2);
-				context.fillStyle = ppm > 0 ? green : flashingRedParams.colour;
+				context.fillStyle = ppm > 0 ? '#fff' : flashingRedParams.colour;
 				context.fillText(~~settings.getPoints(), xpos + sweat.width + 8 + 36, ypos + sweat.height/2);
 			}
 
@@ -1189,7 +1191,7 @@ define({
 				}
 				//text
 				context.font = '24px Samsung Sans';
-				context.fillStyle = '#000';
+				context.fillStyle = notification.textColour;
 				context.textAlign = 'center';
 				context.textBaseline = 'middle';
 				context.fillText( notification.text, canvas.width/2, progressBarHeight);
@@ -1630,46 +1632,26 @@ define({
             	var centreX = canvas.width/2;
             	var centreY = canvas.height/2;
             	var unlockRadius = 110
-            	//white bg
-            	context.globalAlpha = 0.5;
-            	context.fillStyle = '#fff';
+            	//black bg
+            	context.globalAlpha = 0.9;
+            	context.fillStyle = '#000';
             	context.fillRect(0,0,canvas.width, canvas.height);
             	context.globalAlpha = 1;
             	
-            	//black circle
-            	context.beginPath();
-            	context.arc(centreX, centreY, unlockRadius, 0, 2* Math.PI, false);
-            	context.fillStyle = '#000';
-            	context.fill();
-//            	context.beginPath();
-//            	context.arc(centreX, centreY, unlockRadius, 0, 2* Math.PI, false);
-            	context.strokeStyle = '#fff';
-            	context.stroke();
             	//image
             	var unlockSprite = null;
-            	var unlockMessage = '';
             	switch(unlockNotification)
             	{
             		case 'dino':
             			unlockSprite = dinoGameImage;
-            			unlockMessage = 'Race Dino'
             			break;
 					case 'boulder':
 						unlockSprite = boulderGameImage;
-						unlockMessage = 'Race Boulder'
 						break;
 					default:
 						console.log('unknown game being unlocked ' + unlockNotification);
             	}
-            	unlockSprite.draw(context, centreX - unlockSprite.width/2, centreY - unlockSprite.height/2 + 50, 0);
-            	//text
-            	context.font = '24px Samsung Sans';
-            	context.textAlign = "center";
-            	context.textBaseline = "middle";
-            	context.fillStyle = '#fff';
-            	context.fillText('Well Done!', centreX, centreY -69);
-            	context.fillText('You unlocked', centreX, centreY -39);
-            	context.fillText(unlockMessage, centreX, centreY -9 );
+            	unlockSprite.draw(context, 0, 0, 0);
             }
             
             
@@ -1759,6 +1741,15 @@ define({
             }
             image.src = 'images/animation_runner_red.png';
 
+			image = new Image();
+            image.onload = function() {
+                runnerAnimations.idle_red.sprite = new Sprite(this, this.width, 500);
+            }
+            image.onerror = function() {
+                throw "Could not load " + this.src;
+            }
+            image.src = 'images/animation_runner_red_stationary.png';
+            
 			image = new Image();
             image.onload = function() {
                 runnerAnimations.zombieDead.sprite = new Sprite(this, this.width / 2, 1000);
@@ -1926,7 +1917,7 @@ define({
 				dinoGameImage = new Sprite(this, this.width, 1000);
 			}
 			image.onerror = function() { throw "could not load" + this.src; }
-			image.src = 'images/image_dino_achievement_screen.png';
+			image.src = 'images/race_dino_unlocked_ingame.png';
 			
 			//boulder game image
 			image = new Image();
@@ -1955,14 +1946,14 @@ define({
 				goodBG = this;
 			}
 			image.onerror = function() {throw "could not load" + this.src; }
-			image.src = 'images/bg_good.jpg';
+			image.src = 'images/bg_good.png';
 			
 			image = new Image();
 			image.onload = function() {
 				badBG = this;
 			}
 			image.onerror = function() {throw "could not load" + this.src; }
-			image.src = 'images/bg_bad.jpg';
+			image.src = 'images/bg_bad.png';
            /* if (hrm.isAvailable()) {
                 hrm.start();
             } else {
