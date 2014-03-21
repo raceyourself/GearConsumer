@@ -275,3 +275,27 @@ img {
 	font-size: 15px;
 	text-align: center;
 }
+
+.binary-toggle.toggle-on .off {
+	display: none;
+}
+
+.binary-toggle:not(.toggle-on) .on {
+	display: none;
+}
+
+#pregame-skip-gps-btn {
+	width: 100%;
+	color: black;
+	background-color: white;
+	position: absolute;
+	left: 0px;
+	bottom: 0px;
+	padding: 10px;
+}
+
+.skip-btn p {
+	font-size: 32px;
+	font-weight: bold;	
+	margin: 5px 5px;
+}

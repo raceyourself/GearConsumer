@@ -48,6 +48,7 @@ define({
             deadImage = null,
             deadRunnerImage = null,
             gps = null,
+            gpsAvailable = false,
             sweat = null,
             sweat_red = null,
             paceIcon = null,
@@ -919,7 +920,7 @@ define({
 			}
 
 			//GPS
-			if(true)
+			if(gpsAvailable)
 			{
 				var GPSscale = sweat.height / gps.height;
 				gps.drawscaled(context, canvas.width - gps.width*GPSscale, 0, 0, GPSscale);
@@ -1565,6 +1566,11 @@ if(!notification.active)
             page.removeEventListener('pagehide', onPageHide);
         }
                 
+        function onGpsStatus(event) {
+            var status = event.detail;
+            gpsAvailable = (status == 'ready');
+        }
+        
         function bindEvents() {
         }
 
@@ -1706,7 +1712,7 @@ if(!notification.active)
             	gps = new Sprite(this, this.width, 10);
 			}
 			image.onerror = function() { throw "could not load" + this.src; }
-			image.src = 'images/gps-lock.png';
+			image.src = 'images/gps_locked.png';
 			
 			//sweat points
 			image = new Image();
@@ -1812,7 +1818,8 @@ if(!notification.active)
         e.listeners({
             'hrzgame.show': show,
             'hrzgame.attach': attachGame,
-            'hrzgame.detach': detachGame
+            'hrzgame.detach': detachGame,
+            'gps.status': onGpsStatus
         });
 
         return {
