@@ -40,6 +40,7 @@ define({
             raf = false,
             wave = 1,
             banner = false,
+            finished = false,
             countingdown = false,
             runner = null,
             heartGreen = null,
@@ -108,11 +109,12 @@ define({
             hrChangePeriod = 5000,
             lastHRtime = 0,
             hrColour = '#fff',
-            zombieStartOffset = -15,
+            zombieStartOffset = -11,
             zombieCatchupSpeed = -zombieStartOffset/500,
             zombieOffset = zombieStartOffset,
             screenWidthDistance = -zombieStartOffset,	//'real-world' distance covered by the screen's width
             screenLeftDistance = zombieOffset,		//'real-world' position of left of screen
+            zombiePosWeight = 0,
 			hrZones = [],
 			currentHRZone = null,
 			currentZone = 0,
@@ -193,9 +195,31 @@ define({
 			navigator.vibrate([10, 10, 10, 10, 10, 10, 10]);
 			unlockNotification = game;
 			//TODO - have this only disappear 5s after user raises wrist
-			unlockNotificationTimer = setTimeout(clearUnlockNotification, time*1000);
+			//unlockNotificationTimer = setTimeout(clearUnlockNotification, time*1000);
+			page.addEventListener('click', onTapHandler);
 		}
 
+		function onTapHandler()
+		{
+			if(isScrolling()) return;
+			//dismiss
+			clearUnlockNotification();
+			page.removeEventListener('click', onTapHandler);
+
+			//progress to end screen if this was the finished notification
+			if(finished)
+			{
+				continueToResults();
+			}
+		}
+        
+        function isScrolling() {
+            if (!sectionChanger) return false;
+            if (Math.abs(sectionChanger.lastTouchPointX - sectionChanger.startTouchPointX) > 5) return true;
+            if (Math.abs(sectionChanger.lastTouchPointY - sectionChanger.startTouchPointY) > 5) return true;
+            return false;
+        }
+        
 		function onUnlockDino()
 		{
 			showUnlockNotification('dino', 5);
@@ -208,6 +232,7 @@ define({
 
         function onPageShow() {
             visible = true;
+            finished = false;
             e.listen('tizen.back', onBack);
             sectionChanger = new SectionChanger(changer, {
                 circular: false,
@@ -360,7 +385,7 @@ define({
             clearTimeout(bannerTimeout);
             bannerTimeout = setTimeout(clearbanner, countDownParams.stageDuration * 1000);
             setCurrentHRZone("Recovery");
-            var warmupDurationMinutes = 5;
+            var warmupDurationMinutes = .1;
             warmupTimeout = setTimeout(endWarmup, warmupDurationMinutes*60*1000 * timeMultiplier);	//5 minutes warmup
 			countDownParams.outerRadius = countDownParams.outerRadiusMax;
 			countDownParams.startTime = Date.now();
@@ -374,6 +399,7 @@ define({
         	clearTimeout(bannerTimeout);
         	bannerTimeout = setTimeout(clearbanner, countDownParams.stageDuration * 1000);
 			countDownParams.startTime = Date.now();
+			zombiePosWeight = 0;
         }
         
         function endWarmup() 
@@ -551,6 +577,7 @@ define({
             clearTimeout(bannerTimeout);
             bannerTimeout = setTimeout(restart, 1500);
             startZombies();
+//            zombiePosWeight = 0;
         }
         
         function startZombies() {
@@ -598,10 +625,25 @@ define({
             //general update of track window
             if(!isDead)
             {
-				screenWidthDistance = Math.max( 15, Math.min( -zombieOffset + 5, 50));
+				screenWidthDistance = Math.max( 13, Math.min( -zombieOffset + 2, 50)) +1;
+			}
+			if(numZombies>0)
+			{
+				if(zombiePosWeight < 1) { zombiePosWeight += 0.02; }
+//				screenMidDistance = zombiePosWeight * zombieDistance + r.getDistance();
+				var screenLeftDistanceZ = (zombieDistance + r.getDistance() - screenWidthDistance)/2 - 3;
+				var screenLeftDistanceNoZ = r.getDistance() - screenWidthDistance/2 - 2;
+				//lerp
+				var ease = Math.sin( Math.sin(zombiePosWeight*(Math.PI / 2)) );
+				screenLeftDistance = screenLeftDistanceNoZ + ease * (screenLeftDistanceZ - screenLeftDistanceNoZ);
+			}
+			else
+			{
+//				screenMidDistance = r.getDistance();
+				screenLeftDistance = r.getDistance() - screenWidthDistance/2 - 2;
 			}
 			
-			screenLeftDistance = (zombieDistance + r.getDistance() - screenWidthDistance)/2;
+//			screenLeftDistance = screenMidDistance = screenWidthDistance/2;
 			
 			//check how long since heartrate
 			if( Date.now() - lastHRtime > 10*1000 )
@@ -822,16 +864,12 @@ define({
                 r.addPoints(50);
                 navigator.vibrate(1000);
                 showUnlockNotification('finished', 5);
+                finished = true;
                 e.fire('race.end', r);
                 r.stop();
                 lastRender = null;
                 stopZombies();
                 
-                banner = 'Complete!';
-                requestRender();
-                clearTimeout(bannerTimeout);
-				bannerTimeout = setTimeout(continueToResults, 5000);
-
                 return;
             }
             
@@ -1265,11 +1303,11 @@ define({
 
 				//run
 				distkm = Math.round(r.getDistance()/100) / 10;
-				context.fillText(distkm + 'km', progressBarInset - 5, progressBarHeight);
+				context.fillText(distkm + 'km', progressBarInset, progressBarHeight);
 				//target
 				context.textAlign = 'right';
 				var targetdist = Math.round(TRACK_LENGTH/100)/10;
-				context.fillText(targetdist + 'km', canvas.width - progressBarInset + 5, progressBarHeight);
+				context.fillText(targetdist + 'km', canvas.width - progressBarInset, progressBarHeight);
 
 			}
 			else if(targetTime < Infinity)
@@ -1277,23 +1315,23 @@ define({
 				//time run
 				var timeString = stringForTimeHHMMSS(r.getDuration());
 				context.textAlign = 'left';
-				context.fillText(timeString, progressBarInset - 5, progressBarHeight);
+				context.fillText(timeString, progressBarInset, progressBarHeight);
 				//target
 				context.textAlign = 'right';
 				var targetTimeString = stringForTimeHHMMSS(targetTime);
-				context.fillText(targetTimeString, canvas.width - progressBarInset + 5, progressBarHeight);
+				context.fillText(targetTimeString, canvas.width - progressBarInset, progressBarHeight);
 			}
 			else
 			{
 				//show time run on left
 				var timeString = stringForTimeHHMMSS(r.getDuration());
 				context.textAlign = 'left';
-				context.fillText(timeString, progressBarInset -5, progressBarHeight);
+				context.fillText(timeString, progressBarInset, progressBarHeight);
 				
 				//show distance run on right
 				context.textAlign = 'right';
 				var distkm = Math.round(r.getDistance()/100) / 10;
-				context.fillText(distkm + 'km', canvas.width - progressBarInset + 5, progressBarHeight);
+				context.fillText(distkm + 'km', canvas.width - progressBarInset, progressBarHeight);
 			}
 			}
 
