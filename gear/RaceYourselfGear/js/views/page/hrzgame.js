@@ -713,8 +713,8 @@ define({
         //test function to provide random heart rate
         function randomHR() {
         	hr = Math.floor( 50 + 150 * (Math.random()) );
-//        	hr = Math.floor(minHeartRate + 2);
-			hr = Math.floor( (minHeartRate + maxHeartRate)/2);
+//        	hr = Math.floor(minHeartRate + 2);   //warning
+//			hr = Math.floor( (minHeartRate + maxHeartRate)/2);   //always good
         	e.fire('hrm.change', {heartRate: hr});
         }
         
