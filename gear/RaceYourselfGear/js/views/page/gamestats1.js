@@ -69,6 +69,8 @@ define({
         }
         
         function mss(seconds) {
+            if (!isFinite(seconds)) return '--:--';
+            
             var mins = ~~(seconds/60);
             var secs = ~~(seconds - mins*60);
             
@@ -94,9 +96,7 @@ define({
                 pace = pace * 1.609344;
             }
                 
-            if (isFinite(pace)) pace = mss(pace*60);
-            else pace = '&infin;';
-            paceEl.innerHTML = pace;
+            paceEl.innerHTML = mss(pace*60);
             paceUnitsEl.innerHTML = 'min/'+u;
         }        
         
