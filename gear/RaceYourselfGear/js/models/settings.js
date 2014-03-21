@@ -150,8 +150,10 @@ define({
         
         function addPoints(points) {
             // TODO: Move points to a separate model?
-            e.fire('points.change', {previous: settings.points, current: settings.points + points, delta: points});
-            settings.points += points;            
+            var currentPoints = settings.points += points;
+            if (currentPoints < 0) currentPoints = 0; // Clamped
+            e.fire('points.change', {previous: settings.points, current: currentPoints, delta: points});
+            settings.points = currentPoints;            
             return saveSettings();
         }
         

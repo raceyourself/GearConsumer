@@ -212,7 +212,7 @@ define({
                     points: 0,
                     uses: 1,
                     init: function() {
-                        e.listen('race.end', function(event) {
+                        e.listen('race.progress', function(event) {
                             if (progress.total.distance >= 20000) {
                                 achieve('dino');
                                 game.unlock('dino');
@@ -342,10 +342,15 @@ define({
                 progress.monthly.races++;
                 progress.total.races++;
                 
-                progress.daily.distance += race.getDistance();
-                progress.weekly.distance += race.getDistance();
-                progress.monthly.distance += race.getDistance();
-                progress.total.distance += race.getDistance();
+                save();
+            });
+            e.listen('race.progress', function(event) {
+                var data = event.detail;
+                
+                progress.daily.distance += data.distance;
+                progress.weekly.distance += data.distance;
+                progress.monthly.distance += data.distance;
+                progress.total.distance += data.distance;
                 
                 save();
             });            

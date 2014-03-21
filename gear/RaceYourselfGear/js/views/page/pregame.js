@@ -40,7 +40,6 @@ define({
             disabledEl.classList.toggle('hidden', true);
             interval = setInterval(function() {
                 document.getElementById('waiting-gps-div').classList.toggle('toggle-on');
-                console.log(document.getElementById('waiting-gps-div').classList);
             }, 1000);
             
             e.listen('gps.status', onGpsStatus);

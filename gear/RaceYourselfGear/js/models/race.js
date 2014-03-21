@@ -68,6 +68,7 @@ define({
             this.pointsLost = 0;
             this.achievements = [];
             this.data = {}; // Game-specific race data
+            this.triggerProgress();
         }
         Race.prototype = {
             start: function start() {
@@ -170,6 +171,30 @@ define({
             
             getAchievements: function getAchievements() {
                 return this.achievements;
+            },
+            
+            triggerProgress: function triggerProgress() {
+                var lastSnapshot = this.progressSnapshot || {
+                    distance: 0,
+                    steps: 0,
+                    calories: 0
+                };
+                this.progressSnapshot = {
+                        distance: this.distance,
+                        steps: this.steps,
+                        calories: this.calories
+                }
+                if (lastSnapshot.distance != this.progressSnapshot.distance
+                    || lastSnapshot.steps != this.progressSnapshot.steps
+                    || lastSnapshot.calories != this.progressSnapshot.calories) {
+                    var progress = {
+                            distance: this.progressSnapshot.distance - lastSnapshot.distance,
+                            steps: this.progressSnapshot.steps - lastSnapshot.steps,
+                            calories: this.progressSnapshot.calories - lastSnapshot.calories
+                    }
+                    e.fire('race.progress', progress);
+                }
+                    
             }
         };
         
@@ -193,6 +218,8 @@ define({
                 var positionDelta = (pedometerInfo.distance - ongoingRace.lastPedometerDistance);
                 if (positionDelta < 0) positionDelta = 0;
                 ongoingRace.distance += positionDelta;
+                
+                if (ongoingRace.distance - ongoingRace.progressSnapshot.distance > 100) ongoingRace.triggerProgress(); 
             }
             ongoingRace.lastPedometerDistance = pedometerInfo.distance; // update for next loop
             
@@ -228,6 +255,8 @@ define({
                 ongoingRace.speed = speed;
                 var positionDelta = (distance - ongoingRace.lastGpsDistance);
                 ongoingRace.distance += positionDelta;
+                
+                if (ongoingRace.distance - ongoingRace.progressSnapshot.distance > 100) ongoingRace.triggerProgress(); 
                 
                 // fire pedometer.step to update UI
                 ongoingRace.track.push({distance: ongoingRace.getDistance(), time: ongoingRace.getDuration()});
