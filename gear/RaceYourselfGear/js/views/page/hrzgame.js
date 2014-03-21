@@ -139,7 +139,7 @@ define({
 			flashingRed = 'flashingRed',
 			flashingRedParams = { colour: '#fff', period:400, phase: 0 },
 			hrNotFound = false,
-			unlockNotification = 'dino',
+			unlockNotification = null,
 			unlockNotificationTimer = null,
 			dottedPattern = null,
 			countDownParams = { radius: 100, outerRadius: 250, outerRadiusMax: 250, shrinkSpeed: 5, stageDuration:1, startTime:0},
