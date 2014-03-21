@@ -1649,6 +1649,8 @@ define({
             var mins = ~~(seconds/60);
             var secs = ~~(seconds - mins*60);
             
+            if (mins > 99) return '--:--';
+            
             if (secs < 10) secs = '0' + secs;
             
             return mins + ':' + secs;
