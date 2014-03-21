@@ -219,6 +219,7 @@ img {
 .setter-btn {
 	width: 20%;
 	float: left;
+	line-height: 75%;
 }
 .setter-value {
 	width: 60%;	
