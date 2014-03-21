@@ -31,11 +31,11 @@ define({
             e.listen('race.new', reloadRace);
             e.listen('achievement.awarded', tick);
             
-            ongoing = race.getOngoingRace();
             tick();
         }
         
         function tick() {
+            ongoing = race.getOngoingRace();
             if (!ongoing) return;
             var as = ongoing.getAchievements();
             var items = [];
@@ -43,7 +43,7 @@ define({
             for (var key in as) {
                 var a = as[key];
                 items.push(t.get('achievementRow', {
-                            key: key,
+                            key: a.key,
                             title: a.title,
                             subtitle: a.points + ' sweat points',
                             classes: clazz
@@ -70,7 +70,7 @@ define({
             if (!a) return;
             event.preventDefault();
             event.stopPropagation();
-//            e.fire('achievement.show', a.getAttribute('data-achievement'));
+            e.fire('achievement.show', a.getAttribute('data-achievement'));
         }
                 
         function bindEvents() {

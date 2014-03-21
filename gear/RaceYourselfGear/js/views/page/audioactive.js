@@ -5,7 +5,7 @@
  */
 
 define({
-    name: 'views/page/distanceunits',
+    name: 'views/page/audioactive',
     requires: [
         'core/event',
         'models/application',
@@ -13,7 +13,7 @@ define({
         'models/settings',
         'views/page/ageselect'
     ],
-    def: function viewsPageDistanceUnits(req) {
+    def: function viewsPageAudioActive(req) {
         'use strict';
 
         var e = req.core.event,
@@ -23,20 +23,20 @@ define({
             page = null;
 
         function show() {
-            gear.ui.changePage('#distanceunits');            
+            gear.ui.changePage('#audioactive');            
         }
         
         function onPageShow() {
             e.listen('tizen.back', onBack);
             
             var radios = document.getElementsByName('radio-distance-units');
+            
             for(var i=0, length = radios.length; i < length; i++) {
-            	if(settings.getDistanceUnits() == radios[i].value)
+            	if(radios[i].value == 'On' && settings.getAudioActive())
             	{
-            		console.log('FOUND MATCHING RADIO - ' + radios[i].value + ", settings is " + settings.getDistanceUnits());
             		radios[i].checked = true;
-            	} else {
-                    radios[i].checked = false;
+            	} else if(radios[i].value == 'Off' && !settings.getAudioActive()) {
+                    radios[i].checked = true;
             	}
             }
         }
@@ -55,7 +55,7 @@ define({
         }
         
         function init() {
-            page = document.getElementById('distanceunits');
+            page = document.getElementById('audioactive');
             
             var radios = document.getElementsByName('radio-distance-units');
             for(var i=0, length=radios.length; i<length; i++) {
@@ -70,7 +70,12 @@ define({
             for(var i=0, length=radios.length; i<length; i++) {
          	   if(radios[i].checked == true) {
          		   console.log('FOUND MATCHING RADIO - ' + radios[i].value);
-         		   settings.setDistanceUnits(radios[i].value);
+         		   if(radios[i].value == 'On') {
+         			   settings.setAudioActive(true);
+         		   } else {
+         			   settings.setAudioActive(false);
+         		   }
+         		   
          		   break;
          	   }
          	   
@@ -79,7 +84,7 @@ define({
         }
         
         e.listeners({
-            'distanceunits.show': show
+            'audioactive.show': show
         });
         
         return {

@@ -28,7 +28,8 @@ define({
                 firstTimeAge: true,
                 distanceunits: 'KM',
                 paceunits: 'Min/km',
-                currentTarget: ""
+                currentTarget: "",
+                audioActive: true
             },
             settings = {},
             STORAGE_KEY = 'settings';
@@ -81,6 +82,11 @@ define({
         
         function getCurrentTarget() {
         	return settings.currentTarget;
+        }
+        
+        function getAudioActive() {
+        	if(!isFinite(settings.audioActive)) return defaults.audioActive;
+        	return settings.audioActive;
         }
         
         function saveSettings() {
@@ -138,6 +144,10 @@ define({
         	settings.currentTarget = target;
         }
         
+        function setAudioActive(audio) {
+        	settings.audioActive = audio;
+        }
+        
         function addPoints(points) {
             // TODO: Move points to a separate model?
             e.fire('points.change', {previous: settings.points, current: settings.points + points, delta: points});
@@ -177,7 +187,9 @@ define({
             getPaceUnits: getPaceUnits,
             setPaceUnits: setPaceUnits,
             getCurrentTarget: getCurrentTarget,
-            setCurrentTarget: setCurrentTarget
+            setCurrentTarget: setCurrentTarget,
+            getAudioActive: getAudioActive,
+            setAudioActive: setAudioActive
         };
     }
 

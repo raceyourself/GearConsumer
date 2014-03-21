@@ -27,9 +27,11 @@ define({
             provider = req.models.sapRaceYourself,
             settings = req.models.settings,
             _goal = "",
-            ongoingRace = null;
+            ongoingRace = null,
+            history = [];
         
         function newRace() {
+            if (!!ongoingRace) history.unshift(ongoingRace);
             ongoingRace = new Race();
             e.fire('race.new');
             return ongoingRace;
@@ -38,6 +40,10 @@ define({
         function getOngoingRace() {
             return ongoingRace;
         }        
+        
+        function getRaceHistory() {
+            return history;
+        }
         
         /**
          * Constructor
@@ -253,6 +259,7 @@ define({
         return {
             newRace: newRace,
             getOngoingRace: getOngoingRace,
+            getRaceHistory: getRaceHistory,
             setGoal: setGoal,
             getGoal: getGoal
         };
