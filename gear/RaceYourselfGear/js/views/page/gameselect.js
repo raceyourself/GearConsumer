@@ -45,8 +45,8 @@ define({
         }
         
         function onPageHide() {
-            sectionChanger.destroy();
             e.die('tizen.back', onBack);
+            sectionChanger.destroy();
         }   
         
         function onBack() {
