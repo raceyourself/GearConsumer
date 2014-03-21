@@ -21,6 +21,7 @@ define({
             page = null,
             game = req.models.game,
             interval = false,
+            timeout = false,
             provider = req.models.sapRaceYourself;
 
         function show() {
@@ -56,8 +57,8 @@ define({
             history.back();
         }
         
-        function onGpsStatus(e) {
-            var status = e.detail;
+        function onGpsStatus(ev) {
+            var status = ev.detail;
             var waitingEl = document.getElementById('pregame-waiting-gps'),
                 lockedEl = document.getElementById('pregame-locked-gps'),
                 disabledEl = document.getElementById('pregame-disabled-gps');
@@ -72,9 +73,16 @@ define({
                     provider.sendGpsStatusReq(); 
                 }, 5000);
             }
+            
+            if (status === 'ready' || status === 'disabled') {
+                timeout = setTimeout(function() {
+                    e.fire(game.getCurrentGame()+'.show');                    
+                }, 1500);
+            }
         }
         
         function onRace(ev) {
+            clearTimeout(timeout);
             e.fire(game.getCurrentGame()+'.show');
             ev.preventDefault();
         }
