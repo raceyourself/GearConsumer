@@ -39,7 +39,7 @@ define({
         }
 
         function init() {
-            page = document.getElementById('main');
+            page = document.getElementById('about');
             bindEvents();
         }
         
