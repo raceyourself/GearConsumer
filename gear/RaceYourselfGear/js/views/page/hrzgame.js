@@ -117,7 +117,7 @@ define({
 			currentHRZone = null,
 			currentZone = 0,
 			warmupTimeout = false,
-			timeMultiplier = 0.01,			//hack to test quickly. Set to 1
+			timeMultiplier = 1,			//hack to test quickly. Set to 1
 			intervalTimeout = false,
 			zoneAdaptTimeout = false,
 			warningTimeoutLow = false,
