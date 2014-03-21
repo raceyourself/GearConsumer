@@ -268,8 +268,8 @@ define({
         			killSound = zombieGrowl;
 					break;
         		case 'dinosaur':
-        			regularSound = zombieMoan;
-        			killSound = zombieGrowl;
+        			regularSound = dinoRoar;
+        			killSound = dinoRoar;
 					break;
         		case 'boulder':
         			regularSound = zombieMoan;
@@ -794,15 +794,17 @@ define({
         function step() {
             var r = race.getOngoingRace();
             if (r.getDistance() < zombieDistance && !isDead) {
+                if(!isDead)
+                {
                 r.data.caught_by = game.getCurrentOpponentType();
                 r.data.times_caught = r.data.times_caught || 0;
                 r.data.times_caught++;
                 r.addPoints(-100);
                 
-                if(settings.getAudioActive()) {
-                	killSound.play();
-                }
-                
+
+					if(settings.getAudioActive()) {
+						killSound.play();
+					}
                 navigator.vibrate([1000, 500, 250, 100]);
 //                r.stop();
 //                e.fire('race.end', r);
@@ -814,6 +816,7 @@ define({
                 clearTimeout(bannerTimeout);
                 bannerTimeout = setTimeout(nextWave, 3000);
                 e.fire('died', {cause: game.getCurrentOpponentType()});
+				}
                 return;
             }
             if (r.getDistance() >= TRACK_LENGTH || r.getDuration() >= targetTime) {
@@ -1313,7 +1316,7 @@ define({
 					if(zombieDistance != false && currentHRZone!='Recovery' ) {
 						var dinoPos = 0 + distanceToTrackPos(zombieDistance);
 						var dinoScale = scale * 1.5;
-						dino.drawscaled(context, dinoPos - dino.width * dinoScale, canvas.height - (dino.height + 5) * dinoScale - trackHeight - 5* scale, dt, dinoScale);
+						dino.drawscaled(context, dinoPos - dino.width * 0.6 * dinoScale, canvas.height - (dino.height - 20) * dinoScale - trackHeight - 5* scale, dt, dinoScale);
 					}
 					break;
 				case 'boulder':
@@ -1736,6 +1739,14 @@ define({
             }
             zombieGrowl = new Audio('audio/zombie_growl.wav');
             zombieGrowl.onerror = function() {
+                throw "Could not load " + this.src;
+            }
+            
+			dinoRoar = new Audio('audio/T Rex Roar.wav');
+			dinoRoar.onload = function () {
+				dionKill = this;
+			}
+            dinoRoar.onerror = function() {
                 throw "Could not load " + this.src;
             }
             
