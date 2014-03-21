@@ -233,7 +233,7 @@ define({
                 e.fire('pedometer.step');  
             }
             ongoingRace.lastGpsTimestamp = currentTimestamp;
-            
+            ongoingRace.lastGpsDistance = distance;
         }
         
         function onAchievement(event) {

@@ -299,3 +299,12 @@ img {
 	font-weight: bold;	
 	margin: 5px 5px;
 }
+
+.overlay {
+	position: fixed;
+	top: 0px;
+	left: 0px;
+	width: 320px;
+	height: 320px;
+	z-index: 999;
+}

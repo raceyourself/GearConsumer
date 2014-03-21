@@ -206,6 +206,7 @@ define({
                 circular: false,
                 orientation: "horizontal"
             });
+            document.getElementById('quit-confirmation').classList.toggle('hidden', true);
             
             var r = race.getOngoingRace();
             if (r === null || !r.isRunning() || r.hasStopped()) {
@@ -309,7 +310,11 @@ define({
         }        
         
         function onBack() {
-            e.fire('gameselect.show');
+            document.getElementById('quit-confirmation').classList.toggle('hidden');
+        }
+        
+        function onQuit() {
+            e.fire('newmain.show');
         }
         
         function startCountdown() {
@@ -1645,6 +1650,7 @@ define({
         }
         
         function bindEvents() {
+            document.getElementById('quit-confirmation').addEventListener('click', onQuit);
         }
 
         function init() {
@@ -1741,6 +1747,10 @@ define({
             zombieGrowl.onerror = function() {
                 throw "Could not load " + this.src;
             }
+            dinoRoar = new Audio('audio/T Rex Roar.wav');
+            dinoRoar.onerror = function() {
+            	throw "Could not load " + this.src;
+            }           
             
 			dinoRoar = new Audio('audio/T Rex Roar.wav');
 			dinoRoar.onload = function () {
