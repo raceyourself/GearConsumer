@@ -149,7 +149,8 @@ define({
 			timeTurnedBad = 0,
 			crossFadeParametric = 0,
 			crossFadeTime = 1,
-			badFraction = 0;
+			badFraction = 0,
+            hasGPSUpdate = false;
 
 			
 
@@ -988,13 +989,15 @@ define({
 				context.fillStyle = ppm > 0 ? '#fff' : flashingRedParams.colour;
 				context.fillText(~~settings.getPoints(), xpos + sweat.width + 8 + 36, ypos + sweat.height/2);
 			}
+///////////////////////////
+
 
 			//GPS
 				var GPSscale = 0.65;
 				context.save();
 				context.translate(canvas.width - gpsRing.width/2 * GPSscale, gpsRing.height/2 * GPSscale);
 				gpsRing.drawscaled(context, - gpsRing.width/2*GPSscale, -gpsRing.height/2 * GPSscale, 0, GPSscale);
-				if(gpsAvailable)
+				if(gpsAvailable && hasGPSUpdate)
 				{
 					gpsDot.drawscaled(context, - gpsDot.width/2*GPSscale, -gpsDot.height/2 * GPSscale, 0, GPSscale);
 				}
@@ -1508,7 +1511,7 @@ define({
                 var paceUnits = 'min/km';
 	            if(settings.getPaceUnits() == 'km/h') {
 	                pace = r.getSpeed();
-	                paceString = ~~pace;
+	                paceString = Number(pace).toFixed(1);
 	                paceUnits = 'km/h';
 	            }
 
@@ -1667,6 +1670,8 @@ define({
             var mins = ~~(seconds/60);
             var secs = ~~(seconds - mins*60);
             
+            if (mins > 99) return '--:--';
+            
             if (secs < 10) secs = '0' + secs;
             
             return mins + ':' + secs;
@@ -1678,6 +1683,18 @@ define({
         	var pos = trackWidth * (distance - screenLeftDistance) / (screenWidthDistance);
         	return pos;
         }
+
+
+
+        function gpsSymbolOn(){
+             hasGPSUpdate = true;
+
+        }
+        function gpsSymbolOff(){
+             hasGPSUpdate = false;
+            
+        }
+
         
         function attachGame() {
             page.addEventListener('pageshow', onPageShow);
@@ -1857,12 +1874,18 @@ define({
 			image.onerror = function() { throw "could not load" + this.src; }
 			image.src = 'images/image_gps target.png';
 
+
+
             image = new Image();
             image.onload = function() {
             	gpsDot = new Sprite(this, this.width, 10);
 			}
 			image.onerror = function() { throw "could not load" + this.src; }
 			image.src = 'images/image_gps green circle.png';
+
+
+
+
 						
 			//sweat points
 			image = new Image();
@@ -1978,7 +2001,9 @@ define({
             'hrzgame.show': show,
             'hrzgame.attach': attachGame,
             'hrzgame.detach': detachGame,
-            'gps.status': onGpsStatus
+            'gps.status': onGpsStatus,
+            'gpsUpdateOn': gpsSymbolOn,
+            'gpsUpdateOff': gpsSymbolOff
         });
 
         return {

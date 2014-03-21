@@ -13,7 +13,8 @@ define({
         'models/settings',
         'views/page/ageselect',
         'views/page/audioactive',
-        'views/page/paceunits'
+        'views/page/paceunits',
+        'views/page/about'
     ],
     def: function viewsPageSettingsPage(req) {
         'use strict';
@@ -47,6 +48,7 @@ define({
             document.getElementById('distance-units-btn').addEventListener('click', onDistanceUnitsBtnClick);
             document.getElementById('pace-units-btn').addEventListener('click', onPaceUnitsBtnClick);
             document.getElementById('age-btn').addEventListener('click', onAgeBtnClick);
+            document.getElementById('about-btn').addEventListener('click', onAboutBtnClick);
         }
         
         function onDistanceUnitsBtnClick() {
@@ -59,6 +61,10 @@ define({
         
         function onAgeBtnClick() {
         	e.fire('ageselect.show', "settingspage");
+        }
+        
+        function onAboutBtnClick() {
+            e.fire('about.show');            
         }
         
         function init() {

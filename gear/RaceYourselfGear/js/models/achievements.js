@@ -189,7 +189,7 @@ define({
                     }
                 },
                 // Grind
-                'boulder' : {
+/*                'boulder' : {
                     title: 'Boulder dash',
                     description: 'Unlocked the Race Boulder game by running a total of 5km',
                     points: 0,
@@ -206,7 +206,7 @@ define({
                         return Number(Math.min(5000, progress.total.distance)*100/5000).toFixed(1).replace('.0', '') + '%';
                     }
                 },
-                'dino' : {
+*/                'dino' : {
                     title: 'Jurassic Trek',
                     description: 'Unlocked the Race Dino game by running a total of 20km',
                     points: 0,

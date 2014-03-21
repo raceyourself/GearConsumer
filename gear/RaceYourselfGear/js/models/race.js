@@ -199,6 +199,7 @@ define({
             if (step) {
                 ongoingRace.track.push({distance: ongoingRace.getDistance(), time: ongoingRace.getDuration()});
                 e.fire('pedometer.step');
+                e.fire('gpsUpdateOff');
             }            
         }
         
@@ -230,7 +231,8 @@ define({
                 
                 // fire pedometer.step to update UI
                 ongoingRace.track.push({distance: ongoingRace.getDistance(), time: ongoingRace.getDuration()});
-                e.fire('pedometer.step');  
+                e.fire('pedometer.step');
+                e.fire('gpsUpdateOn');  
             }
             ongoingRace.lastGpsTimestamp = currentTimestamp;
             ongoingRace.lastGpsDistance = distance;

@@ -22,7 +22,8 @@ define({
 	    	START_TRACKING_REQ = "start_tracking-req",
 	    	STOP_TRACKING_REQ = "stop-tracking-req",
 	    	AUTHENTICATION_REQ = "authentication-req",
-	    	LOG_ANALYTICS = "log-analytics";
+	    	LOG_ANALYTICS = "log-analytics",
+	    	WEB_LINK_REQ = "web-link-req";
 
         /**
          * Send request to get the status of the GPS (enabled/disabled/ready)
@@ -108,6 +109,23 @@ define({
                 }
             );
         }
+        
+        /**
+         * Send web link to be displayed on the phone
+         * Parameter is a string URI 
+         */
+        function sendWebLinkReq(value) {
+            sap.sendData(
+                SAP_CHANNEL,
+                {
+                    messageType: WEB_LINK_REQ,
+                    URI: value
+                },
+                {
+                    silent: true
+                }
+            );
+        }
 
         /**
          * Connect to SAP
@@ -171,6 +189,7 @@ define({
             sendStartTrackingReq: sendStartTrackingReq,
             sendStopTrackingReq: sendStopTrackingReq,
             sendAuthenticationReq: sendAuthenticationReq,
+            sendWebLinkReq: sendWebLinkReq,
             sendAnalytics: sendAnalytics,
             isAvailable: isAvailable
         };

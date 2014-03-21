@@ -11,6 +11,7 @@ define({
         'models/race',
         'models/game',
         'models/settings',
+        'models/sapRaceYourself',
         'views/page/pregame',
         'views/page/trainingtype',
         'views/page/zombietutorial'
@@ -23,6 +24,7 @@ define({
          	page = null,
          	game = req.models.game,
          	settings = req.models.settings,
+         	provider = req.models.sapRaceYourself,
             changer,
             sectionChanger;
 
@@ -55,13 +57,15 @@ define({
         
         function bindEvents() {
         	var zombieBtnEl = document.getElementById('zombie-mode-btn'),
-        		dinoBtnEl = document.getElementById('dino-mode-btn');
+        		dinoBtnEl = document.getElementById('dino-mode-btn'),
+        		moreGamesEl = document.getElementById('moregames');
         	
         	 page.addEventListener('pageshow', onPageShow);
              page.addEventListener('pagehide', onPageHide);
              
              zombieBtnEl.addEventListener('click', onZombieBtnClick);
              dinoBtnEl.addEventListener('click', onDinoBtnClick);
+             moreGamesEl.addEventListener('click', onMoreGames);
         }
 
         function isScrolling() {
@@ -91,6 +95,11 @@ define({
             game.setCurrentGame('hrzgame');
             game.setCurrentOpponentType('dinosaur');
             e.fire('choosegoal.show');
+        }
+        
+        function onMoreGames(event) {
+            if (isScrolling()) return;
+            provider.sendWebLinkReq('http://www.raceyourself.com/');
         }
         
         function init() {

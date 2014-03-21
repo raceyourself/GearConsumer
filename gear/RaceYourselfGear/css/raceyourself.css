@@ -346,3 +346,17 @@ img {
 .overlay p {
 	font-size: 28px;
 }
+
+#about {
+	font-size: 15px;	
+	line-height: 100%;
+	word-wrap: break-word;
+}
+
+#about .ui-content {
+	padding: 10px 10px;	
+}
+
+#about p {
+	font-size: 18px;
+}
