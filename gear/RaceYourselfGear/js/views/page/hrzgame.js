@@ -279,7 +279,7 @@ define({
             clearTimeout(intervalTimeout);
             clearTimeout(adaptingTimeout);
             clearTimeout(warningTimeout);
-            sectionChanger.destroy();
+            if (!!sectionChanger) sectionChanger.destroy();
             e.die('tizen.back', onBack);
             
             var r = race.getOngoingRace();
