@@ -267,8 +267,8 @@ define({
         			killSound = zombieGrowl;
 					break;
         		case 'dinosaur':
-        			regularSound = zombieMoan;
-        			killSound = zombieGrowl;
+        			regularSound = dinoRoar;
+        			killSound = dinoRoar;
 					break;
         		case 'boulder':
         			regularSound = zombieMoan;
@@ -1692,6 +1692,10 @@ define({
             zombieGrowl.onerror = function() {
                 throw "Could not load " + this.src;
             }
+            dinoRoar = new Audio('audio/T Rex Roar.wav');
+            dinoRoar.onerror = function() {
+            	throw "Could not load " + this.src;
+            }           
             
             //chime
             chime = new Audio('audio/Chime.wav');
