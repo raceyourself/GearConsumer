@@ -122,6 +122,7 @@ define({
 			currentHRZone = null,
 			currentZone = 0,
 			warmupTimeout = false,
+			warmingUp = true,
 			timeMultiplier = 1,			//hack to test quickly. Set to 1
 			intervalTimeout = false,
 			zoneAdaptTimeout = false,
@@ -158,7 +159,9 @@ define({
             hasGPSUpdate = false,
             heartBeatInterval = null,
             heartBeatOn = false,
-            heartBeatOnFrameCount = 0;
+            heartBeatOnFrameCount = 0,
+            
+            unlockNotificationActive = false;
 
 			
 
@@ -168,11 +171,12 @@ define({
             gear.ui.changePage('#race-game');
         }
 
-		function setNotification(colour, textColour, text, duration)
+		function setNotification(colour, textColour, text, text2, duration)
 		{
 			notification.colour = colour;
 			notification.textColour = textColour;
 			notification.text = text;
+			notification.text2 = text2;
 			notification.active = true;
 			if(notificationTimeout != false) 
 			{ clearTimeout(notificationTimeout); }
@@ -202,20 +206,31 @@ define({
 			unlockNotification = game;
 			//TODO - have this only disappear 5s after user raises wrist
 			//unlockNotificationTimer = setTimeout(clearUnlockNotification, time*1000);
-			page.addEventListener('click', onTapHandler);
+			unlockNotificationActive = true;
 		}
 
-		function onTapHandler()
+		function onTapHandler(data)
 		{
 			if(isScrolling()) return;
 			//dismiss
 			clearUnlockNotification();
-			page.removeEventListener('click', onTapHandler);
 
-			//progress to end screen if this was the finished notification
-			if(finished)
+			if(unlockNotificationActive)
 			{
-				continueToResults();
+				//progress to end screen if this was the finished notification
+				if(finished)
+				{
+					continueToResults();
+				}
+				unlockNotificationActive = false;
+			}
+			
+			if(warmingUp)
+			{
+				if(data.pageY > badBG.height)
+				{
+					endWarmup();
+				}
 			}
 		}
         
@@ -261,6 +276,7 @@ define({
 			e.listen('game.unlock.dino', onUnlockDino);
 			e.listen('game.unlock.boulder', onUnlockBoulder);
 			e.listen('achievement.awarded', onAchievementAwarded);
+			page.addEventListener('click', onTapHandler);
             isDead = false;
 			var length = settings.getDistance();
 			console.log('target dist = ' + length);
@@ -294,7 +310,7 @@ define({
         
         function onAchievementAwarded(data)
         {
-        	setNotification( green, '#fff', 'Achievement Unlocked!', 3*1000);
+        	setNotification( green, '#fff', 'Award Unlocked!', 3*1000);
 			navigator.vibrate([100, 50, 100, 50]);
 			chime.play();
         }
@@ -348,6 +364,7 @@ define({
             e.die('game.unlock.dino', onUnlockDino);
             e.die('game.unlock.boulder', onUnlockBoulder);
             e.die('achievement.awarded', onAchievementAwarded);
+			page.removeEventListener('click', onTapHandler);
         }        
         
         function onBack() {
@@ -392,12 +409,12 @@ define({
             clearTimeout(bannerTimeout);
             bannerTimeout = setTimeout(clearbanner, countDownParams.stageDuration * 1000);
             setCurrentHRZone("Recovery");
-            var warmupDurationMinutes = .1;
+            var warmupDurationMinutes = 5;
             warmupTimeout = setTimeout(endWarmup, warmupDurationMinutes*60*1000 * timeMultiplier);	//5 minutes warmup
 			countDownParams.outerRadius = countDownParams.outerRadiusMax;
 			countDownParams.startTime = Date.now();
 			//10 second notification of warming up
-			setNotification(green, '#fff', 'Warm up for ' + warmupDurationMinutes + 'min', 10*1000);
+			setNotification(green, '#fff', 'Warm up for ' + warmupDurationMinutes + 'min', 'Tap to skip', 10*1000);
         }
         
         function restart() {
@@ -411,9 +428,10 @@ define({
         
         function endWarmup() 
         {
+			warmingUp = false;
         	var r = race.getOngoingRace();
         	        	console.log("Warmup over. Goal is: " + r.getGoal());
-        	setNotification(green, '#fff', 'Warmup Over', 5*1000);
+        	setNotification(green, '#fff', 'Warmup Over', null, 5*1000);
 
         	switch(r.getGoal())
         	{
@@ -465,7 +483,7 @@ define({
 							//vibrate
 							navigator.vibrate([10, 100, 10, 100, 10]);
 							//notify
-							setNotification(green, '#fff', 'Recover for ' + recoverDuration + 's', 5*1000);
+							setNotification(green, '#fff', 'Recover for ' + recoverDuration + 's', null, 5*1000);
 							break;
 						case "Aerobic":
 							//transition up to Anaerobic
@@ -474,7 +492,7 @@ define({
 							//vibrate
 							navigator.vibrate([100, 10, 100, 10, 100]);
 							//notify
-							setNotification(red, '#fff', 'Sprint for ' + sprintDuration + 's', 5*1000);
+							setNotification(red, '#fff', 'Sprint for ' + sprintDuration + 's', null, 5*1000);
 							break;
 						default:
 							console.log("shouldn't be in this zone in Strength training: " + currentHRzone);
@@ -674,7 +692,7 @@ define({
 					//colouring and 'speed up' text will still be present
 					timeTurnedBad = Date.now();
 					clearNotification();
-					setNotification(flashingRed, '#fff', 'Heart Rate too low!', 0);
+					setNotification(flashingRed, '#fff', 'Heart Rate too low!', null, 0);
 					showWarningLow = true;
 					if(settings.getAudioActive()) {
 						//regularSound.play();
@@ -708,7 +726,7 @@ define({
 					//colouring and 'speed up' text will still be present
 					timeTurnedBad = Date.now();
 					clearNotification();
-					setNotification(flashingRed, '#fff', 'Heart Rate too high!', 0);
+					setNotification(flashingRed, '#fff', 'Heart Rate too high!', null, 0);
 					showWarningHigh = true;
 					navigator.vibrate([1000, 500, 250, 100]);
 				}
@@ -770,11 +788,11 @@ define({
         function randomHR() {
 //        	hr = Math.floor( 50 + 150 * (Math.random()) );			//random
 //        	hr = Math.floor(minHeartRate + 2);   					//warning
-//			hr = Math.floor( (minHeartRate + maxHeartRate)/2);   	//always good
+			hr = Math.floor( (minHeartRate + maxHeartRate)/2);   	//always good
 			
-			hr = hr + 10 * Math.floor( Math.random() ) - 5;			//random walk
-			hr = Math.floor(Math.min(hr, maxPossibleHeartRate));
-			hr = Math.floor(Math.max(hr, minPossibleHeartRate));
+//			hr = hr + 10 * Math.floor( Math.random() ) - 5;			//random walk
+//			hr = Math.floor(Math.min(hr, maxPossibleHeartRate));
+//			hr = Math.floor(Math.max(hr, minPossibleHeartRate));
 			
 			rToRTime = (60/hr) * 1e-3;
 			
@@ -793,7 +811,7 @@ define({
 				warningTimeoutLow = false;
 				zombiesCatchingUp = false;
 				clearNotification();
-				setNotification( '#fff', '#000', 'No Heart Rate', 0);
+				setNotification( '#fff', '#000', 'No Heart Rate', null, 0);
 				clearInterval(heartBeatInterval);
         	}
         	else
@@ -1256,7 +1274,14 @@ define({
 				context.fillStyle = notification.textColour;
 				context.textAlign = 'center';
 				context.textBaseline = 'middle';
-				context.fillText( notification.text, canvas.width/2, progressBarHeight);
+				var text = notification.text;
+				
+				//if there are 2 strings, rotate between them
+				if(notification.text2 != null && (hrWarningPhase/hrWarningPeriod > 0.5))
+				{
+					text = notification.text2;
+				}
+				context.fillText( text, canvas.width/2, progressBarHeight);
 			}
 			
 			// Track
