@@ -236,7 +236,8 @@ define({
             e.listen('tizen.back', onBack);
             sectionChanger = new SectionChanger(changer, {
                 circular: false,
-                orientation: "horizontal"
+                orientation: "horizontal",
+                scrollbar: "bar"                	
             });
             document.getElementById('quit-confirmation').classList.toggle('hidden', true);
             
