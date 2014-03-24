@@ -116,20 +116,80 @@ define({
             },
             
             getDistance: function getDistance() {
-                return this.distance;
+                if(settings.getDistanceUnits() == 'Miles') {
+                    return getImperialDistance();
+                } else {
+                    return getMetricDistance();
+                }                
+            },
+
+            getDistanceUnits: function getDistanceUnits() {
+                if(settings.getDistanceUnits() == 'Miles') {
+                    return "miles";
+                } else {
+                    return "meters";
+                }
+            },
+
+            getMetricDistance: function getMetricDistance() {
+                return this.distance; // meters
             },
             
+            getImperialDistance: function getImperialDistance() {
+                return units.getMiles(this.distance)/1000; // miles
+            },
+                        
             getDuration: function getDuration() {
                 if (this.running === false) return this.duration;
                 return Date.now() - this.startDate;
             },
             
             getSpeed: function getSpeed() {            
+                if(settings.getDistanceUnits() == 'Miles') {
+                    return this.getImperialSpeed();
+                } else {
+                    return this.getMetricSpeed();
+                }
+            },
+            
+            getSpeedUnits: function getSpeedUnits() {
+                if(settings.getDistanceUnits() == 'Miles') {
+                    return "mph";
+                } else {
+                    return "km/h";
+                }                
+            },
+            
+            getMetricSpeed: function getMetricSpeed() {            
                 return this.speed;
             },
             
+            getImperialSpeed: function getImperialSpeed() {
+                return units.getMiles(this.speed);
+            },
+            
             getPace: function getPace() {
-                return 1/(this.speed/60); // km/h -> min/km
+                if(settings.getDistanceUnits() == 'Miles') {
+                    return this.getImperialPace();
+                } else {
+                    return this.getMetricPace();
+                }
+            },
+            
+            getPaceUnits: function getPaceUnits() {
+                if(settings.getDistanceUnits() == 'Miles') {
+                    return "min/mile";
+                } else {
+                    return "min/km";
+                }                
+            },
+            
+            getMetricPace: function getMetricPace() {
+                return 1/(this.getMetricSpeed()/60); // km/h -> min/km
+            },
+            
+            getImperialPace: function getImperialPace() {
+                return 1/(this.getImperialSpeed()/60); // mph -> min/mile
             },
             
             getSteps: function getSteps() {
@@ -224,7 +284,7 @@ define({
             ongoingRace.lastPedometerDistance = pedometerInfo.distance; // update for next loop
             
             if (step) {
-                ongoingRace.track.push({distance: ongoingRace.getDistance(), time: ongoingRace.getDuration()});
+                ongoingRace.track.push({distance: ongoingRace.getMetricDistance(), time: ongoingRace.getDuration()});
                 e.fire('pedometer.step');
                 e.fire('gpsUpdateOff');
             }            
@@ -259,7 +319,7 @@ define({
                 if (ongoingRace.distance - ongoingRace.progressSnapshot.distance > 100) ongoingRace.triggerProgress(); 
                 
                 // fire pedometer.step to update UI
-                ongoingRace.track.push({distance: ongoingRace.getDistance(), time: ongoingRace.getDuration()});
+                ongoingRace.track.push({distance: ongoingRace.getMetricDistance(), time: ongoingRace.getDuration()});
                 e.fire('pedometer.step');
                 e.fire('gpsUpdateOn');  
             }

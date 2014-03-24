@@ -61,9 +61,11 @@ define({
             
             timeEl.innerHTML = hmm(ongoing.getDuration()/1000);
             if(settings.getPaceUnits() == 'km/h') {
-                speed(ongoing.getSpeed());            
-            } else {
-                pace(ongoing.getPace());
+                paceEl.innerHTML = ~~ongoing.getSpeed();
+                paceUnitsEl.innerHTML = ongoing.getSpeedUnits();
+           } else {
+                paceEl.innerHTML = mss(ongoing.getPace()*60);
+                paceUnitsEl.innerHTML = ongoing.getPaceUnits();
             }
             distance(ongoing.getDistance());
         }
@@ -90,42 +92,12 @@ define({
             return hours + ' ' + mins;
         }
         
-        function pace(mpk) {
-            var pace = mpk;
-            var u = 'km';
-            if(settings.getDistanceUnits() == 'Miles') {
-                u = 'mile';
-                pace = pace * 1.609344;
-            }
-                
-            paceEl.innerHTML = mss(pace*60);
-            paceUnitsEl.innerHTML = 'min/'+u;
-        }        
-        
-        function speed(kmh) {
-            var speed = kmh;
-            var u = 'km/h';
-            if(settings.getDistanceUnits() == 'Miles') {
-                u = 'mph';
-                speed = units.getMiles(speed);
-            }
-                
-            paceEl.innerHTML = ~~speed;
-            paceUnitsEl.innerHTML = u;
-        }
-        
-        function distance(meters) {
+        function distance() {
             var decimals = 0;
-            var value = meters;
-            var u = 'meters';
+            var value = ongoing.getDistance();
+            var u = ongoing.getDistanceUnits();
             
-            if(settings.getDistanceUnits() == 'Miles') {
-                u = 'miles';
-                value = units.getMiles(meters/1000);
-                decimals = Math.max(0, 4 - (~~value).toString().length);
-            }
-            
-            if (value > 1000) {
+            if (value > 1000 || u == 'miles') {
                 value = value / 1000;
                 decimals = Math.max(0, 4 - (~~value).toString().length);
             }
