@@ -2,7 +2,7 @@
 /*jslint regexp: true, plusplus: true*/
 
 /**
- * Heart rate monitor module
+ * Motion module
  */
 
 define({
@@ -18,14 +18,9 @@ define({
 
             CONTEXT_TYPE = 'WRIST_UP';
 
-        /**
-         * @param {MotionHRMInfo} hrmInfo
-         */
-        function handleMotionInfo(motionInfo) {
-        	console.log('motion info');
-        	console.log(motionInfo);
-            eventName = 'motion.wrist_up';
-            e.fire(eventName, motionInfo);
+        function handleMotionInfo(ev) {
+            eventName = 'motion.wristup';
+            e.fire(eventName, ev);
         }
 
         /**

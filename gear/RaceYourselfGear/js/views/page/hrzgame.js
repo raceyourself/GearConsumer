@@ -233,12 +233,13 @@ define({
         function onPageShow() {
             visible = true;
             finished = false;
-            e.listen('tizen.back', onBack);
             sectionChanger = new SectionChanger(changer, {
                 circular: false,
                 orientation: "horizontal",
                 scrollbar: "bar"                	
             });
+            e.listen('tizen.back', onBack);
+            e.listen('motion.wristup', onWristUp);
             document.getElementById('quit-confirmation').classList.toggle('hidden', true);
             
             var r = race.getOngoingRace();
@@ -319,6 +320,7 @@ define({
         
         function onPageHide() {
             e.die('tizen.back', onBack);
+            e.die('motion.wristup', onWristUp);
             visible = false;
             clearInterval(fpsInterval);
             clearInterval(randomHR);
@@ -347,6 +349,10 @@ define({
         function onBack() {
             document.getElementById('quit-confirmation').classList.toggle('hidden');
         }
+        
+        function onWristUp() {
+        	sectionChanger.setActiveSection(2, 1000);
+        }        
         
         function onQuit() {
             e.fire('newmain.show');
