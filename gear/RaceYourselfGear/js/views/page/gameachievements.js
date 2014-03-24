@@ -50,7 +50,9 @@ define({
                 }));
                 clazz = '';
             }
-            list.innerHTML = items.join('');
+            if (items.length > 0) list.innerHTML = items.join('');
+            else list.innerHTML = '<center><small>Awards will appear here</small></center>';
+            console.log(items.length);
         }
         
         function onPageHide() {
@@ -60,6 +62,7 @@ define({
         
         function reloadRace() {
             ongoing = race.getOngoingRace();            
+            tick();
         }
         
         function onItemTap(event) {

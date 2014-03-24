@@ -361,3 +361,18 @@ img {
 #about p {
 	font-size: 18px;
 }
+
+.awarded {
+	background-color: #252525;
+}
+
+.awarded:after {
+	content: url('../images/awarded.png');
+	position: absolute;
+	right: 25px;
+	top: 35px;
+}
+
+.competed {
+	background-color: #252525;
+}

@@ -12,6 +12,7 @@ define({
         'models/application',
         'models/achievements',
         'models/analytics',
+        'models/motion',
         'views/page/main'
     ],
     def: function viewsPageInit(req) {
@@ -19,6 +20,7 @@ define({
 
         var e = req.core.event,
             app = req.models.application,
+            motion = req.models.motion,
             achievements = req.models.achievements,
             touch_start = null, 
             fling_limit = {};
@@ -88,6 +90,7 @@ define({
             fling_limit.x = document.querySelector('.ui-page-active').offsetWidth/3;
             fling_limit.y = document.querySelector('.ui-page-active').offsetHeight/3;
             e.addSingleton('tizen.back');
+            if (motion.isAvailable()) motion.start();
         }
 
         return {
