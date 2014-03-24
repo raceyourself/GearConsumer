@@ -48,6 +48,7 @@ define({
         
         function onPageHide() {
             clearInterval(interval);
+            clearTimeout(timeout);
             e.die('tizen.back', onBack);
             e.die('gps.status', onGpsStatus);
         }
