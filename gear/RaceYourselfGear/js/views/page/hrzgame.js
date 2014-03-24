@@ -103,8 +103,11 @@ define({
             lastDistanceAwarded = 0,
             ppm = 5, // pts/meter
             hr = 100,
+            rToRTime= 1,
             maxHeartRate = 150,
             minHeartRate = 120,
+            maxPossibleHeartRate = 200,
+            minPossibleHeartRate = 50,
             hrInterval = false,
             hrChangePeriod = 5000,
             lastHRtime = 0,
@@ -152,7 +155,10 @@ define({
 			crossFadeParametric = 0,
 			crossFadeTime = 1,
 			badFraction = 0,
-            hasGPSUpdate = false;
+            hasGPSUpdate = false,
+            heartBeatInterval = null,
+            heartBeatOn = false,
+            heartBeatOnFrameCount = 0;
 
 			
 
@@ -325,7 +331,8 @@ define({
             clearTimeout(intervalTimeout);
             clearTimeout(adaptingTimeout);
             clearTimeout(warningTimeoutLow);
-			clearTimeout(warningTimeoutHigh)
+			clearTimeout(warningTimeoutHigh);
+			clearInterval(heartBeatInterval);
             if (!!sectionChanger) sectionChanger.destroy();
             
             var r = race.getOngoingRace();
@@ -751,6 +758,7 @@ define({
         	lastHRtime = Date.now();
         	hrNotFound = false;
             hr = hrmInfo.detail.heartRate;
+            rToRTime = hrmInfo.detail.rInterval;
         	handleHRChanged();
         }
 
@@ -760,9 +768,16 @@ define({
         
         //test function to provide random heart rate
         function randomHR() {
-        	hr = Math.floor( 50 + 150 * (Math.random()) );
-//        	hr = Math.floor(minHeartRate + 2);   //warning
-//			hr = Math.floor( (minHeartRate + maxHeartRate)/2);   //always good
+//        	hr = Math.floor( 50 + 150 * (Math.random()) );			//random
+//        	hr = Math.floor(minHeartRate + 2);   					//warning
+//			hr = Math.floor( (minHeartRate + maxHeartRate)/2);   	//always good
+			
+			hr = hr + 10 * Math.floor( Math.random() ) - 5;			//random walk
+			hr = Math.floor(Math.min(hr, maxPossibleHeartRate));
+			hr = Math.floor(Math.max(hr, minPossibleHeartRate));
+			
+			rToRTime = (60/hr) * 1e-3;
+			
         	e.fire('hrm.change', {heartRate: hr});
         }
         
@@ -779,10 +794,13 @@ define({
 				zombiesCatchingUp = false;
 				clearNotification();
 				setNotification( '#fff', '#000', 'No Heart Rate', 0);
+				clearInterval(heartBeatInterval);
         	}
         	else
         	{
-        
+        		clearInterval(heartBeatInterval);
+        		heartBeatInterval = null;
+        		heartBeatInterval = setInterval(heartBeatBeatOn, 1000);
 				if(hr > maxHeartRate && !hrNotFound)
 				{
 					hrColour = '#ff0000';
@@ -809,13 +827,19 @@ define({
 						r.data.zone_time_start = Date.now();
 					}
 				}
-
-						
-
 			}
-							
-			
         }
+
+		function heartBeatBeatOn()
+		{
+//			setTimeout(heartBeatBeatOff, 250);
+			heartBeatOn = true;
+		}
+		
+//		function heartBeatBeatOff()
+//		{
+//			heartBeatOn = false;
+//		}
         
         function warningOver_low() 
         {
@@ -1531,7 +1555,20 @@ define({
 				{
 					//show heart rate
 					//icon
-					heartIcon.draw(context, hrXPos-heartIcon.width/2, hrYPos-heartIcon.height/2 - 32, 0);
+					var heartScale = 1.0;
+					if(heartBeatOn)
+					{
+						heartScale = 1.2;
+						heartBeatOnFrameCount++;
+						if(heartBeatOnFrameCount > 3) 
+						{ 
+							heartBeatOn = false; 
+							heartBeatOnFrameCount = 0;	
+						}
+					}
+						
+					
+					heartIcon.drawscaled(context, hrXPos-heartScale*heartIcon.width/2, hrYPos-heartScale*heartIcon.height/2 - 32, 0, heartScale);
 					//number
 					context.font = '56px Samsung Sans';
 					context.textAlign = 'center';
