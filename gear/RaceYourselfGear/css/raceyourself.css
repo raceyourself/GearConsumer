@@ -363,7 +363,7 @@ img {
 }
 
 .awarded {
-	background-color: gray;
+	background-color: #252525;
 }
 
 .awarded:after {
@@ -374,5 +374,5 @@ img {
 }
 
 .competed {
-	background-color: gray;
+	background-color: #252525;
 }
