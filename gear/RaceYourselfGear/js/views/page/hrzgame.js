@@ -9,6 +9,7 @@ define({
     requires: [
         'core/event',
         'views/page/gameachievements',
+		'views/page/hrzones',
         'views/page/gamestats1',
         'views/page/gamestats2',
         'views/page/gamestats3',
@@ -362,7 +363,6 @@ define({
             e.die('motion.wristup', onWristUp);
             visible = false;
             clearInterval(fpsInterval);
-            clearInterval(randomHR);
 			clearTimeout(warmupTimeout);
             clearTimeout(intervalTimeout);
             clearTimeout(adaptingTimeout);
@@ -392,7 +392,7 @@ define({
         }
         
         function onWristUp() {
-        	sectionChanger.setActiveSection(2, 1000);
+        	sectionChanger.setActiveSection(3, 1000);
         }        
         
         function onQuit() {
@@ -528,7 +528,8 @@ define({
         function setCurrentHRZone(zone)
         {
         	//update heart-rate based logic
-        	handleHRChanged()
+        	handleHRChanged();
+
         if(zone == currentHRZone)
         {
         	
@@ -536,7 +537,7 @@ define({
         else
         {
         	currentHRZone = zone;
-        //eventually look up based on age, but for now just used valued based on 30yo
+
         	var hrMinMax = new Object();
         	var min20, max20, min75, max75;
         	switch(zone)
@@ -597,6 +598,12 @@ define({
 			//15 seconds to adapt
 			adaptingTimeout	= setTimeout(adaptComplete, config.getAdaptPeriod() * 1000 * timeMultiplier);
 			
+			var zoneInfo = new Object();
+        	zoneInfo.name = zone;
+        	zoneInfo.maxHeartRate = maxHeartRate;
+        	zoneInfo.minHeartRate = minHeartRate;
+        	e.fire('hrzone.change', zoneInfo);
+        	
 			//vibrate
 			navigator.vibrate([10, 10, 10, 10, 10, 10, 10]);
 
@@ -879,7 +886,8 @@ define({
         
         function step() {
             var r = race.getOngoingRace();
-            if (r.getDistance() < zombieDistance && !isDead) {
+//            if (r.getDistance() < zombieDistance && !isDead) {
+			if(zombieOffset >=0 && !isDead) {
                 if(!isDead)
                 {
                 r.data.caught_by = game.getCurrentOpponentType();
@@ -1330,6 +1338,7 @@ define({
 //				if(dist%500 == 0)
 				if(false)
 				{
+					// TODO: Make unit agnostic if enabled
 					context.textBaseline = "bottom";
 					context.textAlign = "right";
 					context.font = '24px Samsung Sans';
@@ -1367,12 +1376,19 @@ define({
 			{
 
 				//run
-				distkm = Math.round(r.getDistance()/100) / 10;
-				context.fillText(distkm + 'km', progressBarInset, progressBarHeight);
+				var d = r.getDistance();
+				var targetdist = TRACK_LENGTH;
+				var u = r.getShortDistanceUnits();
+				if (u == 'm') {
+					d = d / 1000;
+					targetdist = targetdist / 1000;
+					u = 'km';
+				}
+				
+				context.fillText(Number(d).toFixed(1) + u, progressBarInset, progressBarHeight);
 				//target
 				context.textAlign = 'right';
-				var targetdist = Math.round(TRACK_LENGTH/100)/10;
-				context.fillText(targetdist + 'km', canvas.width - progressBarInset, progressBarHeight);
+				context.fillText(Number(targetdist).toFixed(1) + u, canvas.width - progressBarInset, progressBarHeight);
 
 			}
 			else if(targetTime < Infinity)
@@ -1395,8 +1411,13 @@ define({
 				
 				//show distance run on right
 				context.textAlign = 'right';
-				var distkm = Math.round(r.getDistance()/100) / 10;
-				context.fillText(distkm + 'km', canvas.width - progressBarInset, progressBarHeight);
+				var d = r.getDistance();
+				var u = r.getShortDistanceUnits();
+				if (u == 'm') {
+					d = d / 1000;
+					u = 'km';
+				}
+				context.fillText(Number(d).toFixed(1) + u, canvas.width - progressBarInset, progressBarHeight);
 			}
 			}
 
@@ -1634,11 +1655,11 @@ define({
 				//text
                 var pace = r.getPace();
                 var paceString = mss(pace*60);
-                var paceUnits = 'min/km';
+                var paceUnits = r.getPaceUnits();
 	            if(settings.getPaceUnits() == 'km/h') {
 	                pace = r.getSpeed();
 	                paceString = Number(pace).toFixed(1);
-	                paceUnits = 'km/h';
+	                paceUnits = r.getSpeedUnits();
 	            }
 
 				var paceXPos = PaceXPosR - radius/2;

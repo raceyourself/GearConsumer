@@ -222,7 +222,8 @@ define({
             sendAuthenticationReq: sendAuthenticationReq,
             sendWebLinkReq: sendWebLinkReq,
             sendAnalytics: sendAnalytics,
-            isAvailable: isAvailable
+            isAvailable: isAvailable,
+            connect: connect
         };
     }
 

@@ -2,6 +2,6 @@
 #add
 #modify
 res/wgt/author-signature.xml
-res/wgt/css/raceyourself.css
-res/wgt/index.html
+res/wgt/js/gear-extras/scroller.scrollbar.js
+res/wgt/js/views/page/gameselect.js
 res/wgt/signature1.xml

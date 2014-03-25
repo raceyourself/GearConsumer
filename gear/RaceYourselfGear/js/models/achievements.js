@@ -118,7 +118,7 @@ define({
                     init: function() {
                         e.listen('race.end', function(event) {
                             var race = event.detail;
-                            if (race.getDistance() > 1000) achieve('1km_run');
+                            if (race.getMetricDistance() > 1000) achieve('1km_run');
                         });
                     },
                     progress: function() {
@@ -134,7 +134,7 @@ define({
                     init: function() {
                         e.listen('race.end', function(event) {
                             var race = event.detail;
-                            if (race.getDistance() > 3000) achieve('3km_run');
+                            if (race.getMetricDistance() > 3000) achieve('3km_run');
                         });
                     },
                     progress: function() {
@@ -150,7 +150,7 @@ define({
                     init: function() {
                         e.listen('race.end', function(event) {
                             var race = event.detail;
-                            if (race.getDistance() > 5000) achieve('5km_run');
+                            if (race.getMetricDistance() > 5000) achieve('5km_run');
                         });
                     },
                     progress: function() {

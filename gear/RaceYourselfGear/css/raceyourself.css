@@ -285,7 +285,7 @@ img {
 	display: none;
 }
 
-#pregame-skip-gps-btn {
+.skip-gps-btn {
 	width: 100%;
 	color: black;
 	background-color: white;
@@ -360,6 +360,16 @@ img {
 
 #about p {
 	font-size: 24px;
+}
+
+#no-bluetooth .ui-content {
+	padding: 10px 10px;
+	font-size: 24px;
+}
+
+.bluetoothcenter {
+	text-align: center;
+	margin-top: 20px;
 }
 
 .awarded {
