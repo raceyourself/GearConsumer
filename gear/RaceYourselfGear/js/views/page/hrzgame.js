@@ -72,6 +72,7 @@ define({
             		phase: 0,
             		},
             notificationTimeout = false,            	
+            animatedSprites = [],
             zombies = [],
             zombieIdle = null,
             dino = null,
@@ -160,7 +161,7 @@ define({
             heartBeatInterval = null,
             heartBeatOn = false,
             heartBeatOnFrameCount = 0,
-            
+            numAwardsAtFinish = 0,
             unlockNotificationActive = false;
 
 			
@@ -251,6 +252,7 @@ define({
 			showUnlockNotification('boulder', 5);
 		}
 
+
         function onPageShow() {
             visible = true;
             finished = false;
@@ -272,6 +274,12 @@ define({
 
                 startCountdown();
             }
+
+			//reset any existing animations
+			for(var i=0; i<animatedSprites.length; i++)
+			{
+				animatedSprites[i].reset();
+			}
             
 			e.listen('game.unlock.dino', onUnlockDino);
 			e.listen('game.unlock.boulder', onUnlockBoulder);
@@ -293,6 +301,9 @@ define({
             canvas.width = canvas.offsetWidth;
             canvas.height = canvas.offsetHeight;        
             
+//			sweat.scaleTo( 2, 1000);
+//			sweat_red.scaleTo( 2, 1000);
+            
             frames = 0;
             fpsInterval = setInterval(function() {
                 fps = frames;
@@ -312,6 +323,10 @@ define({
         {
         	setNotification( green, '#fff', 'Award Unlocked!', 3*1000);
 			navigator.vibrate([100, 50, 100, 50]);
+			if(finished)
+			{
+				numAwardsAtFinish++;
+			}
 			chime.play();
         }
         
@@ -786,9 +801,9 @@ define({
         
         //test function to provide random heart rate
         function randomHR() {
-//        	hr = Math.floor( 50 + 150 * (Math.random()) );			//random
+        	hr = Math.floor( 50 + 150 * (Math.random()) );			//random
 //        	hr = Math.floor(minHeartRate + 2);   					//warning
-			hr = Math.floor( (minHeartRate + maxHeartRate)/2);   	//always good
+//			hr = Math.floor( (minHeartRate + maxHeartRate)/2);   	//always good
 			
 //			hr = hr + 10 * Math.floor( Math.random() ) - 5;			//random walk
 //			hr = Math.floor(Math.min(hr, maxPossibleHeartRate));
@@ -907,6 +922,7 @@ define({
                 navigator.vibrate(1000);
                 showUnlockNotification('finished', 5);
                 finished = true;
+                numAwardsAtFinish = 0;
                 e.fire('race.end', r);
                 r.stop();
                 lastRender = null;
@@ -1012,6 +1028,12 @@ define({
                 lastRender = Date.now();
             }
             
+            //update animated sprites
+            for(var i=0; i<animatedSprites.length; i++)
+            {
+            	animatedSprites[i].updateAnim();
+			}
+            
             //BG
             //draw good bg
             //draw bad bg with alpha
@@ -1061,6 +1083,7 @@ define({
 			//sweat points
 			if(true)
 			{
+
 				var xpos = 1;
 				var ypos = 1;
 				var img = ppm > 0 ? sweat : sweat_red;
@@ -1762,6 +1785,15 @@ define({
 						context.textBaseline = 'middle';
 						context.fillStyle = '#fff';
 						context.fillText('Training Complete', centreX, 40);
+						if(numAwardsAtFinish == 1)
+						{
+							context.fillText('1 Award Unlocked', centreX, canvas.height - 30);
+						}
+						else if(numAwardsAtFinish >1)
+						{
+							context.fillText(numAwardsAtFinish + ' Awards Unlocked', centreX, canvas.height - 30);
+						}
+						
 						break;
 					default:
 						console.log('unknown game being unlocked ' + unlockNotification);
@@ -2001,6 +2033,7 @@ define({
 			image = new Image();
 			image.onload = function() {
 				sweat = new Sprite(this, this.width, 1000);
+				animatedSprites.push(sweat);
 			}
 			image.onerror = function() { throw "could not load" + this.src; }
 			image.src = 'images/image_sweat_point_green.png';
@@ -2008,6 +2041,7 @@ define({
 			image = new Image();
 			image.onload = function() {
 				sweat_red = new Sprite(this, this.width, 1000);
+				animatedSprites.push(sweat_red);
 			}
 			image.onerror = function() { throw "could not load" + this.src; }
 			image.src = 'images/image_sweat_point_red.png';
