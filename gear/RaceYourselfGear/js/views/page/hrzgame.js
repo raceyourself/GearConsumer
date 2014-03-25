@@ -364,7 +364,7 @@ define({
             e.die('motion.wristup', onWristUp);
             visible = false;
             clearInterval(fpsInterval);
-            clearInterval(randomHR);
+//            clearInterval(randomHR);
 			clearTimeout(warmupTimeout);
             clearTimeout(intervalTimeout);
             clearTimeout(adaptingTimeout);
@@ -896,7 +896,8 @@ define({
         
         function step() {
             var r = race.getOngoingRace();
-            if (r.getDistance() < zombieDistance && !isDead) {
+//            if (r.getDistance() < zombieDistance && !isDead) {
+			if(zombieOffset >=0 && !isDead) {
                 if(!isDead)
                 {
                 r.data.caught_by = game.getCurrentOpponentType();
