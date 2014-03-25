@@ -60,7 +60,7 @@ define({
                 return;
             }
             document.getElementById('duration-final').innerHTML = hmm(r.getDuration()/1000);
-            distance(r.getDistance());
+            distance();
             document.getElementById('kcal-final').innerHTML = ~~(r.getCalories());
             document.getElementById('steps-final').innerHTML = r.getSteps();
             document.getElementById('current-sweat-final').innerHTML = ~~(r.getPointsEarned());
@@ -148,20 +148,21 @@ define({
             return hours + ' ' + mins;
         }
         
-        function distance(meters) {
+        function distance() {
             var decimals = 0;
-            var value = meters;
-            var u = 'meters';
+            var value = r.getDistance();
+            var u = r.getDistanceUnits();
             
-            if(settings.getDistanceUnits() == 'Miles') {
-                u = 'miles';
-                value = units.getMiles(meters/1000);
-                decimals = Math.max(0, 4 - (~~value).toString().length);
-            }
-            
-            if (value > 1000) {
+            if (value > 1000 && u == 'meters') {
                 value = value / 1000;
-                decimals = Math.max(0, 4 - (~~value).toString().length);
+                u = 'kilometers';
+            }
+            if (u == 'kilometers' || u == 'miles') {
+                if(value < 10) {
+                	decimals = 2;
+                } else {
+                	decimals = 1;
+                }
             }
             
             document.getElementById('distance-final').innerHTML = Number(value).toFixed(decimals);
