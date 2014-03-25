@@ -9,6 +9,7 @@ define({
     requires: [
         'core/event',
         'views/page/gameachievements',
+		'views/page/hrzones',
         'views/page/gamestats1',
         'views/page/gamestats2',
         'views/page/gamestats3',
