@@ -44,7 +44,7 @@ define({
         function bindEvents() {
             page.addEventListener('pageshow', onPageShow);
             page.addEventListener('pagehide', onPageHide);
-            page.addEventListener('click', onClick);
+            //page.addEventListener('click', onClick);
         }
 
         function init() {
