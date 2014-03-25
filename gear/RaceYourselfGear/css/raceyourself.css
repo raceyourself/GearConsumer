@@ -229,9 +229,13 @@ img {
 	line-height: 75%;
 }
 .setter-ok {
-	padding-top: 15px;
-	text-align: center;
-	float: clear;
+	width: 100%;
+	color: white;
+	background-color: #46be46;
+	position: absolute;
+	left: 0px;
+	bottom: 0px;
+	padding: 10px;
 }
 .setter-units {
 	font-size: 30%;
