@@ -33,6 +33,11 @@ define({
 
         function onPageShow() {
             d = settings.getDistance();
+            var dsu = '&nbsp;km&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;m';
+            if (settings.getDistanceUnits() == 'Miles') {
+            	dsu = '&nbsp;miles';
+            }
+            document.getElementById('distance-setter-units').innerHTML = dsu;
             render();
             e.listen('tizen.back', onBack);
         }

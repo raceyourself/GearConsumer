@@ -58,7 +58,7 @@
 		        	<div class="setter-btn" id="distance-minus">-</div>
 		        	<div class="setter-value">
 		        		<div id="distance-value">10.0</div>
-		        		<div class="setter-units">&nbsp;km&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;m</div>
+		        		<div class="setter-units" id ="distance-setter-units"></div>
 		        	</div>
 		        	<div class="setter-btn" id="distance-plus">+</div>
 		        	<img class="setter-ok" id="distance-ok" src="images/distance-set.png" alt="Set" />
@@ -162,14 +162,14 @@
                 <li class="li-has-multiline li-has-radio">
                     <label>
                         Pace
-                        <span class="li-text-sub">Min/km</span>
+                        <span class="li-text-sub" id="radio-pace-text">Min/km</span>
                         <input type="radio" name="radio-pace-units" value="Min/km"/>
                     </label>
                 </li>
                 <li class="li-has-multiline li-has-radio">
                     <label>
                         Speed
-                        <span class="li-text-sub">km/h</span>
+                        <span class="li-text-sub" id="radio-speed-text">km/h</span>
                         <input type="radio" name="radio-pace-units" value="km/h"/>
                     </label>
                 </li>

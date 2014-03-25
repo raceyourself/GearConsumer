@@ -44,7 +44,12 @@ define({
             distanceTextEl.innerHTML = settings.getDistanceUnits();
             
             var paceTextEl = document.getElementById('pace-text');
-            paceTextEl.innerHTML = settings.getPaceUnits();
+            var pu = settings.getPaceUnits();
+            if (settings.getDistanceUnits() == 'Miles') {
+            	if (pu == 'km/h') pu = 'mph';
+            	if (pu == 'Min/km') pu = 'Min/mile';
+            }
+            paceTextEl.innerHTML = pu;
             
             var ageTextEl = document.getElementById('age-text');
             switch(settings.getAgeRange()) {
