@@ -10,13 +10,15 @@ define({
         'core/event',
         'models/sapRaceYourself',
         'models/sprite',
-        'models/hrm'
+        'models/hrm',
+        'models/settings'
     ],
     def: function viewsPageHeartRateZones(req) {
         'use strict';
 
         var e = req.core.event,
             Sprite = req.models.sprite.Sprite,
+            settings = req.models.settings,
             page = null,
             changer,
             canvas,
@@ -24,13 +26,14 @@ define({
             raf = false,
             heart = { red: null, green: null, black: null},
             hr = 50,
+            rToRTime = 1,
             zones = { 
             			speed: { name: 'speed', min: 160, max: 180 , zoneAbove:null},
             			fitness: { name: 'fitness', min: 140, max: 160 , zoneAbove:null},
             			weightLoss: { name: 'weight loss', min: 120, max: 140, zoneAbove:null},
             			recovery: { name: 'recovery', min: 0, max: 120, zoneAbove:null}
             		},
-            currentZone = zones.fitness,            
+            currentZone = zones.recovery,            
 			hrm = req.models.hrm,
 			green = '#51b848',
             red = '#cb2027',
@@ -60,11 +63,74 @@ define({
             zones.weightLoss.zoneAbove = zones.fitness;
             zones.fitness.zoneAbove = zones.speed;
                
+		    e.listen('hrzone.change', onZoneChange);
+		   
+		   	initHRZones();
+		   	
             animate();
+            
+            //set hr zone thresholds
+            
         }
+
+		function initHRZones() {
+		
+			var min20, max20, min75, max75;
+			for(var zone in zones)
+			{
+				switch(zone)
+				{
+				case "recovery":
+					min20 = 0;
+					max20 = 120;
+					min75 = 0;
+					max75 = 90;
+					break;
+				case "weightLoss":
+					min20 = 120;
+					max20 = 140;
+					min75 = 90;
+					max75 = 110;
+					break;
+				case "fitness":
+					min20 = 140;
+					max20 = 160;
+					min75 = 110;
+					max75 = 120;
+					break;
+				case "speed":
+					min20 = 160;
+					max20 = 180;
+					min75 = 120;
+					max75 = 135;
+					break;
+				case "performance":
+					min20 = 180;
+					max20 = 200;
+					min75 = 135;
+					max75 = 150;
+					break;
+				default:
+					console.log("Unknown heart rate zone");
+					min20 = 140;
+					max20 = 160;
+					min75 = 110;
+					max75 = 120;
+				}
+				var age = settings.getAgeRange();
+				//clamp to range 20-75
+				age = Math.min( age, 75);
+				age = Math.max( age, 20);
+				var p = 1-(75 - age)/(75-20);
+				zones[zone].max = Math.floor(max20 - p * (max20 - max75));
+				zones[zone].min = Math.floor(min20 - p * (min20 - min75));
+			}
+		}
+	
 
         function onPageHide() {
             e.die('hrm.change', onHeartRateChange);
+            e.die('hrzone.change', onZoneChange);
         }
         
         function onBack() {
@@ -76,9 +142,33 @@ define({
             page.addEventListener('pagehide', onPageHide);
         }
         
-        function onHeartRateChange() {
-        
+        function onHeartRateChange(hrmInfo) {
+            hr = hrmInfo.detail.heartRate;
+            rToRTime = hrmInfo.detail.rInterval;
+
         }
+        
+		function onZoneChange(zoneInfo) {
+			switch(zoneInfo.detail.name)
+			{
+				case 'Recovery':
+					currentZone = zones.recovery;
+					break;
+				case 'Light':
+					currentZone = zones.weightLoss;
+					break;
+				case 'Aerobic':
+					currentZone = zones.fitness;
+					break;
+				case 'Anaerobic':
+				case 'Performance':
+					currentZone = zones.speed;
+					break;
+				default:
+					console.error('Unrecognised hr zone: ' + zoneInfo.detail.name);
+					break;	
+			}
+		}
         
         function animate(time) {
             raf = requestAnimationFrame(animate);
@@ -119,6 +209,20 @@ define({
 			context.fillText(headerString, canvas.width/2, headerHeight/2);
 			
 			var currentHeight = canvas.height - 3*segmentHeight;
+			
+			//red block at top if needed			
+			if(hr > zones.speed.max)
+			{
+				var boxHeight = canvas.height -4*segmentHeight - headerHeight;
+				context.fillStyle = red;
+				context.fillRect(0, headerHeight, canvas.width, boxHeight);
+				context.strokeStyle = grey;
+				context.beginPath();
+				context.moveTo(0, headerHeight);
+				context.lineTo(canvas.width, headerHeight);
+				context.stroke();
+			}
+			
 			//segments
 			context.strokeStyle = grey;
 			context.lineWidth = 1;
@@ -210,6 +314,7 @@ define({
 			
 				currentHeight += segmentHeight;
 			}
+
 
 			//hr circle
         	renderHeartRateCircle(targetHRHeight);

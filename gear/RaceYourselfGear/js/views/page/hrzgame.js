@@ -528,7 +528,8 @@ define({
         function setCurrentHRZone(zone)
         {
         	//update heart-rate based logic
-        	handleHRChanged()
+        	handleHRChanged();
+
         if(zone == currentHRZone)
         {
         	
@@ -536,7 +537,7 @@ define({
         else
         {
         	currentHRZone = zone;
-        //eventually look up based on age, but for now just used valued based on 30yo
+
         	var hrMinMax = new Object();
         	var min20, max20, min75, max75;
         	switch(zone)
@@ -597,6 +598,12 @@ define({
 			//15 seconds to adapt
 			adaptingTimeout	= setTimeout(adaptComplete, config.getAdaptPeriod() * 1000 * timeMultiplier);
 			
+			var zoneInfo = new Object();
+        	zoneInfo.name = zone;
+        	zoneInfo.maxHeartRate = maxHeartRate;
+        	zoneInfo.minHeartRate = minHeartRate;
+        	e.fire('hrzone.change', zoneInfo);
+        	
 			//vibrate
 			navigator.vibrate([10, 10, 10, 10, 10, 10, 10]);
 
