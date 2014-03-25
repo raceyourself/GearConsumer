@@ -22,6 +22,7 @@ define({
             game = req.models.game,
             interval = false,
             timeout = false,
+            resultTimeout = false,
             provider = req.models.sapRaceYourself;
 
         function show() {
@@ -56,6 +57,7 @@ define({
         function onPageHide() {
             clearInterval(interval);
             clearTimeout(timeout);
+            clearTimeout(resultTimeout);
             e.die('tizen.back', onBack);
             e.die('gps.status', onGpsStatus);
         }
@@ -74,11 +76,19 @@ define({
             lockedEl.classList.toggle('hidden', status != 'ready');
             disabledEl.classList.toggle('hidden', status != 'disabled');
             
+            if(resultTimeout)
+            	clearTimeout(resultTimeout);
+            
             if (status === 'enabled') {
                 // Enabled, but not ready yet. Request again after 5s
-                setTimeout(function() {
+            	
+                resultTimeout = setTimeout(function() {
                     provider.sendGpsStatusReq(); 
                 }, 5000);
+            }
+            
+            if(timeout) {
+            	clearTimeout(timeout);
             }
             
             if (status === 'ready' || status === 'disabled') {

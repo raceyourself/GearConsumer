@@ -9,6 +9,7 @@ define({
     requires: [
         'core/event',
         'models/race',
+        'models/sap',
         'models/settings',
         'views/page/pregame'
     ],
@@ -18,6 +19,7 @@ define({
         var e = req.core.event,
             race = req.models.race,
             settings = req.models.settings,
+            sap = req.models.sap,
             page = null,
             t = 30,
             holdInterval = false,
@@ -88,7 +90,11 @@ define({
         
         function onOk() {
             settings.setTime(t);
-            e.fire('pregame.show');
+            if(sap.isConnected() || !sap.isAvailable()) {
+            	e.fire('pregame.show');
+            } else {
+            	e.fire('no-bluetooth.show');
+            }
         }
 
         function bindEvents() {

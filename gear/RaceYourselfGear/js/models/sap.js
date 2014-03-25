@@ -36,6 +36,7 @@ define({
                 socket.sendData(channel, JSON.stringify(params));
             } catch (e) {
                 console.error(e);
+                socket = null;
                 return false;
             }
             return true;

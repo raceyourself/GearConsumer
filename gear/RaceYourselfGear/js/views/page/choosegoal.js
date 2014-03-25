@@ -10,8 +10,10 @@ define({
         'core/event',
         'models/application',
         'models/settings',
+        'models/sap',
         'views/page/setdistance',
-        'views/page/settime'
+        'views/page/settime',
+        'views/page/no-bluetooth'
     ],
     def: function viewsPageChooseGoal(req) {
         'use strict';
@@ -19,6 +21,7 @@ define({
         var e = req.core.event,
             app = req.models.application,
             settings = req.models.settings,
+            sap = req.models.sap,
             page = null;
 
         function show() {
@@ -62,7 +65,11 @@ define({
         
         function onJustRunBtnClick() {
         	settings.setCurrentTarget('none');
-        	e.fire('pregame.show');
+        	if(sap.isConnected() || !sap.isAvailable()) {
+            	e.fire('pregame.show');
+            } else {
+            	e.fire('no-bluetooth.show');
+            }
         }
 
         function init() {

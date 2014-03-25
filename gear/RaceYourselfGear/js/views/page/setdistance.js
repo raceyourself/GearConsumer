@@ -10,13 +10,16 @@ define({
         'core/event',
         'models/race',
         'models/settings',
-        'views/page/pregame'
+        'models/sap',
+        'views/page/pregame',
+        'views/page/no-bluetooth'
     ],
     def: function viewsPageSetDistance(req) {
         'use strict';
 
         var e = req.core.event,
             race = req.models.race,
+            sap = req.models.sap,
             settings = req.models.settings,
             page = null,
             d = 100,
@@ -78,7 +81,12 @@ define({
         
         function onOk() {
             settings.setDistance(d);
-            e.fire('pregame.show');
+            if(sap.isConnected() || !sap.isAvailable()) {
+            	e.fire('pregame.show');
+            } else {
+            	e.fire('no-bluetooth.show');
+            }
+            
         }
 
         function bindEvents() {
