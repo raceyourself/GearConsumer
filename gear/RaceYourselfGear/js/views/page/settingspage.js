@@ -13,6 +13,7 @@ define({
         'models/settings',
         'views/page/ageselect',
         'views/page/audioactive',
+        'views/page/distanceunits',
         'views/page/paceunits',
         'views/page/about'
     ],
@@ -38,6 +39,9 @@ define({
             } else {
             	audioTextEl.innerHTML = 'Off';
             }
+            
+            var distanceTextEl = document.getElementById('distance-text');
+            distanceTextEl.innerHTML = settings.getDistanceUnits();
             
             var paceTextEl = document.getElementById('pace-text');
             paceTextEl.innerHTML = settings.getPaceUnits();
@@ -98,6 +102,7 @@ define({
         	page.addEventListener('pageshow', onPageShow);
             page.addEventListener('pagehide', onPageHide);
             
+            document.getElementById('audioactive-btn').addEventListener('click', onAudioActiveBtnClick);
             document.getElementById('distance-units-btn').addEventListener('click', onDistanceUnitsBtnClick);
             document.getElementById('pace-units-btn').addEventListener('click', onPaceUnitsBtnClick);
             document.getElementById('age-btn').addEventListener('click', onAgeBtnClick);
@@ -106,8 +111,12 @@ define({
             
         }
         
-        function onDistanceUnitsBtnClick() {
+        function onAudioActiveBtnClick() {
         	e.fire('audioactive.show');
+        }
+        
+        function onDistanceUnitsBtnClick() {
+        	e.fire('distanceunits.show');
         }
         
         function onPaceUnitsBtnClick() {

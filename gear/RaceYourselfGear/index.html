@@ -118,13 +118,35 @@
                 <li class="li-has-radio">
                     <label>
                         On
-                        <input type="radio" name="radio-distance-units" value="On"/>
+                        <input type="radio" name="radio-audio-active" value="On"/>
                     </label>
                 </li>
                 <li class="li-has-radio">
                     <label>
                         Off
-                        <input type="radio" name="radio-distance-units" value="Off"/>
+                        <input type="radio" name="radio-audio-active" value="Off"/>
+                    </label>
+                </li>
+            </ul>
+        </div>
+    </div>
+    
+    <div class="ui-page" id="distanceunits">
+        <header class="ui-header">
+            <h2 class="ui-title">Distance Units</h2>
+        </header>
+        <div class="ui-content">
+            <ul class="ui-listview">
+                <li class="li-has-radio">
+                    <label>
+                        KM
+                        <input type="radio" name="radio-distance-units" value="KM"/>
+                    </label>
+                </li>
+                <li class="li-has-radio">
+                    <label>
+                        Miles
+                        <input type="radio" name="radio-distance-units" value="Miles"/>
                     </label>
                 </li>
             </ul>
@@ -300,9 +322,15 @@
     	<div class="ui-content">
     		<ul class="ui-listview">
     			<li class="li-has-multiline">
-    				<a href="#" id="distance-units-btn">
+    				<a href="#" id="audioactive-btn">
     					Audio
     					<span class="li-text-sub" id="audio-text">On/Off</span>
+    				</a>
+    			</li>
+    			<li class="li-has-multiline">
+    				<a href="#" id="distance-units-btn">
+    					KM/miles
+    					<span class="li-text-sub" id="distance-text">KM</span>
     				</a>
     			</li>
     			<li class="li-has-multiline">

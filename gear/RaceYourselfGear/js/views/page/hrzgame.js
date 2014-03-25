@@ -362,7 +362,6 @@ define({
             e.die('motion.wristup', onWristUp);
             visible = false;
             clearInterval(fpsInterval);
-            clearInterval(randomHR);
 			clearTimeout(warmupTimeout);
             clearTimeout(intervalTimeout);
             clearTimeout(adaptingTimeout);
@@ -1330,6 +1329,7 @@ define({
 //				if(dist%500 == 0)
 				if(false)
 				{
+					// TODO: Make unit agnostic if enabled
 					context.textBaseline = "bottom";
 					context.textAlign = "right";
 					context.font = '24px Samsung Sans';
@@ -1367,12 +1367,19 @@ define({
 			{
 
 				//run
-				distkm = Math.round(r.getDistance()/100) / 10;
-				context.fillText(distkm + 'km', progressBarInset, progressBarHeight);
+				var d = r.getDistance();
+				var targetdist = TRACK_LENGTH;
+				var u = r.getShortDistanceUnits();
+				if (u == 'm') {
+					d = d / 1000;
+					targetdist = targetdist / 1000;
+					u = 'km';
+				}
+				
+				context.fillText(Number(d).toFixed(1) + u, progressBarInset, progressBarHeight);
 				//target
 				context.textAlign = 'right';
-				var targetdist = Math.round(TRACK_LENGTH/100)/10;
-				context.fillText(targetdist + 'km', canvas.width - progressBarInset, progressBarHeight);
+				context.fillText(Number(targetdist).toFixed(1) + u, canvas.width - progressBarInset, progressBarHeight);
 
 			}
 			else if(targetTime < Infinity)
@@ -1395,8 +1402,13 @@ define({
 				
 				//show distance run on right
 				context.textAlign = 'right';
-				var distkm = Math.round(r.getDistance()/100) / 10;
-				context.fillText(distkm + 'km', canvas.width - progressBarInset, progressBarHeight);
+				var d = r.getDistance();
+				var u = r.getShortDistanceUnits();
+				if (u == 'm') {
+					d = d / 1000;
+					u = 'km';
+				}
+				context.fillText(Number(d).toFixed(1) + u, canvas.width - progressBarInset, progressBarHeight);
 			}
 			}
 
@@ -1634,11 +1646,11 @@ define({
 				//text
                 var pace = r.getPace();
                 var paceString = mss(pace*60);
-                var paceUnits = 'min/km';
+                var paceUnits = r.getPaceUnits();
 	            if(settings.getPaceUnits() == 'km/h') {
 	                pace = r.getSpeed();
 	                paceString = Number(pace).toFixed(1);
-	                paceUnits = 'km/h';
+	                paceUnits = r.getSpeedUnits();
 	            }
 
 				var paceXPos = PaceXPosR - radius/2;
