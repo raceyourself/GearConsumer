@@ -26,6 +26,7 @@ define({
             mock = req.models.mocks.pedometer,
             provider = req.models.sapRaceYourself,
             settings = req.models.settings,
+            units = req.helpers.units,
             _goal = "",
             ongoingRace = null,
             history = [];
@@ -117,9 +118,9 @@ define({
             
             getDistance: function getDistance() {
                 if(settings.getDistanceUnits() == 'Miles') {
-                    return getImperialDistance();
+                    return this.getImperialDistance();
                 } else {
-                    return getMetricDistance();
+                    return this.getMetricDistance();
                 }                
             },
 
@@ -128,6 +129,14 @@ define({
                     return "miles";
                 } else {
                     return "meters";
+                }
+            },
+
+            getShortDistanceUnits: function getShortDistanceUnits() {
+                if(settings.getDistanceUnits() == 'Miles') {
+                    return "mi";
+                } else {
+                    return "m";
                 }
             },
 

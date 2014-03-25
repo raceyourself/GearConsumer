@@ -43,7 +43,6 @@ define({
             		heartRate: ~~(smoothing*lastData.heartRate + (1-smoothing)*hrmInfo.heartRate),
             		rRInterval: hrmInfo.rRInterval
             };
-            console.log(lastData);
             lastData = hrmInfo;
             e.fire(eventName, info);
         }

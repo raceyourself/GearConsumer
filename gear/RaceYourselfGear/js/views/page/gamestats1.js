@@ -97,9 +97,11 @@ define({
             var value = ongoing.getDistance();
             var u = ongoing.getDistanceUnits();
             
-            if (value > 1000 || u == 'miles') {
+            if (value > 1000 && u == 'meters') {
                 value = value / 1000;
                 u = 'kilometers';
+            }
+            if (u == 'kilometers' || u == 'miles') {
                 if(value < 10) {
                 	decimals = 2;
                 } else {
