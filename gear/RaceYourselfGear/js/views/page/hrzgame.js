@@ -18,7 +18,7 @@ define({
         'models/hrm',
         'models/sprite',
         'models/settings',
-        'models/settings',
+        'models/config',
 		'models/game',
     ],
     def: function viewsPageHeartRateZombiesGame(req) {
@@ -29,6 +29,7 @@ define({
             hrm = req.models.hrm,
             game = req.models.game,
             settings = req.models.settings,
+            config = req.models.config,
             Sprite = req.models.sprite.Sprite,
             page = null,
             canvas,
@@ -123,7 +124,7 @@ define({
 			currentHRZone = null,
 			currentZone = 0,
 			warmupTimeout = false,
-			warmingUp = true,
+			warmingUp = false,
 			timeMultiplier = 1,			//hack to test quickly. Set to 1
 			intervalTimeout = false,
 			zoneAdaptTimeout = false,
@@ -319,6 +320,8 @@ define({
             //get opponent type from game
 			setOpponent(game.getCurrentOpponentType());
 //			setOpponent('dinosaur');
+
+            zombieCatchupSpeed = -zombieStartOffset/config.getCatchupTime();
         }
         
         function onAchievementAwarded(data)
@@ -431,12 +434,13 @@ define({
             clearTimeout(bannerTimeout);
             bannerTimeout = setTimeout(clearbanner, countDownParams.stageDuration * 1000);
             setCurrentHRZone("Recovery");
-            var warmupDurationMinutes = 5;
-            warmupTimeout = setTimeout(endWarmup, warmupDurationMinutes*60*1000 * timeMultiplier);	//5 minutes warmup
+            warmupTimeout = setTimeout(endWarmup, config.getWarmupPeriod()*1000 * timeMultiplier);	//5 minutes warmup
 			countDownParams.outerRadius = countDownParams.outerRadiusMax;
 			countDownParams.startTime = Date.now();
 			//10 second notification of warming up
+            var warmupDurationMinutes = Math.floor(config.getWarmupPeriod() / 60);
 			setNotification(green, '#fff', 'Warm up for ' + warmupDurationMinutes + 'min', 'Tap to skip', 10*1000);
+			warmingUp = true;
         }
         
         function restart() {
@@ -492,8 +496,6 @@ define({
 				case "Endurance":
 					break;
 				case "Strength":
-					var sprintDuration = 30;	//seconds
-					var recoverDuration = 30;	//seconds
 					switch(currentHRZone)
 					{
 						case "Recovery":
@@ -501,20 +503,20 @@ define({
 						case "Anaerobic":
 							//transition to Aerobic for next interval
 							setCurrentHRZone("Aerobic");
-							intervalTimeout = setTimeout(nextHRZone, recoverDuration*1000 * timeMultiplier);
+							intervalTimeout = setTimeout(nextHRZone, config.getRecoverDuration()*1000 * timeMultiplier);
 							//vibrate
 							navigator.vibrate([10, 100, 10, 100, 10]);
 							//notify
-							setNotification(green, '#fff', 'Recover for ' + recoverDuration + 's', null, 5*1000);
+							setNotification(green, '#fff', 'Recover for ' + config.getRecoverDuration() + 's', null, 5*1000);
 							break;
 						case "Aerobic":
 							//transition up to Anaerobic
 							setCurrentHRZone("Anaerobic");
-							intervalTimeout = setTimeout(nextHRZone, sprintDuration*1000 * timeMultiplier);
+							intervalTimeout = setTimeout(nextHRZone, config.getSprintDuration()*1000 * timeMultiplier);
 							//vibrate
 							navigator.vibrate([100, 10, 100, 10, 100]);
 							//notify
-							setNotification(red, '#fff', 'Sprint for ' + sprintDuration + 's', null, 5*1000);
+							setNotification(red, '#fff', 'Sprint for ' + config.getSprintDuration() + 's', null, 5*1000);
 							break;
 						default:
 							console.log("shouldn't be in this zone in Strength training: " + currentHRzone);
@@ -594,7 +596,7 @@ define({
 			//set that we are currently adapting
 			adaptingToRecentZoneShift = true;
 			//15 seconds to adapt
-			adaptingTimeout	= setTimeout(adaptComplete, 10 * 1000 * timeMultiplier);
+			adaptingTimeout	= setTimeout(adaptComplete, config.getAdaptPeriod() * 1000 * timeMultiplier);
 			
 			//vibrate
 			navigator.vibrate([10, 10, 10, 10, 10, 10, 10]);
@@ -678,7 +680,7 @@ define({
 			{
 				if(zombiePosWeight < 1) { zombiePosWeight += 0.02; }
 //				screenMidDistance = zombiePosWeight * zombieDistance + r.getDistance();
-				var screenLeftDistanceZ = (zombieDistance + r.getDistance() - screenWidthDistance)/2 - 3;
+				var screenLeftDistanceZ = (zombieDistance + r.getDistance() - screenWidthDistance)/2 - 4;
 				var screenLeftDistanceNoZ = r.getDistance() - screenWidthDistance/2 - 2;
 				//lerp
 				var ease = Math.sin( Math.sin(zombiePosWeight*(Math.PI / 2)) );
@@ -726,7 +728,7 @@ define({
 				{
 					if(warningTimeoutLow == false)
 					{
-						warningTimeoutLow = setTimeout(warningOver_low, 10*1000 * timeMultiplier);
+						warningTimeoutLow = setTimeout(warningOver_low, config.getWarningPeriod()*1000 * timeMultiplier);
 					}
 				}
 			}
@@ -756,7 +758,7 @@ define({
 				{
 					if(warningTimeoutHigh == false)
 					{
-						warningTimeoutHigh = setTimeout(warningOver_high, 10*1000 * timeMultiplier);
+						warningTimeoutHigh = setTimeout(warningOver_high, config.getWarningPeriod()*1000 * timeMultiplier);
 					}
 				}
 			}
