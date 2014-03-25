@@ -30,9 +30,16 @@ define({
 
         function onPageShow() {
             var waitingEl = document.getElementById('pregame-waiting-gps'),
+            gpsButtonEl = document.getElementById('pregame-skip-gps-btn'),
             lockedEl = document.getElementById('pregame-locked-gps'),
             disabledEl = document.getElementById('pregame-disabled-gps');
+                        
+            gpsButtonEl.classList.toggle('hidden', true);
         
+            setTimeout(function() {
+            	gpsButtonEl.classList.toggle('hidden', false);
+            }, 3000);
+            
             e.listen('tizen.back', onBack);
             
             lockedEl.classList.toggle('hidden', true);

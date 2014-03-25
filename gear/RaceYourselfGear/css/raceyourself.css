@@ -16,7 +16,7 @@
 .gps-screen {
 	padding: 50px;
 	color: white;
-	font-size: x-large;
+	font-size: 30px;
 }
 
 .fill {
@@ -349,7 +349,7 @@ img {
 }
 
 #about {
-	font-size: 15px;	
+	font-size: 21px;	
 	line-height: 100%;
 	word-wrap: break-word;
 }
@@ -359,7 +359,7 @@ img {
 }
 
 #about p {
-	font-size: 18px;
+	font-size: 24px;
 }
 
 .awarded {
