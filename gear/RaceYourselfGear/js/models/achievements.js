@@ -13,7 +13,8 @@ define({
         'helpers/date',
         'models/race',        
         'models/game',        
-        'models/settings'
+        'models/settings',
+        'models/config',
     ],
     def: function modelsAchievements(req) {
         'use strict';
@@ -24,6 +25,7 @@ define({
             game = req.models.game,
             race = req.models.race,
             settings = req.models.settings,
+            config = req.models.config,
             achieved = {},
             progress = {},
             ACHIEVEMENTS = {
@@ -208,19 +210,20 @@ define({
                 },
 */                'dino' : {
                     title: 'Jurassic Trek',
-                    description: 'Unlocked the Race Dino game by running a total of 20km',
+                    description: 'Unlocked the Race Dino game by running a total of ' + config.getDinoUnlockDist() + 'km',
                     points: 0,
                     uses: 1,
                     init: function() {
                         e.listen('race.progress', function(event) {
-                            if (progress.total.distance >= 20000) {
+                            if (progress.total.distance >= config.getDinoUnlockDist() * 1000) {
                                 achieve('dino');
                                 game.unlock('dino');
                             }
                         });
                     },
                     progress: function() {
-                        return Number(Math.min(20000, progress.total.distance)*100/20000).toFixed(1).replace('.0', '') + '%';
+                    	var unlockDist = config.getDinoUnlockDist() * 1000;
+                        return Number(Math.min(unlockDist, progress.total.distance)*100/unlockDist).toFixed(1).replace('.0', '') + '%';
                     }
                 },
                 // Dedication

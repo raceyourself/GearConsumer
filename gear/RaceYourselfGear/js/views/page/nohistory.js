@@ -5,57 +5,46 @@
  */
 
 define({
-    name: 'views/page/main',
+    name: 'views/page/nohistory',
     requires: [
         'core/event',
-        'models/application',
-        'views/page/setdistance',
-        'views/page/settime',
-        'views/page/games',
-        'views/page/newmain'
+        'models/sapRaceYourself'
     ],
-    def: function viewsPageMain(req) {
+    def: function viewsPageNoHistory(req) {
         'use strict';
 
         var e = req.core.event,
-            app = req.models.application,
+            provider = req.models.sapRaceYourself,
             page = null;
 
         function show() {
-            gear.ui.changePage('#main');            
+            gear.ui.changePage('#nohistory');            
         }
         
         function onPageShow() {
             e.listen('tizen.back', onBack);
-            e.fire('newmain.show');
         }
 
         function onPageHide() {
             e.die('tizen.back', onBack);
         }
-        function onClick() {
-            e.fire('newmain.show');
-        }
         
         function onBack() {
-            app.closeApplication();
+            history.back();
         }
 
         function bindEvents() {
             page.addEventListener('pageshow', onPageShow);
             page.addEventListener('pagehide', onPageHide);
-            //page.addEventListener('click', onClick);
         }
 
         function init() {
-            page = document.getElementById('main');
+            page = document.getElementById('nohistory');
             bindEvents();
-            // Assume we always start in this view
-            onPageShow();
         }
         
         e.listeners({
-            'main.show': show
+            'nohistory.show': show
         });
         
         return {

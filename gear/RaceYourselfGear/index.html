@@ -49,8 +49,11 @@
 
     <div class="ui-page" id="setdistance">
     	<div class="navborder">
+    	<header class="ui-header" data-position="fixed">
+    		<h2 class="ui-title">Set the distance</h2>
+    	</header>
 	        <section class="ui-content">
-	            <div class="ry-title">Set the distance</div>
+	            <div class="ry-title"></div>
 	        	<div class="setter">
 		        	<div class="setter-btn" id="distance-minus">-</div>
 		        	<div class="setter-value">
@@ -66,8 +69,11 @@
     
     <div class="ui-page" id="settime">
     	<div class="navborder">
+    	<header class="ui-header" data-position="fixed">
+    		<h2 class="ui-title">Set the time</h2>
+    	</header>
 	        <section class="ui-content">
-	            <div class="ry-title">Set the time</div>
+	            <div class="ry-title"></div>
 	        	<div class="setter">
 		        	<div class="setter-btn" id="time-minus">-</div>
 		        	<div class="setter-value">
@@ -296,16 +302,19 @@
     			<li class="li-has-multiline">
     				<a href="#" id="distance-units-btn">
     					Audio
+    					<span class="li-text-sub" id="audio-text">On/Off</span>
     				</a>
     			</li>
     			<li class="li-has-multiline">
     				<a href="#" id="pace-units-btn">
     					Pace/speed
+    					<span class="li-text-sub" id="pace-text">Min/km</span>
     				</a>
     			</li>
     			<li class="li-has-multiline">
     				<a href="#" id="age-btn">
     					Set age
+    					<span class="li-text-sub" id="age-text">No age set</span>
     				</a>
     			</li>
     			<li class="li-has-multiline">
@@ -329,6 +338,15 @@
 			Dinosaur Scream.flac http://www.freesound.org/people/qubodup/sounds/219945 by Iwan ‘qubodup’ Gabovitch http://freesound.org/people/qubodup under CC-BY 3.0 License http://creativecommons.org/licenses/by/3.0/legalcode<br/>
 			<br/>
 			Fighting Game grunts - young female.wav http://freesound.org/people/AderuMoro/sounds/213295/ by AderuMoro http://freesound.org/people/AderuMoro<br/>
+		</div>
+    </div>
+    
+    <div class="ui-page" id="nohistory">
+    	<header class="ui-header" data-position="fixed">
+    		<h2 class="ui-title">History</h2>
+    	</header>
+    	<div class="ui-content">
+    		You have not yet completed any races - your previous races will be shown here.
 		</div>
     </div>
     
@@ -376,7 +394,7 @@
 		        	<div class="center gps-screen binary-toggle toggle-on" id="waiting-gps-div">
 		        		<img src="images/gps_waiting.png" class="on" />
 		        		<img src="images/gps_locked.png" class="off" />
-        				<p>Waiting on GPS lock from phone</p>
+        				<p class='larger-text'>Waiting on GPS lock from phone</p>
 		           		<div class="skip-btn" id="pregame-skip-gps-btn">
 			        		<p>SKIP</p>
 			        		*use only pedometer
@@ -396,7 +414,7 @@
             	<div class="center-container">
 		        	<div class="center gps-screen">
 	    				<img src="images/gps_locked.png" />
-	    				<p>GPS disabled</p>
+	    				<p class='larger-text'>GPS disabled</p>
 	        		</div>
 	        	</div>
         	</div>

@@ -39,10 +39,14 @@ define({
                 if (!isFinite(a.uses)) text = text + a.achieved.length
                 else text = text + a.achieved.length + '/' + a.uses
                 text = text + ' times';
+                var clazzez = [];
+                if (a.achieved.length > 0) clazzez.push('awarded');
+                if (isFinite(a.uses) && a.achieved.length >= a.uses) clazzez.push('completed');
                 items.push(t.get('achievementRow', {
                             key: key,
                             title: a.title,
-                            subtitle: text
+                            subtitle: text,
+                            classes: clazzez.join(' ')
                 }));
             }
             list.innerHTML = items.join('');

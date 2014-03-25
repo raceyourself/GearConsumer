@@ -28,6 +28,12 @@ define({
             if (this.frames !== ~~this.frames) console.error("Sprite " + spritesheet.src + " has a non-integer frame count!");
             this.setPeriod(animationPeriod);
             this.reset();
+            this.position = { x : 0, y: 0 };
+            this.targetPosition = { x : 0, y : 0};
+            this.lastUpdateTime = Date.now();
+            this.moveTimer = 0;
+            this.speed = { x: 0, y : 0 };
+            this.moveInterval = null;
 //            console.log("Sprite " + spritesheet.src + " has " + this.frames + " " + this.width + "x" + this.height + " frames");
         }
         Sprite.prototype = {
@@ -48,12 +54,24 @@ define({
                         if (!!this.endCallback) this.endCallback(this.time);
                     }
                     var frame = ~~(this.time/this.frameDelay);
+                    
+                    context.save();
+                    context.translate(this.position.x, this.position.y);
+                    context.scale(this.scale, this.scale);
                     context.drawImage(this.spritesheet, frame*this.width, 0, this.width, this.spritesheet.height, x, y, this.width, this.spritesheet.height);
+                    context.restore();
                 },
                 
                 reset: function reset() {
                     this.time = 0;
                     this.endCallback = undefined;
+                    this.targetScale = 1;
+                	this.scale = 1;
+                	this.lastUpdateTime = Date.now();
+                	this.scaleTimer = 0;
+                	this.position = { x: 0, y: 0 };
+                	this.targetPosition = { x: 0, y: 0 };
+                	this.moveTimer = 0;
                 },
                 setPeriod: function setPeriod(milliseconds) {
                     this.animationPeriod = milliseconds;
@@ -68,7 +86,51 @@ define({
                 clone: function clone() {
                     var sprite = new Sprite(this.spritesheet, 0 + this.width, 0 + this.animationPeriod);
                     return sprite;
+                },
+
+                updateAnim: function updateAnim() {
+					var dt = Date.now() - this.lastUpdateTime;
+                	if(this.moveTimer > 0)
+                	{
+						//move
+						this.position.x += this.speed.x * dt;
+						this.position.y += this.speed.y * dt;
+						this.moveTimer -= dt;
+					}
+					if(this.scaleTimer > 0)
+					{
+						this.scale += this.scaleSpeed * dt;
+						this.scaleTimer -= dt;
+					}						
+					this.lastUpdateTime = Date.now();
+                },
+                
+                moveTo: function moveTo(positionX, positionY, duration) {
+                	this.targetPosition.x = positionX;
+                	this.targetPosition.y = positionY;
+                	this.moveTimer = duration;
+                	this.lastUpdateTime = Date.now();
+                	this.speed.x = (this.targetPosition.x - this.position.x) / duration;
+                	this.speed.y = (this.targetPosition.y - this.position.y) / duration;
+//                	this.moveInterval = setInterval(this.updateAnim, 100);
+                },
+				
+                moveby: function moveBy(positionX, positionY, duration)
+                {
+                	var newPos = new Object();
+                	newPos.x = this.position.x + positionX;
+                	newPos.y = this.position.y + positionY;
+					moveTo(newPos);
+                },
+                
+                scaleTo: function scaleTo(scale, duration) {
+                	this.targetScale = scale;
+                	this.scaleTimer = duration;
+                	this.lastUpdateTime = Date.now();
+                	this.scaleSpeed = (this.targetScale - this.scale) / duration;
                 }
+
+                
         };
         
         return {

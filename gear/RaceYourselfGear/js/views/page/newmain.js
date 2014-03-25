@@ -13,7 +13,8 @@ define({
         'views/page/gameselect',
         'views/page/achievements',
         'views/page/settingspage',
-        'views/page/racesummary'
+        'views/page/racesummary',
+        'views/page/nohistory'
     ],
     def: function viewsPageNewMain(req) {
         'use strict';
@@ -67,8 +68,12 @@ define({
         }
         
         function onHistoryBtnClick() {
-            if (!race.getOngoingRace() && race.getRaceHistory().length == 0) return;
-        	e.fire('racesummary.show');
+            if (!race.getOngoingRace() && race.getRaceHistory().length == 0) {
+            	e.fire('nohistory.show');
+        	} else {
+            	e.fire('racesummary.show');
+            }
+        	
         }
 
         function init() {

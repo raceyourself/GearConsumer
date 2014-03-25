@@ -357,10 +357,6 @@ li.profile-step-length {
 }
 
 .ui-listview li, .ui-listview li > * {
-        white-space: nowrap;
-        text-overflow: ellipsis;
-        -o-text-overflow: ellipsis;
-        overflow: hidden!important;
         -webkit-user-select: none;
 }
 .ui-listview li .li-text-sub {
@@ -368,8 +364,6 @@ li.profile-step-length {
         color: rgb(255, 255, 255);
         font-size: 24px;
         opacity: 0.5;
-        text-overflow: ellipsis;
-        overflow: hidden;
 }
 
 .ui-listview li input[type="checkbox"],

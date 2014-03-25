@@ -279,15 +279,15 @@ define({
                 if (positionDelta < 0) positionDelta = 0;
                 ongoingRace.distance += positionDelta;
                 
-                if (ongoingRace.distance - ongoingRace.progressSnapshot.distance > 100) ongoingRace.triggerProgress(); 
+                if (ongoingRace.distance - ongoingRace.progressSnapshot.distance > 100) ongoingRace.triggerProgress();
+                
+                if (step) {
+                    ongoingRace.track.push({distance: ongoingRace.getDistance(), time: ongoingRace.getDuration()});
+                    e.fire('pedometer.step');
+                    e.fire('gpsUpdateOff');
+                }
             }
             ongoingRace.lastPedometerDistance = pedometerInfo.distance; // update for next loop
-            
-            if (step) {
-                ongoingRace.track.push({distance: ongoingRace.getMetricDistance(), time: ongoingRace.getDuration()});
-                e.fire('pedometer.step');
-                e.fire('gpsUpdateOff');
-            }            
         }
         
         function onGpsLocation(event) {
@@ -310,8 +310,8 @@ define({
             if (ongoingRace.lastGpsDistance === null) ongoingRace.lastGpsDistance = distance;
             if (ongoingRace.lastGpsTimestamp == null) ongoingRace.lastGpsTimestamp = currentTimestamp;
             
-            // if we're getting regular GPS updates, use them for speed and distance:
             if (currentTimestamp - ongoingRace.lastGpsTimestamp <= 2000) {
+            	// if we're getting regular GPS updates, use them for speed and distance:
                 ongoingRace.speed = speed;
                 var positionDelta = (distance - ongoingRace.lastGpsDistance);
                 ongoingRace.distance += positionDelta;
@@ -323,6 +323,7 @@ define({
                 e.fire('pedometer.step');
                 e.fire('gpsUpdateOn');  
             }
+            
             ongoingRace.lastGpsTimestamp = currentTimestamp;
             ongoingRace.lastGpsDistance = distance;
         }

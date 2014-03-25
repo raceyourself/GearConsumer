@@ -16,9 +16,10 @@ define({
 //        'views/page/gameselect',
         'models/race',
         'models/hrm',
+        'models/mocks/hrm',
         'models/sprite',
         'models/settings',
-        'models/settings',
+        'models/config',
 		'models/game',
     ],
     def: function viewsPageHeartRateZombiesGame(req) {
@@ -27,8 +28,10 @@ define({
         var e = req.core.event,
             race = req.models.race,
             hrm = req.models.hrm,
+            hrmMock = req.models.mocks.hrm,
             game = req.models.game,
             settings = req.models.settings,
+            config = req.models.config,
             Sprite = req.models.sprite.Sprite,
             page = null,
             canvas,
@@ -72,6 +75,7 @@ define({
             		phase: 0,
             		},
             notificationTimeout = false,            	
+            animatedSprites = [],
             zombies = [],
             zombieIdle = null,
             dino = null,
@@ -103,10 +107,11 @@ define({
             lastDistanceAwarded = 0,
             ppm = 5, // pts/meter
             hr = 100,
+            rToRTime= 1,
             maxHeartRate = 150,
             minHeartRate = 120,
-            hrInterval = false,
-            hrChangePeriod = 5000,
+            maxPossibleHeartRate = 200,
+            minPossibleHeartRate = 50,
             lastHRtime = 0,
             hrColour = '#fff',
             zombieStartOffset = -11,
@@ -119,6 +124,7 @@ define({
 			currentHRZone = null,
 			currentZone = 0,
 			warmupTimeout = false,
+			warmingUp = false,
 			timeMultiplier = 1,			//hack to test quickly. Set to 1
 			intervalTimeout = false,
 			zoneAdaptTimeout = false,
@@ -152,7 +158,12 @@ define({
 			crossFadeParametric = 0,
 			crossFadeTime = 1,
 			badFraction = 0,
-            hasGPSUpdate = false;
+            hasGPSUpdate = false,
+            heartBeatInterval = null,
+            heartBeatOn = false,
+            heartBeatOnFrameCount = 0,
+            numAwardsAtFinish = 0,
+            unlockNotificationActive = false;
 
 			
 
@@ -162,11 +173,12 @@ define({
             gear.ui.changePage('#race-game');
         }
 
-		function setNotification(colour, textColour, text, duration)
+		function setNotification(colour, textColour, text, text2, duration)
 		{
 			notification.colour = colour;
 			notification.textColour = textColour;
 			notification.text = text;
+			notification.text2 = text2;
 			notification.active = true;
 			if(notificationTimeout != false) 
 			{ clearTimeout(notificationTimeout); }
@@ -196,20 +208,31 @@ define({
 			unlockNotification = game;
 			//TODO - have this only disappear 5s after user raises wrist
 			//unlockNotificationTimer = setTimeout(clearUnlockNotification, time*1000);
-			page.addEventListener('click', onTapHandler);
+			unlockNotificationActive = true;
 		}
 
-		function onTapHandler()
+		function onTapHandler(data)
 		{
 			if(isScrolling()) return;
 			//dismiss
 			clearUnlockNotification();
-			page.removeEventListener('click', onTapHandler);
 
-			//progress to end screen if this was the finished notification
-			if(finished)
+			if(unlockNotificationActive)
 			{
-				continueToResults();
+				//progress to end screen if this was the finished notification
+				if(finished)
+				{
+					continueToResults();
+				}
+				unlockNotificationActive = false;
+			}
+			
+			if(warmingUp)
+			{
+				if(data.pageY > badBG.height)
+				{
+					endWarmup();
+				}
 			}
 		}
         
@@ -230,14 +253,17 @@ define({
 			showUnlockNotification('boulder', 5);
 		}
 
+
         function onPageShow() {
             visible = true;
             finished = false;
-            e.listen('tizen.back', onBack);
             sectionChanger = new SectionChanger(changer, {
                 circular: false,
-                orientation: "horizontal"
+                orientation: "horizontal",
+                scrollbar: "bar"                	
             });
+            e.listen('tizen.back', onBack);
+            e.listen('motion.wristup', onWristUp);
             document.getElementById('quit-confirmation').classList.toggle('hidden', true);
             
             var r = race.getOngoingRace();
@@ -251,10 +277,17 @@ define({
 
                 startCountdown();
             }
+
+			//reset any existing animations
+			for(var i=0; i<animatedSprites.length; i++)
+			{
+				animatedSprites[i].reset();
+			}
             
 			e.listen('game.unlock.dino', onUnlockDino);
 			e.listen('game.unlock.boulder', onUnlockBoulder);
 			e.listen('achievement.awarded', onAchievementAwarded);
+			page.addEventListener('click', onTapHandler);
             isDead = false;
 			var length = settings.getDistance();
 			console.log('target dist = ' + length);
@@ -271,6 +304,9 @@ define({
             canvas.width = canvas.offsetWidth;
             canvas.height = canvas.offsetHeight;        
             
+//			sweat.scaleTo( 2, 1000);
+//			sweat_red.scaleTo( 2, 1000);
+            
             frames = 0;
             fpsInterval = setInterval(function() {
                 fps = frames;
@@ -279,17 +315,22 @@ define({
             
             animate();
             requestRender();
-            hrInterval = setInterval(randomHR, hrChangePeriod);
             
             //get opponent type from game
 			setOpponent(game.getCurrentOpponentType());
 //			setOpponent('dinosaur');
+
+            zombieCatchupSpeed = -zombieStartOffset/config.getCatchupTime();
         }
         
         function onAchievementAwarded(data)
         {
-        	setNotification( green, '#fff', 'Achievement Unlocked!', 3*1000);
+        	setNotification( green, '#fff', 'Award Unlocked!', 3*1000);
 			navigator.vibrate([100, 50, 100, 50]);
+			if(finished)
+			{
+				numAwardsAtFinish++;
+			}
 			chime.play();
         }
         
@@ -318,6 +359,7 @@ define({
         
         function onPageHide() {
             e.die('tizen.back', onBack);
+            e.die('motion.wristup', onWristUp);
             visible = false;
             clearInterval(fpsInterval);
             clearInterval(randomHR);
@@ -325,7 +367,8 @@ define({
             clearTimeout(intervalTimeout);
             clearTimeout(adaptingTimeout);
             clearTimeout(warningTimeoutLow);
-			clearTimeout(warningTimeoutHigh)
+			clearTimeout(warningTimeoutHigh);
+			clearInterval(heartBeatInterval);
             if (!!sectionChanger) sectionChanger.destroy();
             
             var r = race.getOngoingRace();
@@ -341,11 +384,16 @@ define({
             e.die('game.unlock.dino', onUnlockDino);
             e.die('game.unlock.boulder', onUnlockBoulder);
             e.die('achievement.awarded', onAchievementAwarded);
+			page.removeEventListener('click', onTapHandler);
         }        
         
         function onBack() {
             document.getElementById('quit-confirmation').classList.toggle('hidden');
         }
+        
+        function onWristUp() {
+        	sectionChanger.setActiveSection(2, 1000);
+        }        
         
         function onQuit() {
             e.fire('newmain.show');
@@ -385,12 +433,13 @@ define({
             clearTimeout(bannerTimeout);
             bannerTimeout = setTimeout(clearbanner, countDownParams.stageDuration * 1000);
             setCurrentHRZone("Recovery");
-            var warmupDurationMinutes = .1;
-            warmupTimeout = setTimeout(endWarmup, warmupDurationMinutes*60*1000 * timeMultiplier);	//5 minutes warmup
+            warmupTimeout = setTimeout(endWarmup, config.getWarmupPeriod()*1000 * timeMultiplier);	//5 minutes warmup
 			countDownParams.outerRadius = countDownParams.outerRadiusMax;
 			countDownParams.startTime = Date.now();
 			//10 second notification of warming up
-			setNotification(green, '#fff', 'Warm up for ' + warmupDurationMinutes + 'min', 10*1000);
+            var warmupDurationMinutes = Math.floor(config.getWarmupPeriod() / 60);
+			setNotification(green, '#fff', 'Warm up for ' + warmupDurationMinutes + 'min', 'Tap to skip', 10*1000);
+			warmingUp = true;
         }
         
         function restart() {
@@ -404,9 +453,10 @@ define({
         
         function endWarmup() 
         {
+			warmingUp = false;
         	var r = race.getOngoingRace();
         	        	console.log("Warmup over. Goal is: " + r.getGoal());
-        	setNotification(green, '#fff', 'Warmup Over', 5*1000);
+        	setNotification(green, '#fff', 'Warmup Over', null, 5*1000);
 
         	switch(r.getGoal())
         	{
@@ -445,8 +495,6 @@ define({
 				case "Endurance":
 					break;
 				case "Strength":
-					var sprintDuration = 30;	//seconds
-					var recoverDuration = 30;	//seconds
 					switch(currentHRZone)
 					{
 						case "Recovery":
@@ -454,20 +502,20 @@ define({
 						case "Anaerobic":
 							//transition to Aerobic for next interval
 							setCurrentHRZone("Aerobic");
-							intervalTimeout = setTimeout(nextHRZone, recoverDuration*1000 * timeMultiplier);
+							intervalTimeout = setTimeout(nextHRZone, config.getRecoverDuration()*1000 * timeMultiplier);
 							//vibrate
 							navigator.vibrate([10, 100, 10, 100, 10]);
 							//notify
-							setNotification(green, '#fff', 'Recover for ' + recoverDuration + 's', 5*1000);
+							setNotification(green, '#fff', 'Recover for ' + config.getRecoverDuration() + 's', null, 5*1000);
 							break;
 						case "Aerobic":
 							//transition up to Anaerobic
 							setCurrentHRZone("Anaerobic");
-							intervalTimeout = setTimeout(nextHRZone, sprintDuration*1000 * timeMultiplier);
+							intervalTimeout = setTimeout(nextHRZone, config.getSprintDuration()*1000 * timeMultiplier);
 							//vibrate
 							navigator.vibrate([100, 10, 100, 10, 100]);
 							//notify
-							setNotification(red, '#fff', 'Sprint for ' + sprintDuration + 's', 5*1000);
+							setNotification(red, '#fff', 'Sprint for ' + config.getSprintDuration() + 's', null, 5*1000);
 							break;
 						default:
 							console.log("shouldn't be in this zone in Strength training: " + currentHRzone);
@@ -547,7 +595,7 @@ define({
 			//set that we are currently adapting
 			adaptingToRecentZoneShift = true;
 			//15 seconds to adapt
-			adaptingTimeout	= setTimeout(adaptComplete, 10 * 1000 * timeMultiplier);
+			adaptingTimeout	= setTimeout(adaptComplete, config.getAdaptPeriod() * 1000 * timeMultiplier);
 			
 			//vibrate
 			navigator.vibrate([10, 10, 10, 10, 10, 10, 10]);
@@ -631,7 +679,7 @@ define({
 			{
 				if(zombiePosWeight < 1) { zombiePosWeight += 0.02; }
 //				screenMidDistance = zombiePosWeight * zombieDistance + r.getDistance();
-				var screenLeftDistanceZ = (zombieDistance + r.getDistance() - screenWidthDistance)/2 - 3;
+				var screenLeftDistanceZ = (zombieDistance + r.getDistance() - screenWidthDistance)/2 - 4;
 				var screenLeftDistanceNoZ = r.getDistance() - screenWidthDistance/2 - 2;
 				//lerp
 				var ease = Math.sin( Math.sin(zombiePosWeight*(Math.PI / 2)) );
@@ -667,7 +715,7 @@ define({
 					//colouring and 'speed up' text will still be present
 					timeTurnedBad = Date.now();
 					clearNotification();
-					setNotification(flashingRed, '#fff', 'Heart Rate too low!', 0);
+					setNotification(flashingRed, '#fff', 'Heart Rate too low!', null, 0);
 					showWarningLow = true;
 					if(settings.getAudioActive()) {
 						//regularSound.play();
@@ -679,7 +727,7 @@ define({
 				{
 					if(warningTimeoutLow == false)
 					{
-						warningTimeoutLow = setTimeout(warningOver_low, 10*1000 * timeMultiplier);
+						warningTimeoutLow = setTimeout(warningOver_low, config.getWarningPeriod()*1000 * timeMultiplier);
 					}
 				}
 			}
@@ -701,7 +749,7 @@ define({
 					//colouring and 'speed up' text will still be present
 					timeTurnedBad = Date.now();
 					clearNotification();
-					setNotification(flashingRed, '#fff', 'Heart Rate too high!', 0);
+					setNotification(flashingRed, '#fff', 'Heart Rate too high!', null, 0);
 					showWarningHigh = true;
 					navigator.vibrate([1000, 500, 250, 100]);
 				}
@@ -709,7 +757,7 @@ define({
 				{
 					if(warningTimeoutHigh == false)
 					{
-						warningTimeoutHigh = setTimeout(warningOver_high, 10*1000 * timeMultiplier);
+						warningTimeoutHigh = setTimeout(warningOver_high, config.getWarningPeriod()*1000 * timeMultiplier);
 					}
 				}
 			}
@@ -751,21 +799,14 @@ define({
         	lastHRtime = Date.now();
         	hrNotFound = false;
             hr = hrmInfo.detail.heartRate;
+            rToRTime = hrmInfo.detail.rInterval;
         	handleHRChanged();
         }
 
 		function setMinMaxHeartRate() {
 			//to be eventually based on age and user-defined goals. Just use values for 30yo aerobic exercise for now.
 		}
-        
-        //test function to provide random heart rate
-        function randomHR() {
-        	hr = Math.floor( 50 + 150 * (Math.random()) );
-//        	hr = Math.floor(minHeartRate + 2);   //warning
-//			hr = Math.floor( (minHeartRate + maxHeartRate)/2);   //always good
-        	e.fire('hrm.change', {heartRate: hr});
-        }
-        
+                
         function handleHRChanged() 
         {
         	if(hrNotFound)
@@ -778,11 +819,14 @@ define({
 				warningTimeoutLow = false;
 				zombiesCatchingUp = false;
 				clearNotification();
-				setNotification( '#fff', '#000', 'No Heart Rate', 0);
+				setNotification( '#fff', '#000', 'No Heart Rate', null, 0);
+				clearInterval(heartBeatInterval);
         	}
         	else
         	{
-        
+        		clearInterval(heartBeatInterval);
+        		heartBeatInterval = null;
+        		heartBeatInterval = setInterval(heartBeatBeatOn, 1000);
 				if(hr > maxHeartRate && !hrNotFound)
 				{
 					hrColour = '#ff0000';
@@ -809,13 +853,19 @@ define({
 						r.data.zone_time_start = Date.now();
 					}
 				}
-
-						
-
 			}
-							
-			
         }
+
+		function heartBeatBeatOn()
+		{
+//			setTimeout(heartBeatBeatOff, 250);
+			heartBeatOn = true;
+		}
+		
+//		function heartBeatBeatOff()
+//		{
+//			heartBeatOn = false;
+//		}
         
         function warningOver_low() 
         {
@@ -865,6 +915,7 @@ define({
                 navigator.vibrate(1000);
                 showUnlockNotification('finished', 5);
                 finished = true;
+                numAwardsAtFinish = 0;
                 e.fire('race.end', r);
                 r.stop();
                 lastRender = null;
@@ -970,6 +1021,12 @@ define({
                 lastRender = Date.now();
             }
             
+            //update animated sprites
+            for(var i=0; i<animatedSprites.length; i++)
+            {
+            	animatedSprites[i].updateAnim();
+			}
+            
             //BG
             //draw good bg
             //draw bad bg with alpha
@@ -1019,6 +1076,7 @@ define({
 			//sweat points
 			if(true)
 			{
+
 				var xpos = 1;
 				var ypos = 1;
 				var img = ppm > 0 ? sweat : sweat_red;
@@ -1232,7 +1290,14 @@ define({
 				context.fillStyle = notification.textColour;
 				context.textAlign = 'center';
 				context.textBaseline = 'middle';
-				context.fillText( notification.text, canvas.width/2, progressBarHeight);
+				var text = notification.text;
+				
+				//if there are 2 strings, rotate between them
+				if(notification.text2 != null && (hrWarningPhase/hrWarningPeriod > 0.5))
+				{
+					text = notification.text2;
+				}
+				context.fillText( text, canvas.width/2, progressBarHeight);
 			}
 			
 			// Track
@@ -1531,7 +1596,20 @@ define({
 				{
 					//show heart rate
 					//icon
-					heartIcon.draw(context, hrXPos-heartIcon.width/2, hrYPos-heartIcon.height/2 - 32, 0);
+					var heartScale = 1.0;
+					if(heartBeatOn)
+					{
+						heartScale = 1.2;
+						heartBeatOnFrameCount++;
+						if(heartBeatOnFrameCount > 3) 
+						{ 
+							heartBeatOn = false; 
+							heartBeatOnFrameCount = 0;	
+						}
+					}
+						
+					
+					heartIcon.drawscaled(context, hrXPos-heartScale*heartIcon.width/2, hrYPos-heartScale*heartIcon.height/2 - 32, 0, heartScale);
 					//number
 					context.font = '56px Samsung Sans';
 					context.textAlign = 'center';
@@ -1700,6 +1778,15 @@ define({
 						context.textBaseline = 'middle';
 						context.fillStyle = '#fff';
 						context.fillText('Training Complete', centreX, 40);
+						if(numAwardsAtFinish == 1)
+						{
+							context.fillText('1 Award Unlocked', centreX, canvas.height - 30);
+						}
+						else if(numAwardsAtFinish >1)
+						{
+							context.fillText(numAwardsAtFinish + ' Awards Unlocked', centreX, canvas.height - 30);
+						}
+						
 						break;
 					default:
 						console.log('unknown game being unlocked ' + unlockNotification);
@@ -1939,6 +2026,7 @@ define({
 			image = new Image();
 			image.onload = function() {
 				sweat = new Sprite(this, this.width, 1000);
+				animatedSprites.push(sweat);
 			}
 			image.onerror = function() { throw "could not load" + this.src; }
 			image.src = 'images/image_sweat_point_green.png';
@@ -1946,6 +2034,7 @@ define({
 			image = new Image();
 			image.onload = function() {
 				sweat_red = new Sprite(this, this.width, 1000);
+				animatedSprites.push(sweat_red);
 			}
 			image.onerror = function() { throw "could not load" + this.src; }
 			image.src = 'images/image_sweat_point_red.png';
@@ -2036,11 +2125,13 @@ define({
 			}
 			image.onerror = function() {throw "could not load" + this.src; }
 			image.src = 'images/bg_bad.jpg';
-           /* if (hrm.isAvailable()) {
+            if (hrm.isAvailable()) {
                 hrm.start();
-            } else {
-                // TODO: Disable game?
-            } */                       
+                // Availability will change if start fails
+            } 
+            if (!hrm.isAvailable()) {
+            	hrmMock.start();
+            }                       
             
             bindEvents();
         }
