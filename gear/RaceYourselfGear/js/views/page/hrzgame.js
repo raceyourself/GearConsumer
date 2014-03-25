@@ -1097,7 +1097,7 @@ define({
 				context.save();
 				context.translate(canvas.width - gpsRing.width/2 * GPSscale, gpsRing.height/2 * GPSscale);
 				gpsRing.drawscaled(context, - gpsRing.width/2*GPSscale, -gpsRing.height/2 * GPSscale, 0, GPSscale);
-				if(gpsAvailable && hasGPSUpdate)
+				if(hasGPSUpdate)
 				{
 					gpsDot.drawscaled(context, - gpsDot.width/2*GPSscale, -gpsDot.height/2 * GPSscale, 0, GPSscale);
 				}
