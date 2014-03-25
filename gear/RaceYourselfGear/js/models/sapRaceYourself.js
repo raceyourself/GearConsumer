@@ -169,6 +169,7 @@ define({
         function onConnection(data) {
             if (data.detail.status) {
                 console.log('Connected to provider!');
+                sendRemoteConfigurationReq();
             }
         }
 
