@@ -5,15 +5,14 @@
  */
 
 define({
-    name: 'views/page/audioactive',
+    name: 'views/page/distanceunits',
     requires: [
         'core/event',
         'models/application',
         'models/race',
-        'models/settings',
-        'views/page/ageselect'
+        'models/settings'
     ],
-    def: function viewsPageAudioActive(req) {
+    def: function viewsPageDistanceUnits(req) {
         'use strict';
 
         var e = req.core.event,
@@ -23,20 +22,21 @@ define({
             page = null;
 
         function show() {
-            gear.ui.changePage('#audioactive');            
+            gear.ui.changePage('#distanceunits');            
         }
         
         function onPageShow() {
             e.listen('tizen.back', onBack);
             
-            var radios = document.getElementsByName('radio-audio-active');
+            var radios = document.getElementsByName('radio-distance-units');
             
             for(var i=0, length = radios.length; i < length; i++) {
-            	if(radios[i].value == 'On' && settings.getAudioActive())
+            	if(settings.getDistanceUnits() == radios[i].value)
             	{
+            		console.log('FOUND MATCHING RADIO - ' + radios[i].value + ", settings is " + settings.getDistanceUnits());
             		radios[i].checked = true;
-            	} else if(radios[i].value == 'Off' && !settings.getAudioActive()) {
-                    radios[i].checked = true;
+            	} else {
+                    radios[i].checked = false;            	    
             	}
             }
         }
@@ -55,9 +55,9 @@ define({
         }
         
         function init() {
-            page = document.getElementById('audioactive');
+            page = document.getElementById('distanceunits');
             
-            var radios = document.getElementsByName('radio-audio-active');
+            var radios = document.getElementsByName('radio-distance-units');
             for(var i=0, length=radios.length; i<length; i++) {
             	radios[i].addEventListener('click', onRadioClick);
             }
@@ -66,25 +66,19 @@ define({
         }
         
         function onRadioClick() {
-        	var radios = document.getElementsByName('radio-audio-active');
+        	var radios = document.getElementsByName('radio-distance-units');
             for(var i=0, length=radios.length; i<length; i++) {
-         	   if(radios[i].checked == true) {
+          	   if(radios[i].checked == true) {
          		   console.log('FOUND MATCHING RADIO - ' + radios[i].value);
-         		   if(radios[i].value == 'On') {
-         			   settings.setAudioActive(true);
-         		   } else {
-         			   settings.setAudioActive(false);
-         		   }
-         		   
+         		   settings.setDistanceUnits(radios[i].value);
          		   break;
          	   }
-         	   
             }
             e.fire('settingspage.show');
         }
         
         e.listeners({
-            'audioactive.show': show
+            'distanceunits.show': show
         });
         
         return {

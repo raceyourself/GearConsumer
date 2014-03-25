@@ -58,7 +58,7 @@
 		        	<div class="setter-btn" id="distance-minus">-</div>
 		        	<div class="setter-value">
 		        		<div id="distance-value">10.0</div>
-		        		<div class="setter-units">&nbsp;km&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;m</div>
+		        		<div class="setter-units" id ="distance-setter-units"></div>
 		        	</div>
 		        	<div class="setter-btn" id="distance-plus">+</div>
 		        	<img class="setter-ok" id="distance-ok" src="images/distance-set.png" alt="Set" />
@@ -118,13 +118,35 @@
                 <li class="li-has-radio">
                     <label>
                         On
-                        <input type="radio" name="radio-distance-units" value="On"/>
+                        <input type="radio" name="radio-audio-active" value="On"/>
                     </label>
                 </li>
                 <li class="li-has-radio">
                     <label>
                         Off
-                        <input type="radio" name="radio-distance-units" value="Off"/>
+                        <input type="radio" name="radio-audio-active" value="Off"/>
+                    </label>
+                </li>
+            </ul>
+        </div>
+    </div>
+    
+    <div class="ui-page" id="distanceunits">
+        <header class="ui-header">
+            <h2 class="ui-title">Distance Units</h2>
+        </header>
+        <div class="ui-content">
+            <ul class="ui-listview">
+                <li class="li-has-radio">
+                    <label>
+                        KM
+                        <input type="radio" name="radio-distance-units" value="KM"/>
+                    </label>
+                </li>
+                <li class="li-has-radio">
+                    <label>
+                        Miles
+                        <input type="radio" name="radio-distance-units" value="Miles"/>
                     </label>
                 </li>
             </ul>
@@ -140,14 +162,14 @@
                 <li class="li-has-multiline li-has-radio">
                     <label>
                         Pace
-                        <span class="li-text-sub">Min/km</span>
+                        <span class="li-text-sub" id="radio-pace-text">Min/km</span>
                         <input type="radio" name="radio-pace-units" value="Min/km"/>
                     </label>
                 </li>
                 <li class="li-has-multiline li-has-radio">
                     <label>
                         Speed
-                        <span class="li-text-sub">km/h</span>
+                        <span class="li-text-sub" id="radio-speed-text">km/h</span>
                         <input type="radio" name="radio-pace-units" value="km/h"/>
                     </label>
                 </li>
@@ -300,9 +322,15 @@
     	<div class="ui-content">
     		<ul class="ui-listview">
     			<li class="li-has-multiline">
-    				<a href="#" id="distance-units-btn">
+    				<a href="#" id="audioactive-btn">
     					Audio
     					<span class="li-text-sub" id="audio-text">On/Off</span>
+    				</a>
+    			</li>
+    			<li class="li-has-multiline">
+    				<a href="#" id="distance-units-btn">
+    					KM/miles
+    					<span class="li-text-sub" id="distance-text">KM</span>
     				</a>
     			</li>
     			<li class="li-has-multiline">
@@ -388,6 +416,17 @@
         </div>
     </div>
     
+    <div class="ui-page" id="no-bluetooth">
+    	<section class="ui-content bluetoothcenter" >
+		    Please connect your phone and turn on GPS
+    		<img src="images/icon_no_bluetooth_connection.png" />
+    		<div class="skip-btn skip-gps-btn" id="no-bluetooth-skip-btn" >
+    			<p>SKIP</p>
+    			*use only pedometer
+    		</div>
+    	</section>
+    </div>
+    
     <div class="ui-page" id="pregame">
         	<div id="pregame-waiting-gps" class="fill hidden">
 	        	<div class="">
@@ -395,7 +434,7 @@
 		        		<img src="images/gps_waiting.png" class="on" />
 		        		<img src="images/gps_locked.png" class="off" />
         				<p class='larger-text'>Waiting on GPS lock from phone</p>
-		           		<div class="skip-btn" id="pregame-skip-gps-btn">
+		           		<div class="skip-btn skip-gps-btn" id="pregame-skip-gps-btn">
 			        		<p>SKIP</p>
 			        		*use only pedometer
 			        	</div>

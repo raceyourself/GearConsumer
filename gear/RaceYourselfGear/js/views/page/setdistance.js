@@ -10,13 +10,16 @@ define({
         'core/event',
         'models/race',
         'models/settings',
-        'views/page/pregame'
+        'models/sap',
+        'views/page/pregame',
+        'views/page/no-bluetooth'
     ],
     def: function viewsPageSetDistance(req) {
         'use strict';
 
         var e = req.core.event,
             race = req.models.race,
+            sap = req.models.sap,
             settings = req.models.settings,
             page = null,
             d = 100,
@@ -30,6 +33,11 @@ define({
 
         function onPageShow() {
             d = settings.getDistance();
+            var dsu = '&nbsp;km&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;m';
+            if (settings.getDistanceUnits() == 'Miles') {
+            	dsu = '&nbsp;miles';
+            }
+            document.getElementById('distance-setter-units').innerHTML = dsu;
             render();
             e.listen('tizen.back', onBack);
         }
@@ -78,7 +86,12 @@ define({
         
         function onOk() {
             settings.setDistance(d);
-            e.fire('pregame.show');
+            if(sap.isConnected() || !sap.isAvailable()) {
+            	e.fire('pregame.show');
+            } else {
+            	e.fire('no-bluetooth.show');
+            }
+            
         }
 
         function bindEvents() {

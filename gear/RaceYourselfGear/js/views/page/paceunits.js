@@ -39,6 +39,14 @@ define({
                     radios[i].checked = false;            	    
             	}
             }
+            var pu = 'min/km'
+            var su = 'km/h';
+            if (settings.getDistanceUnits() == 'Miles') {
+            	pu = 'min/mile';
+            	su = 'mph';
+            }
+            document.getElementById('radio-pace-text').innerHTML = pu;
+            document.getElementById('radio-speed-text').innerHTML = su;
         }
 
         function onPageHide() {

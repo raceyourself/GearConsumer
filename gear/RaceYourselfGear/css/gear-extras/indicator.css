@@ -6,7 +6,7 @@
 .scrollbar-bar-type .scrollbar-indicator {
 	position: absolute;
 	height: 6px;
-	background-color: rgb(255, 144, 0);
+	background-color: #18cc08;
 }
 
 .scrollbar-over-type {
