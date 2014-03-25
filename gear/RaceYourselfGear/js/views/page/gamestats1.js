@@ -127,7 +127,12 @@ define({
             
             if (value > 1000) {
                 value = value / 1000;
-                decimals = Math.max(0, 4 - (~~value).toString().length);
+                u = 'kilometers';
+                if(value < 10) {
+                	decimals = 2;
+                } else {
+                	decimals = 1;
+                }
             }
             
             distanceEl.innerHTML = Number(value).toFixed(decimals);

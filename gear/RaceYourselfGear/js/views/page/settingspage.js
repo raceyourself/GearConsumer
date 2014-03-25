@@ -31,6 +31,59 @@ define({
         
         function onPageShow() {
             e.listen('tizen.back', onBack);
+            
+            var audioTextEl = document.getElementById('audio-text');
+            if(settings.getAudioActive()) {
+            	audioTextEl.innerHTML = 'On';
+            } else {
+            	audioTextEl.innerHTML = 'Off';
+            }
+            
+            var paceTextEl = document.getElementById('pace-text');
+            paceTextEl.innerHTML = settings.getPaceUnits();
+            
+            var ageTextEl = document.getElementById('age-text');
+            switch(settings.getAgeRange()) {
+            case 0:
+            	ageTextEl.innerHTML = 'No age chosen';
+            	break;
+            	
+            case 20:
+            	ageTextEl.innerHTML = '0-20';
+            	break;
+            	
+            case 25:
+            	ageTextEl.innerHTML = '21-30';
+            	break;
+            	
+            case 35:
+            	ageTextEl.innerHTML = '31-40';
+            	break;
+            	
+            case 45:
+            	ageTextEl.innerHTML = '41-50';
+            	break;
+            	
+            case 55: 
+                ageTextEl.innerHTML = '51-60';
+            	break;
+            	
+            case 65: 
+            	ageTextEl.innerHTML = '61-70';
+            	break;
+            	
+            case 75:
+            	ageTextEl.innerHTML = '71-80';
+            	break;
+            	
+            case 80:
+            	ageTextEl.innerHTML = '80+';
+            	break;
+            	
+            default:
+            	ageTextEl.innerHTML = 'No age chosen';
+            	break;
+            }
         }
 
         function onPageHide() {
@@ -49,6 +102,8 @@ define({
             document.getElementById('pace-units-btn').addEventListener('click', onPaceUnitsBtnClick);
             document.getElementById('age-btn').addEventListener('click', onAgeBtnClick);
             document.getElementById('about-btn').addEventListener('click', onAboutBtnClick);
+            
+            
         }
         
         function onDistanceUnitsBtnClick() {
