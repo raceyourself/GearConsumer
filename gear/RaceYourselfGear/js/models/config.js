@@ -75,8 +75,8 @@ define({
 			return config.catchupTime;
 		}
         
-        function saveConfig() {
-            if (s.add(STORAGE_KEY, config)) {
+        function saveConfig(configuration) {
+            if (s.add(STORAGE_KEY, configuration)) {
                 return true;
             }
             return false;
@@ -85,7 +85,7 @@ define({
         function onConfigurationUpdate(event) {
         	var configuration = event.detail;
         	console.log(configuration);
-        	if (configuration != null) config = configuration;
+        	saveConfig(configuration);
         }
         
         /**
@@ -95,7 +95,6 @@ define({
             config = s.get(STORAGE_KEY);
             if (config === null) {
                 config = defaults;
-                saveConfig();
             }
             e.listen('configuration.update', onConfigurationUpdate);
         }
