@@ -164,7 +164,8 @@ define({
             heartBeatOn = false,
             heartBeatOnFrameCount = 0,
             numAwardsAtFinish = 0,
-            unlockNotificationActive = false;
+            unlockNotificationActive = false,
+            hasBeenInGoalHRZone = false;
 
 			
 
@@ -228,13 +229,13 @@ define({
 				unlockNotificationActive = false;
 			}
 			
-			if(warmingUp)
-			{
-				if(data.pageY > badBG.height)
-				{
-					endWarmup();
-				}
-			}
+//			if(warmingUp)
+//			{
+//				if(data.pageY > badBG.height)
+//				{
+//					endWarmup();
+//				}
+//			}
 		}
         
         function isScrolling() {
@@ -276,7 +277,7 @@ define({
                 e.listen('pedometer.step', step);
                 e.listen('hrm.change', onHeartRateChange);
 
-                startCountdown();
+//                startCountdown();
             }
 
 			//reset any existing animations
@@ -322,6 +323,17 @@ define({
 //			setOpponent('dinosaur');
 
             zombieCatchupSpeed = -zombieStartOffset/config.getCatchupTime();
+            
+			startRun();
+        }
+        
+        //start the run, but not the game
+        function startRun()
+        {
+			//end warmup - now misnamed, actually sets the initial hr zone we want, based on goal type
+            endWarmup();
+			race.getOngoingRace().start();
+            startZombies();
         }
         
         function onAchievementAwarded(data)
@@ -425,21 +437,22 @@ define({
 			countDownParams.startTime = Date.now();
 		}
         function go() {
-            race.getOngoingRace().start();
-            startZombies();
+
             lastRender = Date.now();
             requestRender();
             countingdown = false;
             clearTimeout(bannerTimeout);
             bannerTimeout = setTimeout(clearbanner, countDownParams.stageDuration * 1000);
-            setCurrentHRZone("Recovery");
-            warmupTimeout = setTimeout(endWarmup, config.getWarmupPeriod()*1000 * timeMultiplier);	//5 minutes warmup
+
+            //warmupTimeout = setTimeout(endWarmup, config.getWarmupPeriod()*1000 * timeMultiplier);	//5 minutes warmup
 			countDownParams.outerRadius = countDownParams.outerRadiusMax;
 			countDownParams.startTime = Date.now();
 			//10 second notification of warming up
-            var warmupDurationMinutes = Math.floor(config.getWarmupPeriod() / 60);
-			setNotification(green, '#fff', 'Warm up for ' + warmupDurationMinutes + 'min', 'Tap to skip', 10*1000);
-			warmingUp = true;
+//            var warmupDurationMinutes = Math.floor(config.getWarmupPeriod() / 60);
+//			setNotification(green, '#fff', 'Warm up for ' + warmupDurationMinutes + 'min', 'Tap to skip', 10*1000);
+//			warmingUp = true;
+
+			sectionChanger
         }
         
         function restart() {
@@ -456,7 +469,7 @@ define({
 			warmingUp = false;
         	var r = race.getOngoingRace();
         	        	console.log("Warmup over. Goal is: " + r.getGoal());
-        	setNotification(green, '#fff', 'Warmup Over', null, 5*1000);
+//        	setNotification(green, '#fff', 'Warmup Over', null, 5*1000);
 
         	switch(r.getGoal())
         	{
@@ -532,7 +545,7 @@ define({
 
         if(zone == currentHRZone)
         {
-        	
+
         }
         else
         {
@@ -682,7 +695,7 @@ define({
             {
 				screenWidthDistance = Math.max( 13, Math.min( -zombieOffset + 2, 50)) +1;
 			}
-			if(numZombies>0)
+			if(numZombies>0 && hasBeenInGoalHRZone)
 			{
 				if(zombiePosWeight < 1) { zombiePosWeight += 0.02; }
 //				screenMidDistance = zombiePosWeight * zombieDistance + r.getDistance();
@@ -831,6 +844,7 @@ define({
         	}
         	else
         	{
+        		//check if we've the zone for the first time
         		clearInterval(heartBeatInterval);
         		heartBeatInterval = null;
         		heartBeatInterval = setInterval(heartBeatBeatOn, 1000);
@@ -841,6 +855,13 @@ define({
 				else if (hr > minHeartRate && !hrNotFound)
 				{
 					hrColour = '#fff';
+					if(!hasBeenInGoalHRZone)
+					{
+						hasBeenInGoalHRZone = true;
+						//start run
+						console.log('Reached target hr zone. Starting run');
+						setTimeout(progressToGame, 1000);
+					}
 				}
 				else
 				{
@@ -861,6 +882,13 @@ define({
 					}
 				}
 			}
+        }
+        
+        function progressToGame()
+        {
+        	setNotification(green, '#fff', 'Race Starting', 2000);
+			sectionChanger.setActiveSection(3, 1000);
+			setTimeout(startCountdown, 1000);
         }
 
 		function heartBeatBeatOn()
@@ -1433,7 +1461,7 @@ define({
             {
 	            case 'zombie':
 					// Zombies
-					if (zombieDistance !== false) {
+					if (zombieDistance !== false && hasBeenInGoalHRZone) {
 						for (var i=0;i<numZombies;i++) {
 							var zombie = zombies[i];
 							var x_offset = ((i*(zombie.width*0.3))+(i%2)*5 + zombie.width*0.3) * scale;
