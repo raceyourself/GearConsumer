@@ -867,6 +867,7 @@ define({
 		{
 //			setTimeout(heartBeatBeatOff, 250);
 			heartBeatOn = true;
+			e.fire('heart.beat');
 		}
 		
 //		function heartBeatBeatOff()

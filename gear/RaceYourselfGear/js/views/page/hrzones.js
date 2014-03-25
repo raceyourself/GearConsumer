@@ -46,13 +46,16 @@ define({
             grey = '606060',            
             headerHeight = 39,
             segmentHeight = 62,
-            dir = 1;
+            dir = 1,
+            heartBeatOnFrames = 0,
+            heartBeatOn = false;
 
         function show() {
         }
         
         function onPageShow() {
             e.listen('hrm.change', onHeartRateChange);
+            e.listen('heart.beat', onHeartBeat);
 			canvas.width = canvas.offsetWidth;
             canvas.height = canvas.offsetHeight;
             //above assignment gives bad values. hard-coding screen dimensions
@@ -72,6 +75,11 @@ define({
             //set hr zone thresholds
             
         }
+
+		function onHeartBeat() {
+			heartBeatOn = true;
+			heartBeatOnFrames = false;
+		}
 
 		function initHRZones() {
 		
@@ -131,6 +139,7 @@ define({
         function onPageHide() {
             e.die('hrm.change', onHeartRateChange);
             e.die('hrzone.change', onZoneChange);
+			e.die('hrzone.change', onZoneChange);
         }
         
         function onBack() {
@@ -185,9 +194,9 @@ define({
 			context.clearRect(0, 0, canvas.width, canvas.height);            
 
 			//change hr
-			hr += dir;
-			if(hr > 200) { dir = -1; }
-			if(hr < 50) { dir = 1; }
+//			hr += dir;
+//			if(hr > 200) { dir = -1; }
+//			if(hr < 50) { dir = 1; }
 
 			//header
 			var headerString;
@@ -323,6 +332,20 @@ define({
         
         function renderHeartRateCircle(height) {
         	
+        	//set heart larger on a beat
+        	var heartScale = 1;
+        	if(heartBeatOn)
+        	{
+        		heartScale = 1.2;
+        		heartBeatOnFrames++;
+        		if(heartBeatOnFrames>=3)
+        		{
+        			heartBeatOn = false;
+        			heartBeatOnFrames = 0;
+				}
+			}
+        	
+        	
         	//pos
         	var heartRadius = 115/2;
         	var hrXPos = canvas.width - heartRadius - 10;
@@ -347,7 +370,6 @@ define({
         	}
         	
         	//draw icon
-        	var heartScale = 1.0;
         	heartIcon.drawscaled(context, hrXPos - heartScale*heartIcon.width/2, hrYPos - heartScale*heartIcon.height/2 - 32, 0, heartScale);
         	
         	//text
