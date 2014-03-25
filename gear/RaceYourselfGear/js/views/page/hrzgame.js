@@ -16,6 +16,7 @@ define({
 //        'views/page/gameselect',
         'models/race',
         'models/hrm',
+        'models/mocks/hrm',
         'models/sprite',
         'models/settings',
         'models/config',
@@ -27,6 +28,7 @@ define({
         var e = req.core.event,
             race = req.models.race,
             hrm = req.models.hrm,
+            hrmMock = req.models.mocks.hrm,
             game = req.models.game,
             settings = req.models.settings,
             config = req.models.config,
@@ -110,8 +112,6 @@ define({
             minHeartRate = 120,
             maxPossibleHeartRate = 200,
             minPossibleHeartRate = 50,
-            hrInterval = false,
-            hrChangePeriod = 5000,
             lastHRtime = 0,
             hrColour = '#fff',
             zombieStartOffset = -11,
@@ -315,7 +315,6 @@ define({
             
             animate();
             requestRender();
-            hrInterval = setInterval(randomHR, hrChangePeriod);
             
             //get opponent type from game
 			setOpponent(game.getCurrentOpponentType());
@@ -807,22 +806,7 @@ define({
 		function setMinMaxHeartRate() {
 			//to be eventually based on age and user-defined goals. Just use values for 30yo aerobic exercise for now.
 		}
-        
-        //test function to provide random heart rate
-        function randomHR() {
-        	hr = Math.floor( 50 + 150 * (Math.random()) );			//random
-//        	hr = Math.floor(minHeartRate + 2);   					//warning
-//			hr = Math.floor( (minHeartRate + maxHeartRate)/2);   	//always good
-			
-//			hr = hr + 10 * Math.floor( Math.random() ) - 5;			//random walk
-//			hr = Math.floor(Math.min(hr, maxPossibleHeartRate));
-//			hr = Math.floor(Math.max(hr, minPossibleHeartRate));
-			
-			rToRTime = (60/hr) * 1e-3;
-			
-        	e.fire('hrm.change', {heartRate: hr});
-        }
-        
+                
         function handleHRChanged() 
         {
         	if(hrNotFound)
@@ -2141,11 +2125,13 @@ define({
 			}
 			image.onerror = function() {throw "could not load" + this.src; }
 			image.src = 'images/bg_bad.jpg';
-           /* if (hrm.isAvailable()) {
+            if (hrm.isAvailable()) {
                 hrm.start();
-            } else {
-                // TODO: Disable game?
-            } */                       
+                // Availability will change if start fails
+            } 
+            if (!hrm.isAvailable()) {
+            	hrmMock.start();
+            }                       
             
             bindEvents();
         }

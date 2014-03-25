@@ -84,7 +84,6 @@ define({
 		
         function onConfigurationUpdate(event) {
         	var configuration = event.detail;
-        	console.log(configuration);
         	saveConfig(configuration);
         }
         
