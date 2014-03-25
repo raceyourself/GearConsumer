@@ -8,19 +8,25 @@
 define({
     name: 'models/hrm',
     requires: [
-        'core/event'
+        'core/event',
+        'models/config'
     ],
     def: function modelsHeartRateMonitor(req) {
         'use strict';
 
-        var e = req,
+        var e = req.core.event,
+        	config = req.models.config,
             hrm = null,
-            lastData = {},
+            available = true,
+            lastData = {
+        		heartRate: 60,
+        		rRInterval: 0
+        	},
 
             CONTEXT_TYPE = 'HRM';
 
         /**
-         * Return last received motion data
+         * Return last received (un-smoothed) motion data
          * @return {object}
          */
         function getLastData() {
@@ -31,9 +37,14 @@ define({
          * @param {MotionHRMInfo} hrmInfo
          */
         function handleHrmInfo(hrmInfo) {
-            eventName = 'hrm.change';
-            lastdata = hrmInfo;
-            e.fire(eventName, hrmInfo);
+            var eventName = 'hrm.change';
+            var smoothing = config.getHrSmoothing();            
+            var info = {
+            		heartRate: ~~(smoothing*lastData.heartRate + (1-smoothing)*hrmInfo.heartRate),
+            		rRInterval: hrmInfo.rRInterval
+            };
+            lastData = hrmInfo;
+            e.fire(eventName, info);
         }
 
         /**
@@ -41,10 +52,15 @@ define({
          * @public
          */
         function start() {
-            hrm.start(
-                CONTEXT_TYPE,
-                handleHrmInfo
-            );
+        	try {
+	            hrm.start(
+	                CONTEXT_TYPE,
+	                handleHrmInfo
+	            );
+        	} catch(e) {
+        		available = false;
+        		console.error(e);
+        	}
         }
 
         /**
@@ -56,7 +72,7 @@ define({
         }
 
         function isAvailable() {
-            return !!hrm;
+            return !!hrm && available;
         }
         
         /**

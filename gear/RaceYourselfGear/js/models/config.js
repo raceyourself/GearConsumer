@@ -23,12 +23,10 @@ define({
                 sprintDuration: 30, 		//seconds
                 recoverDuration: 30,		//seconds
                 warningPeriod: 10,			//seconds outside of HR zone before zombies start closing
-                adaptPeriod: 10,				//seconds after change of zone before zombies can close
+                adaptPeriod: 10,			//seconds after change of zone before zombies can close
                 warmupPeriod: 5*60,			//seconds
                 dinoUnlockDist: 20,			//km
-                catchupTime: 500			//num ticks for zombies to catch up
-                 
-                
+                catchupTime: 500			//num ticks for zombies to catch up                
             },
             config = {},
             STORAGE_KEY = 'config';
@@ -77,58 +75,18 @@ define({
 			return config.catchupTime;
 		}
         
-        function saveConfig() {
-            if (s.add(STORAGE_KEY, config)) {
+        function saveConfig(configuration) {
+            if (s.add(STORAGE_KEY, configuration)) {
                 return true;
             }
             return false;
+        }		
+		
+        function onConfigurationUpdate(event) {
+        	var configuration = event.detail;
+        	saveConfig(configuration);
         }
-
-        /**
-         * Sets unit.
-         * @param {string} value
-         */
-        function setHrSmoothing(value) {
-        	config.hrSmoothing = value;
-        	return saveConfig();
-        }
-
-		function setSprintDuration(value) {
-			config.sprintDuration = value;
-			return saveConfig();
-		}
-
-		function setRecoverDuration(value) {
-			config.recoverDuration = value;
-			return saveConfig();
-		}
-
-		function setWarningPeriod(value) {
-			config.warningPeriod = value;
-			return saveConfig();
-		}
-		
-		function setAdaptPeriod(value) {
-			config.adaptPeriod = value;
-			return saveConfig();
-		}		
-		
-		function setWarmupPeriod(value) {
-			config.warmupPeriod = value;
-			return saveConfig();
-		}
-		
-		function setDinoUnlockDist(value) {
-			config.dinoUnlockDist = value;
-			return saveConfig();
-		}
-		
-		function setCatchupTime(value) {
-			config.catchupTime = value;
-			return saveConfig();
-		}
-		
-		
+        
         /**
          * Initializes module.
          */
@@ -136,29 +94,20 @@ define({
             config = s.get(STORAGE_KEY);
             if (config === null) {
                 config = defaults;
-                saveConfig();
             }
+            e.listen('configuration.update', onConfigurationUpdate);
         }
 
         return {
             init: init,
             getHrSmoothing : getHrSmoothing,
-            setHrSmoothing : setHrSmoothing,
             getSprintDuration : getSprintDuration,
-            setSprintDuration : setSprintDuration,
             getRecoverDuration : getRecoverDuration,
-            setRecoverDuration : setRecoverDuration,
             getWarningPeriod : getWarningPeriod,
-            setWarningPeriod : setWarningPeriod,
             getAdaptPeriod : getAdaptPeriod,
-            setAdaptPeriod : setAdaptPeriod,
             getWarmupPeriod : getWarmupPeriod,
-            setWarmupPeriod : setWarmupPeriod,
             getDinoUnlockDist : getDinoUnlockDist,
-            setDinoUnlockDist : setDinoUnlockDist,
-            getCatchupTime : getCatchupTime,
-            setCatchupTime : setCatchupTime,
-            
+            getCatchupTime : getCatchupTime            
         };
     }
 

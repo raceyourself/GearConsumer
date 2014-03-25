@@ -23,7 +23,9 @@ define({
 	    	STOP_TRACKING_REQ = "stop-tracking-req",
 	    	AUTHENTICATION_REQ = "authentication-req",
 	    	LOG_ANALYTICS = "log-analytics",
-	    	WEB_LINK_REQ = "web-link-req";
+	    	WEB_LINK_REQ = "web-link-req",
+	    	REMOTE_CONFIGURATION_REQ = "remote-configuration-req",
+	    	REMOTE_CONFIGURATION_RESP = "remote-configuration-resp";
 
         /**
          * Send request to get the status of the GPS (enabled/disabled/ready)
@@ -37,6 +39,24 @@ define({
                 SAP_CHANNEL,
                 {
                     messageType: GPS_STATUS_REQ
+                },
+                {
+                    silent: true
+                }
+            );
+        }
+
+        /**
+         * Send request to get the remote configuration
+         */
+        function sendRemoteConfigurationReq() {
+            if (!sap.isAvailable()) {
+                return false;
+            }
+            return sap.sendData(
+                SAP_CHANNEL,
+                {
+                    messageType: REMOTE_CONFIGURATION_REQ
                 },
                 {
                     silent: true
@@ -149,6 +169,7 @@ define({
         function onConnection(data) {
             if (data.detail.status) {
                 console.log('Connected to provider!');
+                sendRemoteConfigurationReq();
             }
         }
 
@@ -173,6 +194,15 @@ define({
             e.fire('gps.status', status);
         }
         
+        /**
+         * Fired on incoming remote configuration
+         */
+        function onRemoteConfiguration(data) {
+            var message = data.detail.message;
+            var configuration = message.CONFIGURATION;
+            e.fire('configuration.update', configuration);
+        }
+        
         function isAvailable() {
             return sap.isAvailable();
         }
@@ -180,7 +210,8 @@ define({
         e.listeners({
             'models.sap.init': onConnection,
             'models.sap.gps-position-data': onGpsPositionChanged,
-            'models.sap.gps-status-resp': onGpsStatusChanged
+            'models.sap.gps-status-resp': onGpsStatusChanged,
+            'models.sap.remote-configuration-resp': onRemoteConfiguration
         });
 
         return {

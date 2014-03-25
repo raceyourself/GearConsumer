@@ -9,6 +9,7 @@ define({
     requires: [
         'core/event',
         'views/page/gameachievements',
+		'views/page/hrzones',
         'views/page/gamestats1',
         'views/page/gamestats2',
         'views/page/gamestats3',
@@ -16,6 +17,7 @@ define({
 //        'views/page/gameselect',
         'models/race',
         'models/hrm',
+        'models/mocks/hrm',
         'models/sprite',
         'models/settings',
         'models/config',
@@ -27,6 +29,7 @@ define({
         var e = req.core.event,
             race = req.models.race,
             hrm = req.models.hrm,
+            hrmMock = req.models.mocks.hrm,
             game = req.models.game,
             settings = req.models.settings,
             config = req.models.config,
@@ -110,8 +113,6 @@ define({
             minHeartRate = 120,
             maxPossibleHeartRate = 200,
             minPossibleHeartRate = 50,
-            hrInterval = false,
-            hrChangePeriod = 5000,
             lastHRtime = 0,
             hrColour = '#fff',
             zombieStartOffset = -11,
@@ -315,7 +316,6 @@ define({
             
             animate();
             requestRender();
-            hrInterval = setInterval(randomHR, hrChangePeriod);
             
             //get opponent type from game
 			setOpponent(game.getCurrentOpponentType());
@@ -363,7 +363,6 @@ define({
             e.die('motion.wristup', onWristUp);
             visible = false;
             clearInterval(fpsInterval);
-            clearInterval(randomHR);
 			clearTimeout(warmupTimeout);
             clearTimeout(intervalTimeout);
             clearTimeout(adaptingTimeout);
@@ -807,22 +806,7 @@ define({
 		function setMinMaxHeartRate() {
 			//to be eventually based on age and user-defined goals. Just use values for 30yo aerobic exercise for now.
 		}
-        
-        //test function to provide random heart rate
-        function randomHR() {
-        	hr = Math.floor( 50 + 150 * (Math.random()) );			//random
-//        	hr = Math.floor(minHeartRate + 2);   					//warning
-//			hr = Math.floor( (minHeartRate + maxHeartRate)/2);   	//always good
-			
-//			hr = hr + 10 * Math.floor( Math.random() ) - 5;			//random walk
-//			hr = Math.floor(Math.min(hr, maxPossibleHeartRate));
-//			hr = Math.floor(Math.max(hr, minPossibleHeartRate));
-			
-			rToRTime = (60/hr) * 1e-3;
-			
-        	e.fire('hrm.change', {heartRate: hr});
-        }
-        
+                
         function handleHRChanged() 
         {
         	if(hrNotFound)
@@ -895,7 +879,8 @@ define({
         
         function step() {
             var r = race.getOngoingRace();
-            if (r.getDistance() < zombieDistance && !isDead) {
+//            if (r.getDistance() < zombieDistance && !isDead) {
+			if(zombieOffset >=0 && !isDead) {
                 if(!isDead)
                 {
                 r.data.caught_by = game.getCurrentOpponentType();
@@ -1346,6 +1331,7 @@ define({
 //				if(dist%500 == 0)
 				if(false)
 				{
+					// TODO: Make unit agnostic if enabled
 					context.textBaseline = "bottom";
 					context.textAlign = "right";
 					context.font = '24px Samsung Sans';
@@ -1383,12 +1369,19 @@ define({
 			{
 
 				//run
-				distkm = Math.round(r.getDistance()/100) / 10;
-				context.fillText(distkm + 'km', progressBarInset, progressBarHeight);
+				var d = r.getDistance();
+				var targetdist = TRACK_LENGTH;
+				var u = r.getShortDistanceUnits();
+				if (u == 'm') {
+					d = d / 1000;
+					targetdist = targetdist / 1000;
+					u = 'km';
+				}
+				
+				context.fillText(Number(d).toFixed(1) + u, progressBarInset, progressBarHeight);
 				//target
 				context.textAlign = 'right';
-				var targetdist = Math.round(TRACK_LENGTH/100)/10;
-				context.fillText(targetdist + 'km', canvas.width - progressBarInset, progressBarHeight);
+				context.fillText(Number(targetdist).toFixed(1) + u, canvas.width - progressBarInset, progressBarHeight);
 
 			}
 			else if(targetTime < Infinity)
@@ -1411,8 +1404,13 @@ define({
 				
 				//show distance run on right
 				context.textAlign = 'right';
-				var distkm = Math.round(r.getDistance()/100) / 10;
-				context.fillText(distkm + 'km', canvas.width - progressBarInset, progressBarHeight);
+				var d = r.getDistance();
+				var u = r.getShortDistanceUnits();
+				if (u == 'm') {
+					d = d / 1000;
+					u = 'km';
+				}
+				context.fillText(Number(d).toFixed(1) + u, canvas.width - progressBarInset, progressBarHeight);
 			}
 			}
 
@@ -1650,11 +1648,11 @@ define({
 				//text
                 var pace = r.getPace();
                 var paceString = mss(pace*60);
-                var paceUnits = 'min/km';
+                var paceUnits = r.getPaceUnits();
 	            if(settings.getPaceUnits() == 'km/h') {
 	                pace = r.getSpeed();
 	                paceString = Number(pace).toFixed(1);
-	                paceUnits = 'km/h';
+	                paceUnits = r.getSpeedUnits();
 	            }
 
 				var paceXPos = PaceXPosR - radius/2;
@@ -2141,11 +2139,13 @@ define({
 			}
 			image.onerror = function() {throw "could not load" + this.src; }
 			image.src = 'images/bg_bad.jpg';
-           /* if (hrm.isAvailable()) {
+            if (hrm.isAvailable()) {
                 hrm.start();
-            } else {
-                // TODO: Disable game?
-            } */                       
+                // Availability will change if start fails
+            } 
+            if (!hrm.isAvailable()) {
+            	hrmMock.start();
+            }                       
             
             bindEvents();
         }
