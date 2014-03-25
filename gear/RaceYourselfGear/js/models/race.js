@@ -252,7 +252,7 @@ define({
             
             if (currentTimestamp - ongoingRace.lastGpsTimestamp <= 2000) {
             	// if we're getting regular GPS updates, use them for speed and distance:
-                ongoingRace.speed = speed;
+                ongoingRace.speed = speed*3.6;  // convert m/s (GPS) into km/hr (rest of this app)
                 var positionDelta = (distance - ongoingRace.lastGpsDistance);
                 ongoingRace.distance += positionDelta;
                 
