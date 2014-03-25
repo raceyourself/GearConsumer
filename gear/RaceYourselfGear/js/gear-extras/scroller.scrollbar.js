@@ -227,15 +227,15 @@ Scroller.Scrollbar.Type["bar"] = extend( {}, Scroller.Scrollbar.Type.Interface, 
 	start: function( scrollbarElement, barElement ) {
 		var style = scrollbarElement.style,
 		duration = this.options.animationDuration;
-		style["-webkit-transition"] = "opacity " + duration / 1000 + "s ease";
+		//style["-webkit-transition"] = "opacity " + duration / 1000 + "s ease";
 		style["opacity"] = 1;
 	},
 
 	end: function( scrollbarElement, barElement ) {
 		var style = scrollbarElement.style,
 		duration = this.options.animationDuration;
-		style["-webkit-transition"] = "opacity " + duration / 1000 + "s ease";
-		style["opacity"] = 0;
+		//style["-webkit-transition"] = "opacity " + duration / 1000 + "s ease";
+		style["opacity"] = 1;
 	}
 });
 

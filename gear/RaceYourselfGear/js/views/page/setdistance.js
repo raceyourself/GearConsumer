@@ -85,7 +85,11 @@ define({
         }
         
         function onOk() {
-            settings.setDistance(d);
+        	var distance = d;
+            if (settings.getDistanceUnits() == 'Miles') {
+            	distance = distance / 1000;
+            }
+            settings.setDistance(distance);
             if(sap.isConnected() || !sap.isAvailable()) {
             	e.fire('pregame.show');
             } else {

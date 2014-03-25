@@ -392,7 +392,7 @@ define({
         }
         
         function onWristUp() {
-        	sectionChanger.setActiveSection(2, 1000);
+        	sectionChanger.setActiveSection(3, 1000);
         }        
         
         function onQuit() {
