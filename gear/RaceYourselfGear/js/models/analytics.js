@@ -18,10 +18,12 @@ define({
             provider = req.models.sapRaceYourself,
             queue = [],
             launchTime = Date.now(),
-            pageShowTime = Date.now(); // initial view
+            pageShowTime = Date.now(), // initial view
+            VERSION = 1;
         
         
         function log(event) {
+        	event.version = event.version || VERSION;
             queue.push(event);
             if (queue.length > 1) console.warn('Analytics queue has ' + queue.length + ' events');
             var queued;
@@ -48,12 +50,38 @@ define({
             log(data);
         }
         
+        function onAward(event) {
+            var achievement = event.detail.achievement;
+            var data = {
+            		'Award': achievement.key,
+                    'Time since launch': Date.now()-launchTime,
+                    'Event type': 'Achievement awarded'
+                    
+            };
+            log(data);
+        }
+        
+        function onRaceEnd(event) {
+        	var race = event.detail;
+            var data = {
+            		'Distance': race.getDistance(),
+            		'Distance units': race.getDistanceUnits(),
+            		'Time': race.getDuration(),
+                    'Time since launch': Date.now()-launchTime,
+                    'Event type': 'Completed a race'
+                    
+            };
+            log(data);
+        }
+        
         /**
          * Initializes the module
          */
         function init() {
             window.addEventListener('pageshow', onAnyPageShow);
             window.addEventListener('pagehide', onAnyPageHide);
+            e.listen('achievement.awarded', onAward)
+            e.listen('race.end', onRaceEnd)
         }
 
         return {
