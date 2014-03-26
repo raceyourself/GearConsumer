@@ -240,9 +240,9 @@ define({
 			
 			/// Zones
 			
-			var dt = (Date.now() - textRotation.lastUpdateTime) / 1000;
+			var hrdt = (Date.now() - textRotation.lastUpdateTime) / 1000;
 			textRotation.lastUpdateTime = Date.now();
-			textRotation.phase += dt;
+			textRotation.phase += hrdt;
 			textRotation.phase = textRotation.phase % textRotation.period;
 			var textPhaseProportion = textRotation.phase/textRotation.period;
 			

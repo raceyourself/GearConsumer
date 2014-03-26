@@ -334,6 +334,8 @@ define({
             endWarmup();
 			race.getOngoingRace().start();
             startZombies();
+			lastRender = Date.now();
+
         }
         
         function onAchievementAwarded(data)
@@ -438,7 +440,6 @@ define({
 		}
         function go() {
 
-            lastRender = Date.now();
             requestRender();
             countingdown = false;
             clearTimeout(bannerTimeout);
@@ -669,7 +670,7 @@ define({
         function zombieTick() 
         {
         	//zombies catch up
-        	if(zombiesCatchingUp)
+        	if(zombiesCatchingUp && hasBeenInGoalHRZone)
         	{
             	zombieOffset += zombieCatchupSpeed;
         	}
