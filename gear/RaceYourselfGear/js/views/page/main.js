@@ -26,25 +26,23 @@ define({
         }
         
         function onPageShow() {
-            e.listen('tizen.back', onBack);
-            e.fire('newmain.show');
+            setTimeout(onLoad, 1);
         }
 
         function onPageHide() {
-            e.die('tizen.back', onBack);
-        }
-        function onClick() {
-            e.fire('newmain.show');
         }
         
         function onBack() {
             app.closeApplication();
         }
+        
+        function onLoad() {
+        	e.fire('newmain.show');
+        }
 
         function bindEvents() {
             page.addEventListener('pageshow', onPageShow);
             page.addEventListener('pagehide', onPageHide);
-            //page.addEventListener('click', onClick);
         }
 
         function init() {

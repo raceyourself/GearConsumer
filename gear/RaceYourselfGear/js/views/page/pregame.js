@@ -52,6 +52,8 @@ define({
             
             e.listen('gps.status', onGpsStatus);
             provider.sendGpsStatusReq();
+            
+            e.fire(game.getCurrentGame()+'.preload');
         }
         
         function onPageHide() {

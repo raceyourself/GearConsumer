@@ -22,6 +22,8 @@
 	        <div class="footer">
 	        	<p class="text-center">Gear edition</p>
 	        </div>
+	        <div class="loading-bar" id="main-loading">
+	        </div>
         </section>
     </div>
     
@@ -61,7 +63,7 @@
 		        		<div class="setter-units" id ="distance-setter-units"></div>
 		        	</div>
 		        	<div class="setter-btn" id="distance-plus">+</div>
-		        	<img class="setter-ok" id="distance-ok" src="images/distance-set.png" alt="Set" />
+		        	<div class="setter-ok" id="distance-ok" >SET </div>
 	        	</div>
 	        </section>    	
 	    </div>
@@ -81,7 +83,7 @@
 		        		<div class="setter-units">&nbsp;&nbsp;hr&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;min</div>
 		        	</div>
 		        	<div class="setter-btn" id="time-plus">+</div>
-		        	<img class="setter-ok" id="time-ok" src="images/distance-set.png" alt="Set" />
+		        	<div class="setter-ok" id="time-ok">Set</div> 
 	        	</div>
 	        </section>    	
 	    </div>
@@ -139,8 +141,8 @@
             <ul class="ui-listview">
                 <li class="li-has-radio">
                     <label>
-                        KM
-                        <input type="radio" name="radio-distance-units" value="KM"/>
+                        Km
+                        <input type="radio" name="radio-distance-units" value="Km"/>
                     </label>
                 </li>
                 <li class="li-has-radio">
@@ -178,21 +180,23 @@
     </div>
     
     <div class="ui-page" id="zombietutorial">
+    	<header class="ui-header">
+    		<h2 class="ui-title">How to play</h2>
+    	</header>
     	<div id="zombie-tutorial-sectionchanger" class="ui-content">
-    		<div>
-    			<section class="section-active">
+    		<div >
+    			<section class="section-active zombie-tutorial" >
     				<img src="images/screen_menu_game_zombie_tutorial1.jpg"/>
     			</section>
-    			<section>  				
+    			<section class="zombie-tutorial">  				
     				<img src="images/screen_menu_game_zombie_tutorial2.jpg"/>
     			</section>
-    			<section>
+    			<section class="zombie-tutorial">
     				<img src="images/screen_menu_game_zombie_tutorial3.jpg" />
     			</section>
-    			<section>
-    				<a href="#" id="zombie-tutorial-end-btn">
-    					<img src="images/screen_menu_game_zombie_tutorial4.jpg"/>
-    				</a>
+    			<section class="zombie-tutorial">
+    				<img src="images/screen_menu_game_zombie_tutorial4.jpg"/>
+    				<div class="zombie-ok center" id="start-race-btn" >Race Now </div>
     			</section>
     		</div>
     	</div>
@@ -239,7 +243,7 @@
     
     <div class="ui-page" id="trainingtype">
     	<header class="ui-header" data-position="fixed">
-    		<h2 class="ui-title">Heartrate training</h2>
+    		<h2 class="ui-title">Heart rate training</h2>
     	</header>
     	<div class="ui-content">
     		<ul class="ui-listview">
@@ -329,14 +333,20 @@
     			</li>
     			<li class="li-has-multiline">
     				<a href="#" id="distance-units-btn">
-    					KM/miles
-    					<span class="li-text-sub" id="distance-text">KM</span>
+    					Km/miles
+    					<span class="li-text-sub" id="distance-text">Km</span>
     				</a>
     			</li>
     			<li class="li-has-multiline">
     				<a href="#" id="pace-units-btn">
     					Pace/speed
     					<span class="li-text-sub" id="pace-text">Min/km</span>
+    				</a>
+    			</li>
+    			<li class="li-has-multiline">
+    				<a href="#" id="vibrate-btn">
+    					Vibration
+    					<span class="li-text-sub" id="vibrate-text">On/Off</span>
     				</a>
     			</li>
     			<li class="li-has-multiline">
@@ -351,6 +361,28 @@
     				</a>
     			</li>
     		</ul>
+    	</div>
+    </div>
+    
+    <div class="ui-page" id="vibratesetting">
+    	<header class="ui-header" data-position="fixed">
+    		<h2 class="ui-title">Vibration</h2>
+    	</header>
+    	<div class="ui-content">
+    		<ul class="ui-listview">
+                <li class="li-has-radio">
+                    <label>
+                        On
+                        <input type="radio" name="radio-vibrate-active" value="On"/>
+                    </label>
+                </li>
+                <li class="li-has-radio">
+                    <label>
+                        Off
+                        <input type="radio" name="radio-vibrate-active" value="Off"/>
+                    </label>
+                </li>
+            </ul>
     	</div>
     </div>
     
@@ -373,7 +405,7 @@
     	<header class="ui-header" data-position="fixed">
     		<h2 class="ui-title">History</h2>
     	</header>
-    	<div class="ui-content">
+    	<div class="ui-content padding-history">
     		You have not yet completed any races - your previous races will be shown here.
 		</div>
     </div>
@@ -487,7 +519,7 @@
 						Canvas not supported
 					</canvas>
 				</section>
-				<section class="section-active" id="game-canvas">
+				<section id="game-canvas">
 				  	<canvas id="race-canvas">
 				       	Canvas not supported
 				    </canvas>
@@ -753,7 +785,7 @@
     </div>
     
     <div class="ui-page" id="error-page">
-    	<p><b>ERROR!</b></p>
+    	<p><b>OOPS!</b></p>
     	<div id="error-message">
     	</div>
     </div>

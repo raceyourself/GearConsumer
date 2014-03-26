@@ -85,8 +85,8 @@ define({
             boulderGameImage = null,
             dinoUnlockImageFS = null,
             finishedImage = null,
+            awardImage = null,
             numZombies = 0,
-            zombieDistance = false,
             zombieInterval = false,
             zombieSpeed = 0,
             completionSound = null,
@@ -164,7 +164,12 @@ define({
             heartBeatOn = false,
             heartBeatOnFrameCount = 0,
             numAwardsAtFinish = 0,
-            unlockNotificationActive = false;
+            unlockNotificationActive = false,
+            hasBeenInGoalHRZone = false,
+            loaded = false,
+            loading = false,
+            waiting = false,
+            pendingAssets = 0;
 
 			
 
@@ -204,6 +209,8 @@ define({
 
 		function showUnlockNotification(game, time)
 		{
+			//switch to game screen
+			sectionChanger.setActiveSection(3, 500);
 			//vibrate
 			navigator.vibrate([10, 10, 10, 10, 10, 10, 10]);
 			unlockNotification = game;
@@ -214,7 +221,7 @@ define({
 
 		function onTapHandler(data)
 		{
-			if(isScrolling()) return;
+			if(isScrolling() && !finished) return;
 			//dismiss
 			clearUnlockNotification();
 
@@ -228,13 +235,13 @@ define({
 				unlockNotificationActive = false;
 			}
 			
-			if(warmingUp)
-			{
-				if(data.pageY > badBG.height)
-				{
-					endWarmup();
-				}
-			}
+//			if(warmingUp)
+//			{
+//				if(data.pageY > badBG.height)
+//				{
+//					endWarmup();
+//				}
+//			}
 		}
         
         function isScrolling() {
@@ -256,6 +263,11 @@ define({
 
 
         function onPageShow() {
+        	if (!loaded) {
+        		waiting = true;
+        		loadAssets();
+        		return;
+        	}
             visible = true;
             finished = false;
             sectionChanger = new SectionChanger(changer, {
@@ -276,7 +288,7 @@ define({
                 e.listen('pedometer.step', step);
                 e.listen('hrm.change', onHeartRateChange);
 
-                startCountdown();
+//                startCountdown();
             }
 
 			//reset any existing animations
@@ -322,11 +334,24 @@ define({
 //			setOpponent('dinosaur');
 
             zombieCatchupSpeed = -zombieStartOffset/config.getCatchupTime();
+            
+			startRun();
+        }
+        
+        //start the run, but not the game
+        function startRun()
+        {
+			//end warmup - now misnamed, actually sets the initial hr zone we want, based on goal type
+            endWarmup();
+			race.getOngoingRace().start();
+            startZombies();
+			lastRender = Date.now();
+
         }
         
         function onAchievementAwarded(data)
         {
-        	setNotification( green, '#fff', 'Award Unlocked!', 3*1000);
+        	setNotification( green, '#fff', 'Award Unlocked!', null, 3*1000);
 			navigator.vibrate([100, 50, 100, 50]);
 			if(finished)
 			{
@@ -425,21 +450,21 @@ define({
 			countDownParams.startTime = Date.now();
 		}
         function go() {
-            race.getOngoingRace().start();
-            startZombies();
-            lastRender = Date.now();
+
             requestRender();
             countingdown = false;
             clearTimeout(bannerTimeout);
             bannerTimeout = setTimeout(clearbanner, countDownParams.stageDuration * 1000);
-            setCurrentHRZone("Recovery");
-            warmupTimeout = setTimeout(endWarmup, config.getWarmupPeriod()*1000 * timeMultiplier);	//5 minutes warmup
+
+            //warmupTimeout = setTimeout(endWarmup, config.getWarmupPeriod()*1000 * timeMultiplier);	//5 minutes warmup
 			countDownParams.outerRadius = countDownParams.outerRadiusMax;
 			countDownParams.startTime = Date.now();
 			//10 second notification of warming up
-            var warmupDurationMinutes = Math.floor(config.getWarmupPeriod() / 60);
-			setNotification(green, '#fff', 'Warm up for ' + warmupDurationMinutes + 'min', 'Tap to skip', 10*1000);
-			warmingUp = true;
+//            var warmupDurationMinutes = Math.floor(config.getWarmupPeriod() / 60);
+//			setNotification(green, '#fff', 'Warm up for ' + warmupDurationMinutes + 'min', 'Tap to skip', 10*1000);
+//			warmingUp = true;
+
+			sectionChanger
         }
         
         function restart() {
@@ -456,7 +481,7 @@ define({
 			warmingUp = false;
         	var r = race.getOngoingRace();
         	        	console.log("Warmup over. Goal is: " + r.getGoal());
-        	setNotification(green, '#fff', 'Warmup Over', null, 5*1000);
+//        	setNotification(green, '#fff', 'Warmup Over', null, 5*1000);
 
         	switch(r.getGoal())
         	{
@@ -532,7 +557,7 @@ define({
 
         if(zone == currentHRZone)
         {
-        	
+
         }
         else
         {
@@ -647,7 +672,6 @@ define({
                 zombies[i].time = animDelay;
             }
             zombieOffset = zombieStartOffset;
-            zombieDistance = zombieOffset;
 //            int intervalTime = Math.min(350, 750-(wave*50));
 			var intervalTime = 33;
             zombieInterval = setInterval(zombieTick, intervalTime);
@@ -656,7 +680,7 @@ define({
         function zombieTick() 
         {
         	//zombies catch up
-        	if(zombiesCatchingUp)
+        	if(zombiesCatchingUp && hasBeenInGoalHRZone)
         	{
             	zombieOffset += zombieCatchupSpeed;
         	}
@@ -673,37 +697,14 @@ define({
         	}
         	
         	var r = race.getOngoingRace();
-        	zombieDistance = r.getDistance() + zombieOffset;
             requestRender();
             step();
-            
-            //general update of track window
-            if(!isDead)
-            {
-				screenWidthDistance = Math.max( 13, Math.min( -zombieOffset + 2, 50)) +1;
-			}
-			if(numZombies>0)
-			{
-				if(zombiePosWeight < 1) { zombiePosWeight += 0.02; }
-//				screenMidDistance = zombiePosWeight * zombieDistance + r.getDistance();
-				var screenLeftDistanceZ = (zombieDistance + r.getDistance() - screenWidthDistance)/2 - 4;
-				var screenLeftDistanceNoZ = r.getDistance() - screenWidthDistance/2 - 2;
-				//lerp
-				var ease = Math.sin( Math.sin(zombiePosWeight*(Math.PI / 2)) );
-				screenLeftDistance = screenLeftDistanceNoZ + ease * (screenLeftDistanceZ - screenLeftDistanceNoZ);
-			}
-			else
-			{
-//				screenMidDistance = r.getDistance();
-				screenLeftDistance = r.getDistance() - screenWidthDistance/2 - 2;
-			}
-			
-//			screenLeftDistance = screenMidDistance = screenWidthDistance/2;
-			
+            			
 			//check how long since heartrate
 			if( Date.now() - lastHRtime > 10*1000 )
 			{
 				hrNotFound = true;			
+				e.fire('heartrate.lost');
 			}
 	
 			//Update Heart Rate related mechanics
@@ -797,7 +798,6 @@ define({
         
         function stopZombies() {
             clearInterval(zombieInterval);
-            zombieDistance = false;            
         }
         
         
@@ -831,6 +831,7 @@ define({
         	}
         	else
         	{
+        		//check if we've the zone for the first time
         		clearInterval(heartBeatInterval);
         		heartBeatInterval = null;
         		heartBeatInterval = setInterval(heartBeatBeatOn, 1000);
@@ -841,6 +842,13 @@ define({
 				else if (hr > minHeartRate && !hrNotFound)
 				{
 					hrColour = '#fff';
+					if(!hasBeenInGoalHRZone)
+					{
+						hasBeenInGoalHRZone = true;
+						//start run
+						console.log('Reached target hr zone. Starting run');
+						setTimeout(progressToGame, 1000);
+					}
 				}
 				else
 				{
@@ -862,11 +870,19 @@ define({
 				}
 			}
         }
+        
+        function progressToGame()
+        {
+        	setNotification(green, '#fff', 'Race Starting', null, 2000);
+			sectionChanger.setActiveSection(3, 1000);
+			setTimeout(startCountdown, 1000);
+        }
 
 		function heartBeatBeatOn()
 		{
 //			setTimeout(heartBeatBeatOff, 250);
 			heartBeatOn = true;
+			e.fire('heart.beat');
 		}
 		
 //		function heartBeatBeatOff()
@@ -923,6 +939,7 @@ define({
                 navigator.vibrate(1000);
                 showUnlockNotification('finished', 5);
                 finished = true;
+                sectionChanger.scrollbar.element.classList.toggle('hidden', true);
                 numAwardsAtFinish = 0;
                 e.fire('race.end', r);
                 r.stop();
@@ -932,8 +949,8 @@ define({
                 return;
             }
             
-            if (lastDistanceAwarded < r.getDistance()) {
-                var distance = r.getDistance();
+            if (lastDistanceAwarded < r.getMetricDistance()) {
+                var distance = r.getMetricDistance();
                 r.addPoints((distance - lastDistanceAwarded)*ppm);
                 lastDistanceAwarded = distance;
             }
@@ -1020,6 +1037,35 @@ define({
 
         function render() {
             if (!visible) return;
+            
+        	var r = race.getOngoingRace();
+        	var playerDistance = r.getMetricDistance();
+        	var zOffset = zombieOffset;
+        	var zDistance = playerDistance + zombieOffset;
+        	
+            //general update of track window
+            if(!isDead)
+            {
+				screenWidthDistance = Math.max( 13, Math.min( -zOffset + 2, 50)) +1;
+			}
+			if(numZombies>0 && hasBeenInGoalHRZone)
+			{
+				if(zombiePosWeight < 1) { zombiePosWeight += 0.02; }
+//				screenMidDistance = zombiePosWeight * zDistance + playerDistance;
+				var screenLeftDistanceZ = (zDistance + playerDistance - screenWidthDistance)/2 - 4;
+				var screenLeftDistanceNoZ = playerDistance - screenWidthDistance/2 - 2;
+				//lerp
+				var ease = Math.sin( Math.sin(zombiePosWeight*(Math.PI / 2)) );
+				screenLeftDistance = (1-ease)*screenLeftDistanceNoZ + ease*screenLeftDistanceZ;
+			}
+			else
+			{
+//				screenMidDistance = playerDistance;
+				screenLeftDistance = playerDistance - screenWidthDistance/2 - 2;
+			}
+            
+//			screenLeftDistance = screenMidDistance = screenWidthDistance/2;
+			
             var dt = 0;
             var trackHeight = canvas.height - badBG.height;
             var trackThickness = 4;
@@ -1071,7 +1117,6 @@ define({
             
             context.clearRect(0, 0, canvas.width, canvas.height);            
             var trackWidth = canvas.width - 0 - runner.sprite.width;
-            var r = race.getOngoingRace();
 
 			
 			//draw good bg
@@ -1105,9 +1150,9 @@ define({
 				context.save();
 				context.translate(canvas.width - gpsRing.width/2 * GPSscale, gpsRing.height/2 * GPSscale);
 				gpsRing.drawscaled(context, - gpsRing.width/2*GPSscale, -gpsRing.height/2 * GPSscale, 0, GPSscale);
-				if(hasGPSUpdate)
-				{
-					gpsDot.drawscaled(context, - gpsDot.width/2*GPSscale, -gpsDot.height/2 * GPSscale, 0, GPSscale);
+
+				if(hasGPSUpdate) {
+					gpsDot.drawscaled(context, - gpsDot.width/2*GPSscale, -gpsDot.height/2 * GPSscale + 0.5*GPSscale, 0, GPSscale);
 				}
 				context.restore();
 
@@ -1120,8 +1165,8 @@ define({
                 context.fillText(banner, canvas.width/2, 25);
             }
             
-            if (banner === false && zombieDistance !== false) {
-                var delta = r.getDistance() - zombieDistance;
+            if (banner === false && zDistance !== false) {
+                var delta = playerDistance - zDistance;
                 delta = ~~delta;
                 var postfix = 'ahead';
                 var prefix = '';
@@ -1309,6 +1354,11 @@ define({
 			}
 			
 			// Track
+			
+			//black line above track
+			context.fillStyle = '#000';
+			context.fillRect(0, badBG.height - 7, canvas.width, 10);
+			
             context.beginPath();
             context.moveTo(0, canvas.height - trackHeight);
             context.lineTo(canvas.width, canvas.height - trackHeight);
@@ -1328,7 +1378,7 @@ define({
 			
 			//draw distance markers for screen range
 			context.beginPath();
-			var distMarkerSpacing = 10;
+			var distMarkerSpacing = 2.5;
 			var distMarkerIndex = Math.floor(screenLeftDistance/distMarkerSpacing);
 			distMarkerIndex = Math.max(distMarkerIndex, 0);
 			while (distMarkerIndex * distMarkerSpacing <= (screenLeftDistance + 2*screenWidthDistance) )
@@ -1350,15 +1400,15 @@ define({
 				}
 				else
 				{
-					var distMarkerHeight = 12;
-					if(dist%100 == 0) { distMarkerHeight = 20; }
+					var distMarkerHeight = 6;
+//					if(dist%100 == 0) { distMarkerHeight = 20; }
 //					context.fillText('' + dist, distanceToTrackPos(dist), canvas.height-25);
 					context.moveTo(screenPosX, canvas.height - trackHeight +1);
 					context.lineTo(screenPosX, canvas.height - (trackHeight -3 - distMarkerHeight*scale));
 				}
 				distMarkerIndex++;
 			}
-			context.lineWidth = trackThickness*0.75;
+			context.lineWidth = trackThickness*0.5;
 			context.strokeStyle = "#fff";
 			context.stroke();
 			
@@ -1424,7 +1474,7 @@ define({
 			
             scale = 10/screenWidthDistance;
             
-            var playerXPos = 0 + distanceToTrackPos(r.getDistance())
+            var playerXPos = 0 + distanceToTrackPos(playerDistance)
             
             var opponentType = game.getCurrentOpponentType()
 //            opponentType = 'dinosaur';
@@ -1432,7 +1482,7 @@ define({
             {
 	            case 'zombie':
 					// Zombies
-					if (zombieDistance !== false) {
+					if (zDistance !== false && hasBeenInGoalHRZone) {
 						for (var i=0;i<numZombies;i++) {
 							var zombie = zombies[i];
 							var x_offset = ((i*(zombie.width*0.3))+(i%2)*5 + zombie.width*0.3) * scale;
@@ -1440,7 +1490,7 @@ define({
 //							if (i%2==1) context.globalAlpha = 0.75;
 //							else context.globalAlpha = 1;
 							context.globalAlpha = 1;
-							var zombiePos = 0 + distanceToTrackPos(zombieDistance) - x_offset;
+							var zombiePos = 0 + distanceToTrackPos(zDistance) - x_offset;
 		//                    zombiePos -= screenLeftDistance;
 							if(!isDead || zombiePos < playerXPos - 10)
 							{	
@@ -1463,16 +1513,16 @@ define({
 					}
 					break;
 				case 'dinosaur':
-					if(zombieDistance != false && currentHRZone!='Recovery' ) {
-						var dinoPos = 0 + distanceToTrackPos(zombieDistance);
+					if(zDistance != false && currentHRZone!='Recovery' ) {
+						var dinoPos = 0 + distanceToTrackPos(zDistance);
 						var dinoScale = scale * 1.5;
 						dino.drawscaled(context, dinoPos - dino.width * 0.6 * dinoScale, canvas.height - (dino.height - 25) * dinoScale - trackHeight - 5* scale, dt, dinoScale);
 					}
 					break;
 				case 'boulder':
-					if(zombieDistance != false) 
+					if(zDistance != false) 
 					{
-						var boulderPos = 0 + distanceToTrackPos(zombieDistance);
+						var boulderPos = 0 + distanceToTrackPos(zDistance);
 						context.save();
 						boulder.rotation += dt*boulder.rotationSpeed;
 						context.translate(boulderPos, canvas.height - boulder.height * scale - trackHeight - 5*scale);
@@ -1497,7 +1547,7 @@ define({
              	runner = runnerAnimations.zombieDead;
             }
             runner.sprite.drawscaled(context, playerXPos, canvas.height -playerOffset , dt, playerScale);
-            
+        	
 			if(!countingdown)
             {
 				// Heart Rate
@@ -1695,7 +1745,7 @@ define({
 						context.font = '24px Samsung Sans';
 						context.fillText('m', distXPos, distYPos + 38);
 						//number
-						var delta = Math.round(r.getDistance() - zombieDistance);
+						var delta = Math.round(playerDistance - zDistance);
 						context.font = '56px Samsung Sans';
 						context.fillText(delta, distXPos, distYPos +4);
 					}
@@ -1799,13 +1849,22 @@ define({
 						context.textBaseline = 'middle';
 						context.fillStyle = '#fff';
 						context.fillText('Training Complete', centreX, 40);
+						var margin = 5;
+						context.textBaseline = 'bottom';
 						if(numAwardsAtFinish == 1)
 						{
-							context.fillText('1 Award Unlocked', centreX, canvas.height - 30);
+							context.fillText('1 Award Unlocked', centreX, canvas.height - margin - margin*3 - awardImage.height);
 						}
 						else if(numAwardsAtFinish >1)
 						{
-							context.fillText(numAwardsAtFinish + ' Awards Unlocked', centreX, canvas.height - 30);
+							context.fillText(numAwardsAtFinish + ' Awards Unlocked', centreX, canvas.height - margin - margin*3 - awardImage.height);
+						}
+						if (numAwardsAtFinish > 0) {
+							var width = (awardImage.width+margin)*numAwardsAtFinish - margin;
+							var left = centreX - width/2;
+							for (var i=0; i < numAwardsAtFinish; i++) {
+								awardImage.draw(context, left + (awardImage.width+margin)*i, canvas.height - margin*3 - awardImage.height, 0);
+							}
 						}
 						
 						break;
@@ -1834,8 +1893,8 @@ define({
         }
        
         function distanceToTrackPos(distance)
-        {
-        	var trackWidth = canvas.width - 0 - runner.sprite.width;
+        {        	
+        	var trackWidth = canvas.width - 0 -  runner.sprite.width;
         	var pos = trackWidth * (distance - screenLeftDistance) / (screenWidthDistance);
         	return pos;
         }
@@ -1877,6 +1936,18 @@ define({
             canvas = document.getElementById('race-canvas');
             context = canvas.getContext('2d');
             
+            if (hrm.isAvailable()) {
+                hrm.start();
+                // Availability will change if start fails
+            } 
+            if (!hrm.isAvailable()) {
+            	hrmMock.start();
+            }                       
+            
+            bindEvents();
+        }
+        
+        function loadAssets() {
             // Set up animation transitions
             runnerAnimations.idle.previous = null;
             runnerAnimations.idle.next = runnerAnimations.running;
@@ -1885,84 +1956,38 @@ define({
             runnerAnimations.sprinting.previous = runnerAnimations.running;
             runnerAnimations.sprinting.next = null;
             
-            var image = new Image();            
-            image.onload = function() {
+            loadImage('images/animation_runner_green_still.png', function() {
                 runnerAnimations.idle.sprite = new Sprite(this, this.width, 1000);
                 runner = runnerAnimations.running;
-            }
-            image.onerror = function() {
-                throw "Could not load " + this.src;
-            }
-            image.src = 'images/animation_runner_green_still.png';
+            });
 
-
-            image = new Image();
-            image.onload = function() {
+            loadImage('images/animation_runner_green.png', function() {
                 runnerAnimations.running.sprite = new Sprite(this, this.width / 6, 500);
                 runnerAnimations.sprinting.sprite = new Sprite(this, this.width / 6, 500);
-            }
-            image.onerror = function() {
-                throw "Could not load " + this.src;
-            }
-            image.src = 'images/animation_runner_green.png';
+            });
 
-			image = new Image();
-            image.onload = function() {
+            loadImage('images/animation_runner_red.png', function() {
                 runnerAnimations.running_red.sprite = new Sprite(this, this.width / 6, 500);
                 runnerAnimations.sprinting_red.sprite = new Sprite(this, this.width / 6, 500);
-            }
-            image.onerror = function() {
-                throw "Could not load " + this.src;
-            }
-            image.src = 'images/animation_runner_red.png';
+            });
 
-			image = new Image();
-            image.onload = function() {
+            loadImage('images/animation_runner_red_stationary.png', function() {
                 runnerAnimations.idle_red.sprite = new Sprite(this, this.width, 500);
-            }
-            image.onerror = function() {
-                throw "Could not load " + this.src;
-            }
-            image.src = 'images/animation_runner_red_stationary.png';
+            });
             
-			image = new Image();
-            image.onload = function() {
+            loadImage('images/animation_cloud.png', function() {
                 runnerAnimations.zombieDead.sprite = new Sprite(this, this.width / 2, 1000);
-            }
-            image.onerror = function() {
-                throw "Could not load " + this.src;
-            }
-            image.src = 'images/animation_cloud.png';
+            });
 
-            /*
-            image = new Image();
-            image.onload = function() {
-                runnerAnimations.sprinting.sprite = new Sprite(this, this.width / 6, 2500);
-            }
-            image.onerror = function() {
-                throw "Could not load " + this.src;
-            }
-            image.src = 'images/runner-sprinting-anim.png';
-            */
-
-            image = new Image();
-            image.onload = function() {
+            loadImage('images/animation_zombie1.png', function() {
                 zombies.push(new Sprite(this, this.width / 6, 1000));
-            }
-            image.onerror = function() {
-                throw "Could not load " + this.src;
-            }
-            image.src = 'images/animation_zombie1.png';
+            });
 
 			//zombie idle
-            image = new Image();
-            image.onload = function() {
+            loadImage('images/animation_zombie_stationary.png', function() {
                 zombieIdle = new Sprite(this, this.width, 1000);
-            }
-            image.onerror = function() {
-                throw "Could not load " + this.src;
-            }
-            image.src = 'images/animation_zombie_stationary.png';
+            });
+            
             
             zombieMoan = new Audio('audio/zombie_moan.wav');
             zombieMoan.onerror = function() {
@@ -1978,12 +2003,10 @@ define({
             }           
             
 			dinoRoar = new Audio('audio/T Rex Roar.wav');
-			dinoRoar.onload = function () {
-				dionKill = this;
-			}
             dinoRoar.onerror = function() {
                 throw "Could not load " + this.src;
             }
+            dinoKill = dinoRoar;
             
             //chime
             chime = new Audio('audio/Chime.wav');
@@ -1991,176 +2014,138 @@ define({
             
             
             //heart     
-        	image = new Image();
-        	image.onload = function() {
+            loadImage('images/image_heart_green.png', function() {
         		heartGreen = new Sprite(this, this.width, 1000);
         		heartGreen.scale = 0.5;
-        	}
-            image.onerror = function() {
-                throw "Could not load " + this.src;
-            }
-            image.src = 'images/image_heart_green.png';
+        	});
 
-        	image = new Image();
-        	image.onload = function() {
+            loadImage('images/image_heart_red.png', function() {
         		heartRed = new Sprite(this, this.width, 1000);
         		heartRed.scale = 0.5;
-        	}
-            image.onerror = function() {
-                throw "Could not load " + this.src;
-            }
-            image.src = 'images/image_heart_red.png';
+        	});
             
-			image = new Image();
-        	image.onload = function() {
+            loadImage('images/image_heart_black.png', function() {
         		heartBlack = new Sprite(this, this.width, 1000);
         		heartBlack.scale = 0.5;
-        	}
-            image.onerror = function() {
-                throw "Could not load " + this.src;
-            }
-            image.src = 'images/image_heart_black.png';
+        	});
             
                         
             //gps
-            image = new Image();
-            image.onload = function() {
+			loadImage('images/image_gps target.png', function() {
             	gpsRing = new Sprite(this, this.width, 10);
-			}
-			image.onerror = function() { throw "could not load" + this.src; }
-			image.src = 'images/image_gps target.png';
+			});
 
-
-
-            image = new Image();
-            image.onload = function() {
+			loadImage('images/image_gps green circle.png', function() {
             	gpsDot = new Sprite(this, this.width, 10);
-			}
-			image.onerror = function() { throw "could not load" + this.src; }
-			image.src = 'images/image_gps green circle.png';
+			});
 
-
-
-
-						
 			//sweat points
-			image = new Image();
-			image.onload = function() {
+			loadImage('images/image_sweat_point_green.png', function() {
 				sweat = new Sprite(this, this.width, 1000);
 				animatedSprites.push(sweat);
-			}
-			image.onerror = function() { throw "could not load" + this.src; }
-			image.src = 'images/image_sweat_point_green.png';
+			});
 
-			image = new Image();
-			image.onload = function() {
+			loadImage('images/image_sweat_point_red.png', function() {
 				sweat_red = new Sprite(this, this.width, 1000);
 				animatedSprites.push(sweat_red);
-			}
-			image.onerror = function() { throw "could not load" + this.src; }
-			image.src = 'images/image_sweat_point_red.png';
+			});
 			            
             //dead image
-			image = new Image();
-			image.onload = function() {
+			loadImage('images/image_skull.png', function() {
 				deadImage = new Sprite(this, this.width, 1000);
-			}
-			image.onerror = function() { throw "could not load" + this.src; }
-			image.src = 'images/image_skull.png';
+			});
                         
  			//dead player image
-			image = new Image();
-			image.onload = function() {
+			loadImage('images/image_skull.png', function() {
 				deadRunnerImage = new Sprite(this, this.width, 1000);
-			}
-			image.onerror = function() { throw "could not load" + this.src; }
-			image.src = 'images/image_skull.png';
+			});
 			      
 			//dino image
-			image = new Image();
-			image.onload = function() {
-				dino = new Sprite(this, this.width/10, 1000);
-			}
-			image.onerror = function() { throw "could not load" + this.src; }
-			image.src = 'images/animation_dino.png';
+			loadImage('images/animation_dino_small_running.png', function() {
+				dino = new Sprite(this, this.width/5, 750);
+			});
 			
 			//boulder image
-			image = new Image();
-			image.onload = function() {
+			loadImage('images/image_boulder_achievement_screen.png', function() {
 				boulder = new Sprite(this, this.width, 1000);
 				boulder.rotation = 0;
 				boulder.rotationSpeed = 0.2;
-			}
-			image.onerror = function() { throw "could not load" + this.src; }
-			image.src = 'images/image_boulder_achievement_screen.png';			
+			});
 			
 			//dino game image
-			image = new Image();
-			image.onload = function() {
+			loadImage('images/race_dino_unlocked_ingame.png', function() {
 				dinoGameImage = new Sprite(this, this.width, 1000);
-			}
-			image.onerror = function() { throw "could not load" + this.src; }
-			image.src = 'images/race_dino_unlocked_ingame.png';
+			});
 			
 			//boulder game image
-			image = new Image();
-			image.onload = function() {
+			loadImage('images/image_boulder_achievement_screen.png', function() {
 				boulderGameImage = new Sprite(this, this.width, 1000);
-			}
-			image.onerror = function() { throw "could not load" + this.src; }
-			image.src = 'images/image_boulder_achievement_screen.png';	
+			});
 			
 			//finished image
-			image = new Image();
-			image.onload = function() {
+			loadImage('images/image_ending flag with effect.png', function() {
 				finishedImage = new Sprite(this, this.width, 1000);
-			}
-			image.onerror = function() { throw "could not load" + this.src; }
-			image.src = 'images/image_ending flag.png';	
+			});
+			
+			loadImage('images/awarded.png', function() {
+				awardImage = new Sprite(this, this.width, 1000);
+			});
 			
 			//dashed pattern
-			image = new Image();
-			image.onload = function() {
+			loadImage('images/dashedLine.png', function() {
 				dottedPattern = context.createPattern(this, "repeat");
-			}
-			image.onerror = function() {throw "could not load" + this.src; }
-			image.src = 'images/dashedLine.png';
+			});
 			
-			image = new Image();
-			image.onload = function() {
+			loadImage('images/icon-speed_whiteBG.png', function() {
 				paceIcon = new Sprite(this, this.width, 1000);
-			}
-			image.onerror = function() {throw "could not load" + this.src; }
-			image.src = 'images/icon-speed_whiteBG.png';
+			});
 						
-			image = new Image();
-			image.onload = function() {
+			loadImage('images/bg_good.jpg', function() {
 				goodBG = this;
-			}
-			image.onerror = function() {throw "could not load" + this.src; }
-			image.src = 'images/bg_good.jpg';
+			});
 			
-			image = new Image();
-			image.onload = function() {
+			loadImage('images/bg_bad.jpg', function() {
 				badBG = this;
-			}
-			image.onerror = function() {throw "could not load" + this.src; }
-			image.src = 'images/bg_bad.jpg';
-            if (hrm.isAvailable()) {
-                hrm.start();
-                // Availability will change if start fails
-            } 
-            if (!hrm.isAvailable()) {
-            	hrmMock.start();
-            }                       
-            
-            bindEvents();
+			});
+			
+        	loading = true;
+        }
+        
+        function loadImage(url, onload) {
+        	pendingAssets++;
+        	var image = new Image();
+        	image.onerror = function() {
+        		throw 'could not load' + this.src;      	
+        	}
+        	image.onload = function() {
+        		pendingAssets--;
+        		onload.call(this);
+        		if (loading && pendingAssets == 0) {
+        			onAssetsLoaded();
+        		}
+        	};
+        	image.src = url;
+        }
+        
+        function onAssetsLoaded() {
+        	console.log('Assets loaded');
+        	loading = false;
+        	loaded = true;
+        	if (waiting) {
+        		onPageShow();
+        		waiting = false;
+        	}
+        }
+        
+        function onPreload() {
+        	loadAssets();
         }
 
         e.listeners({
             'hrzgame.show': show,
             'hrzgame.attach': attachGame,
             'hrzgame.detach': detachGame,
+            'hrzgame.preload': onPreload,
             'gps.status': onGpsStatus,
             'gpsUpdateOn': gpsSymbolOn,
             'gpsUpdateOff': gpsSymbolOff

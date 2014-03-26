@@ -26,10 +26,11 @@ define({
                 age: 0,
                 zombieTutorial: false,
                 firstTimeAge: true,
-                distanceunits: 'KM',
+                distanceunits: 'Km',
                 paceunits: 'Min/km',
                 currentTarget: "",
-                audioActive: true
+                audioActive: true,
+                vibrateActive: true
             },
             settings = {},
             STORAGE_KEY = 'settings';
@@ -87,6 +88,11 @@ define({
         function getAudioActive() {
         	if(!isFinite(settings.audioActive)) return defaults.audioActive;
         	return settings.audioActive;
+        }
+        
+        function getVibrateActive() {
+        	if(!isFinite(settings.vibrateActive)) return defaults.vibrateActive;
+        	return settings.vibrateActive;
         }
         
         function saveSettings() {
@@ -148,6 +154,10 @@ define({
         	settings.audioActive = audio;
         }
         
+        function setVibrateActive(vibrate) {
+        	settings.vibrateActive = vibrate;
+        }
+        
         function addPoints(points) {
             // TODO: Move points to a separate model?
             var currentPoints = settings.points += points;
@@ -191,7 +201,9 @@ define({
             getCurrentTarget: getCurrentTarget,
             setCurrentTarget: setCurrentTarget,
             getAudioActive: getAudioActive,
-            setAudioActive: setAudioActive
+            setAudioActive: setAudioActive,
+            getVibrateActive: getVibrateActive,
+            setVibrateActive: setVibrateActive
         };
     }
 

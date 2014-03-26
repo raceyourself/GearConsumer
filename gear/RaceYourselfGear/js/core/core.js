@@ -19,7 +19,13 @@
          * Internal object cache
          * @type {object}
          */
-        modules = {};
+        modules = {},
+        
+        /**
+         * Percentage loaded
+         */
+        loaded_pct = 0;
+
 
     /**
      * Generic Module class.
@@ -271,6 +277,8 @@
         sorted = sort(modules);
         sortedLen = sorted.length;
 
+        var def_pct = loaded_pct;
+        
         // Link modules in requires order.
         for (i = 0; i < sortedLen; i += 1) {
             name = sorted[i];
@@ -294,6 +302,9 @@
                     modules[name].instance.init();
                 }
             }
+            // Assume init is the rest of the load time
+            loaded_pct = def_pct + ~~(i*(100-def_pct)/sortedLen);
+            document.getElementById('main-loading').style.width = loaded_pct + '%';
         }
         /* build:app */
         initDebug();
@@ -428,6 +439,10 @@
         // Check for loaded modules.
         loaded();
 
+        // Assume a define is 1% of the load time
+        loaded_pct++;
+        document.getElementById('main-loading').style.width = loaded_pct + '%';
+        
         return true;
     }
 
