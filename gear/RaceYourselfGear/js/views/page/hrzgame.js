@@ -168,6 +168,7 @@ define({
             hasBeenInGoalHRZone = false,
             loaded = false,
             loading = false,
+            waiting = false,
             pendingAssets = 0;
 
 			
@@ -261,6 +262,7 @@ define({
 
         function onPageShow() {
         	if (!loaded) {
+        		waiting = true;
         		loadAssets();
         		return;
         	}
@@ -2106,13 +2108,21 @@ define({
         	console.log('Assets loaded');
         	loading = false;
         	loaded = true;
-        	onPageShow();
+        	if (waiting) {
+        		onPageShow();
+        		waiting = false;
+        	}
+        }
+        
+        function onPreload() {
+        	loadAssets();
         }
 
         e.listeners({
             'hrzgame.show': show,
             'hrzgame.attach': attachGame,
             'hrzgame.detach': detachGame,
+            'hrzgame.preload': onPreload,
             'gps.status': onGpsStatus,
             'gpsUpdateOn': gpsSymbolOn,
             'gpsUpdateOff': gpsSymbolOff
