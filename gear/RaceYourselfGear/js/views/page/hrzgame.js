@@ -1039,7 +1039,7 @@ define({
             if (!visible) return;
             
         	var r = race.getOngoingRace();
-        	var playerDistance = r.getDistance();
+        	var playerDistance = r.getMetricDistance();
         	var zOffset = zombieOffset;
         	var zDistance = playerDistance + zombieOffset;
         	
@@ -1427,7 +1427,7 @@ define({
 			{
 
 				//run
-				var d = playerDistance;
+				var d = r.getDistance();
 				var targetdist = TRACK_LENGTH;
 				var u = r.getShortDistanceUnits();
 				if (u == 'm') {
@@ -1462,7 +1462,7 @@ define({
 				
 				//show distance run on right
 				context.textAlign = 'right';
-				var d = playerDistance;
+				var d = r.getDistance();
 				var u = r.getShortDistanceUnits();
 				if (u == 'm') {
 					d = d / 1000;
