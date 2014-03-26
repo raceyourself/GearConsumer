@@ -65,7 +65,8 @@ define({
                     running_red: { name: 'running_red', sprite: null, speedThreshold: 0.1},
                     sprinting: { name: 'sprinting', sprite: null, speedThreshold: 4},
                     sprinting_red: { name: 'sprinting_red', sprite: null, speedThreshold: 4},
-                    zombieDead: { name: 'zombieDead', sprite: null, speedThreshold: -1}
+                    zombieDead: { name: 'zombieDead', sprite: null, speedThreshold: -1},
+                    dinoDead: { name: 'dinoDead', sprite: null, speedThreshold: -1}
             },
             notification = {
             		active: false,
@@ -921,11 +922,6 @@ define({
 //                lastRender = null;
 //                stopZombies();
 				isDead = true;
-                runner.sprite.onEnd(function(dt) {
-                    runner.sprite.onEnd(null);
-                    runner = runnerAnimations.zombieDead;
-                    runner.sprite.time = dt;
-                });
                 requestRender();
                 clearTimeout(bannerTimeout);
                 bannerTimeout = setTimeout(nextWave, 10000);
@@ -1513,7 +1509,7 @@ define({
 					}
 					break;
 				case 'dinosaur':
-					if(zDistance != false && currentHRZone!='Recovery' ) {
+					if(zDistance != false && currentHRZone!='Recovery' && !isDead) {
 						var dinoPos = 0 + distanceToTrackPos(zDistance);
 						var dinoScale = scale * 1.5;
 						dino.drawscaled(context, dinoPos - dino.width * 0.6 * dinoScale, canvas.height - (dino.height - 25) * dinoScale - trackHeight - 5* scale, dt, dinoScale);
@@ -1544,7 +1540,8 @@ define({
             {
              	playerScale *=1.6;	
              	playerOffset += 30*playerScale; 
-             	runner = runnerAnimations.zombieDead;
+                if (game.getCurrentOpponentType() == 'dinosaur') runner = runnerAnimations.dinoDead;
+                else runner = runnerAnimations.zombieDead;
             }
             runner.sprite.drawscaled(context, playerXPos, canvas.height -playerOffset , dt, playerScale);
         	
@@ -1977,6 +1974,10 @@ define({
             
             loadImage('images/animation_cloud.png', function() {
                 runnerAnimations.zombieDead.sprite = new Sprite(this, this.width / 2, 1000);
+            });
+
+            loadImage('images/animation_dino_eating.png', function() {
+                runnerAnimations.dinoDead.sprite = new Sprite(this, this.width / 11, 1375);
             });
 
             loadImage('images/animation_zombie1.png', function() {
