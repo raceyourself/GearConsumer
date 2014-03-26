@@ -1340,6 +1340,11 @@ define({
 			}
 			
 			// Track
+			
+			//black line above track
+			context.fillStyle = '#000';
+			context.fillRect(0, badBG.height - 7, canvas.width, 10);
+			
             context.beginPath();
             context.moveTo(0, canvas.height - trackHeight);
             context.lineTo(canvas.width, canvas.height - trackHeight);
@@ -1359,7 +1364,7 @@ define({
 			
 			//draw distance markers for screen range
 			context.beginPath();
-			var distMarkerSpacing = 10;
+			var distMarkerSpacing = 2.5;
 			var distMarkerIndex = Math.floor(screenLeftDistance/distMarkerSpacing);
 			distMarkerIndex = Math.max(distMarkerIndex, 0);
 			while (distMarkerIndex * distMarkerSpacing <= (screenLeftDistance + 2*screenWidthDistance) )
@@ -1381,15 +1386,15 @@ define({
 				}
 				else
 				{
-					var distMarkerHeight = 12;
-					if(dist%100 == 0) { distMarkerHeight = 20; }
+					var distMarkerHeight = 6;
+//					if(dist%100 == 0) { distMarkerHeight = 20; }
 //					context.fillText('' + dist, distanceToTrackPos(dist), canvas.height-25);
 					context.moveTo(screenPosX, canvas.height - trackHeight +1);
 					context.lineTo(screenPosX, canvas.height - (trackHeight -3 - distMarkerHeight*scale));
 				}
 				distMarkerIndex++;
 			}
-			context.lineWidth = trackThickness*0.75;
+			context.lineWidth = trackThickness*0.5;
 			context.strokeStyle = "#fff";
 			context.stroke();
 			
