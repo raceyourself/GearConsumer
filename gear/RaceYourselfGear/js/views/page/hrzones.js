@@ -52,7 +52,9 @@ define({
             heartBeatOnFrames = 0,
             heartBeatOn = false,
             heartRateNotFound = false,
-            textRotation = { phase: 0, period: 2 , lastUpdateTime: 0};
+            textRotation = { phase: 0, period: 2 , lastUpdateTime: 0},
+            hrDrift = { target: 50, current: 50 };
+
 
         function show() {
         }
@@ -87,6 +89,7 @@ define({
 
 		function onHeartRateLost() {
 			heartRateNotFound = true;
+			hrDrift.target = false;
 		}
 		
 		function initHRZones() {
@@ -160,9 +163,9 @@ define({
         }
         
         function onHeartRateChange(hrmInfo) {
-            hr = hrmInfo.detail.heartRate;
+            hr = Math.floor(hrmInfo.detail.heartRate);
             rToRTime = hrmInfo.detail.rInterval;
-
+			hrDrift.target = hr;
         }
         
 		function onZoneChange(zoneInfo) {
@@ -206,6 +209,19 @@ define({
 //			if(hr > 200) { dir = -1; }
 //			if(hr < 50) { dir = 1; }
 
+			if(hrDrift.current > hrDrift.target) 
+			{
+				//slow down on approach
+				if(hrDrift.current - hrDrift.target < 5) { hrDrift.current -= 0.5; }
+			 	else { hrDrift.current--; }
+			 }
+			if(hrDrift.current < hrDrift.target) 
+			{ 
+				if(hrDrift.target - hrDrift.current <5) { hrDrift.current += 0.5; }
+				else { hrDrift.current++; }
+				
+			}
+
 			//header
 			var headerString;
 			var headerStyle;
@@ -247,7 +263,7 @@ define({
 			var textPhaseProportion = textRotation.phase/textRotation.period;
 			
 			//red block at top if needed			
-			if(hr > zones.speed.max)
+			if(hrDrift.current > zones.speed.max)
 			{
 				var boxHeight = canvas.height -4*segmentHeight - headerHeight;
 				context.fillStyle = red;
@@ -282,7 +298,7 @@ define({
 				
 				//fill & text for zone
 				var colour = white; 
-				if(hr >= zones[zone].min && hr < zones[zone].max && !heartRateNotFound)
+				if(hrDrift.current >= zones[zone].min && hrDrift.current < zones[zone].max && !heartRateNotFound)
 				{
 					var fillColour;
 					//we are currently in this zone
@@ -306,9 +322,6 @@ define({
 					context.fillStyle = fillColour;
 					context.fillRect(0, currentHeight - segmentHeight, canvas.width, segmentHeight);
 					
-					//set hr position here
-					var p = (hr - zones[zone].min)/(zones[zone].max - zones[zone].min);
-					targetHRHeight = currentHeight - p*segmentHeight;
 				}
 				else
 				{
@@ -325,6 +338,13 @@ define({
 						//TODO flash
 					}
 				}
+				if(hrDrift.current >= zones[zone].min && hrDrift.current < zones[zone].max && !heartRateNotFound)
+				{
+					//set hr position here
+					var p = (hrDrift.current - zones[zone].min)/(zones[zone].max - zones[zone].min);
+					targetHRHeight = currentHeight - p*segmentHeight;
+				}
+
 
 				//text inside box
 				context.fillStyle = colour;
@@ -345,6 +365,7 @@ define({
 						}
 					}					
 				}
+				context.font = '24px Samsung Sans';
 				context.fillText(boxString, 10, currentHeight - segmentHeight/2);
 			
 				//black capsule
@@ -422,7 +443,7 @@ define({
         	//icon
         	//pick appropriate icon
         	var heartIcon = heart.green;
-        	if(hr < currentZone.min || hr > currentZone.max)
+        	if(hrDrift.current < currentZone.min || hrDrift.current > currentZone.max)
         	{
         		heartIcon = heart.red;
         	}
