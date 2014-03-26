@@ -1218,12 +1218,12 @@ define({
 				var fillProportion = 0;
 				if(TRACK_LENGTH < Infinity) 
 				{
-					fillProportion = playerDistance/TRACK_LENGTH;
+					fillProportion = r.getDistance()/TRACK_LENGTH;
 				}
 
 				else if(targetTime < Infinity)
 				{
-					fillProportion = playerDistance/targetTime;
+					fillProportion = r.getDuration()/targetTime;
 				}
 				else
 				{
