@@ -170,6 +170,8 @@ define({
             
             //eliminator vars
             nextLapDistance = config.getLapLength(),
+            timeCurrentLapStarted = 0,
+            numLaps = 0,
 			ghostRunners = [],
 			tickInterval = null,
 			ghostImage = null,
@@ -338,9 +340,13 @@ define({
 			TRACK_LENGTH = config.getLapLength();
 			
 			//TODO clear ghosts;
+			ghostRunners = [];
 
-			//for now add a single ghost
-			addGhost(21);
+			//for now add some sample ghosts
+			addGhost(120);
+			addGhost(115);
+			addGhost(100);
+			addGhost(50);
 
 			// set up tick
 			var intervalTime = 33;
@@ -358,11 +364,14 @@ define({
         {
         	//TODO set anim speed based on time
         	var newRunner = new Sprite(ghostImage, ghostImage.width/6, 500);
-        	newRunner.time = time;
+        	newRunner.lapTime = time;
         	newRunner.lapDistance = 0;
         	ghostRunners.push(newRunner);
         	
         	//TODO sort based on speed for render order
+
+			//TODO cull the slowest if too many
+
         }
         
         //start the run, but not the game
@@ -375,7 +384,9 @@ define({
 			lastRender = Date.now();
 			
         	sectionChanger.setActiveSection(3, 0);
-
+			
+			timeCurrentLapStarted = Date.now();
+			
         }
         
         function onAchievementAwarded(data)
@@ -494,6 +505,11 @@ define({
 				var ghost = ghostRunners[i];
 				ghost.lapDistance = 0;
 			}
+			
+			timeCurrentLapStarted = Date.now();
+			
+			numLaps++;
+			
 ///////// /Eliminator
 
         }
@@ -544,12 +560,14 @@ define({
 			
 			var lapLength = config.getLapLength();
 			
+			var timeInLap = (Date.now() - timeCurrentLapStarted) / 1000;
+			
 			//update runner distances
 			for(var i=0; i<ghostRunners.length; i++)
 			{
 				var ghost = ghostRunners[i];
-				var speed = lapLength / (ghost.time * 1000);
-				ghost.lapDistance += speed * dt;
+
+				ghost.lapDistance = TRACK_LENGTH * (timeInLap / ghost.lapTime);
 				if(ghost.lapDistance > lapLength)
 				{
 					ghost.lapDistance = lapLength;
@@ -621,20 +639,43 @@ define({
             if (r.getDistance() >= nextLapDistance)
             {
             	// add new ghost
-				addGhost(20);
+            	var lapTime = (Date.now() - timeCurrentLapStarted)/1000;
+				addGhost(lapTime);
             	
             	//show notification
-            	//TODO
-            	
-            	//update lap counter
-            	//TODO
+            	setNotification(green, '#fff', 'Lap Complete', null, 1000);
             	
             	//set next lap distance
             	nextLapDistance += config.getLapLength();
             	
             	//show 'go'
             	//TODO
-            	restart();
+            	
+            	//check if the fastest ghost finished before us
+            	var playerWon = true;
+				for(var i=0; i<ghostRunners.length; i++)
+				{
+					var ghost = ghostRunners[i];
+					if(ghost.lapDistance >= TRACK_LENGTH)
+					{
+						playerWon = false;
+						navigator.vibrate(1000);
+						showUnlockNotification('finished', 5);
+						finished = true;
+						e.fire('race.end', r);
+	                	r.stop();
+					}
+				}
+            	
+            	if(playerWon)
+            	{
+            	   	restart();
+            	}
+            	else
+            	{
+            		
+            	}
+            	
             }
 ///////////// /Eliminator
             
@@ -752,9 +793,14 @@ define({
 */
 
 ////////// Eliminator
-			screenWidthDistance = 10;
+			screenWidthDistance = 13;
 			var playerLapDistance = r.getDistance() % TRACK_LENGTH;
-			screenLeftDistance = playerLapDistance - screenWidthDistance/2;
+			//drift from left to right as we get further through the lap
+			//go from 0.2 to 0.8 of the way across the screen.
+			var lapProportion = playerLapDistance / TRACK_LENGTH;
+			var minInset = 0.1;
+			var inset = minInset + (1-2*minInset) * (lapProportion)
+			screenLeftDistance = playerLapDistance - inset * screenWidthDistance;
 
 ////////// /Eliminator
 			
@@ -1070,6 +1116,13 @@ define({
 			context.strokeStyle = "#fff";
 			context.stroke();
 			
+			//one thick line at the lap mark
+			context.beginPath();
+			context.moveTo(screenPosX, canvas.height - trackHeight +1);
+			context.lineTo(screenPosX, canvas.height - (trackHeight -3 - distMarkerHeight * scale));
+			context.lineWidth = trackThickness * 2;
+			context.stroke();
+			
 			//text labels
 			///run
 			context.font = '24px Samsung Sans';
@@ -1203,26 +1256,54 @@ define({
             var playerScale = scale;
             var playerOffset = runner.sprite.height * playerScale + trackHeight - 6*scale; 
 
-			var alpha = 1;
+			//ghost alpha to vary between 1 and this value, with a geometric decay towards it
+			var minGhostAlpha = 0.5;
+			var additionalAlpha = 1 - minGhostAlpha;
 
+			context.globalAlpha = 0.5;
+
+////////// Eliminator
 			//Ghosts
 			for(var i=0; i<ghostRunners.length; i++)
         	{
         		var ghost = ghostRunners[i];
-        		alpha *= 0.75;
-				context.globalAlpha = alpha;
+//        		additionalAlpha *= 0.75;
+//				context.globalAlpha = minGhostAlpha + additionalAlpha;
         		ghost.drawscaled(context, distanceToTrackPos(ghost.lapDistance), canvas.height - playerOffset, dt, scale);
         	}
+        	context.globalAlpha = 1;
         	
+        	
+        	//Lap counter
+        	var counterHeight = 100;
+        	var counterXPos = canvas.width/2;
+        	var counterRadius = 135/2;
+        	//circle
+        	context.beginPath();
+        	context.arc( counterXPos, counterHeight, counterRadius, 0, 2*Math.PI, false);
+        	context.fillStyle = green;
+        	//TODO red or green dependenton ahead/behind
+        	context.fill();
+        	//text
+        	context.font = '85px Samsung Sans';
+        	context.fillStyle = '#fff';
+        	context.textAlign = 'center';
+        	context.textBaseline = 'middle';
+        	context.fillText( numLaps, counterXPos, counterHeight - 10);
+        	context.font = '24px Samsung Sans';
+        	context.fillText('laps', counterXPos, counterHeight + 40);
+        	
+////////// /Eliminator        	
         	context.globalAlpha = 1;
 
-
+/*
             if(isDead)
             {
              	playerScale *=1.6;	
              	playerOffset += 30*playerScale; 
              	runner = runnerAnimations.zombieDead;
             }
+*/            
             runner.sprite.drawscaled(context, playerXPos, canvas.height -playerOffset , dt, playerScale);
             
 			if(!countingdown)
@@ -1373,7 +1454,7 @@ define({
 				
 */				
 				//Pace
-				var radius = 115/2;
+/*				var radius = 115/2;
 				var hrXPos = canvas.width - radius - 10;
 				var hrYPos = 37 + radius;
 
@@ -1406,7 +1487,7 @@ define({
 				context.fillText(paceUnits, paceXPos, hrYPos + 38);
 				//icon
 				paceIcon.draw(context, paceXPos - paceIcon.width/2, hrYPos - paceIcon.height/2 - 38, 0);
-								
+*/								
 			
 /*			
 				//Ahead/Behind
