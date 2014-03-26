@@ -87,7 +87,6 @@ define({
             finishedImage = null,
             awardImage = null,
             numZombies = 0,
-            zombieDistance = false,
             zombieInterval = false,
             zombieSpeed = 0,
             completionSound = null,
@@ -673,7 +672,6 @@ define({
                 zombies[i].time = animDelay;
             }
             zombieOffset = zombieStartOffset;
-            zombieDistance = zombieOffset;
 //            int intervalTime = Math.min(350, 750-(wave*50));
 			var intervalTime = 33;
             zombieInterval = setInterval(zombieTick, intervalTime);
@@ -699,33 +697,9 @@ define({
         	}
         	
         	var r = race.getOngoingRace();
-        	zombieDistance = r.getDistance() + zombieOffset;
             requestRender();
             step();
-            
-            //general update of track window
-            if(!isDead)
-            {
-				screenWidthDistance = Math.max( 13, Math.min( -zombieOffset + 2, 50)) +1;
-			}
-			if(numZombies>0 && hasBeenInGoalHRZone)
-			{
-				if(zombiePosWeight < 1) { zombiePosWeight += 0.02; }
-//				screenMidDistance = zombiePosWeight * zombieDistance + r.getDistance();
-				var screenLeftDistanceZ = (zombieDistance + r.getDistance() - screenWidthDistance)/2 - 4;
-				var screenLeftDistanceNoZ = r.getDistance() - screenWidthDistance/2 - 2;
-				//lerp
-				var ease = Math.sin( Math.sin(zombiePosWeight*(Math.PI / 2)) );
-				screenLeftDistance = screenLeftDistanceNoZ + ease * (screenLeftDistanceZ - screenLeftDistanceNoZ);
-			}
-			else
-			{
-//				screenMidDistance = r.getDistance();
-				screenLeftDistance = r.getDistance() - screenWidthDistance/2 - 2;
-			}
-			
-//			screenLeftDistance = screenMidDistance = screenWidthDistance/2;
-			
+            			
 			//check how long since heartrate
 			if( Date.now() - lastHRtime > 10*1000 )
 			{
@@ -824,7 +798,6 @@ define({
         
         function stopZombies() {
             clearInterval(zombieInterval);
-            zombieDistance = false;            
         }
         
         
@@ -1063,6 +1036,35 @@ define({
 
         function render() {
             if (!visible) return;
+            
+        	var r = race.getOngoingRace();
+        	var playerDistance = r.getDistance();
+        	var zOffset = zombieOffset;
+        	var zDistance = playerDistance + zombieOffset;
+        	
+            //general update of track window
+            if(!isDead)
+            {
+				screenWidthDistance = Math.max( 13, Math.min( -zOffset + 2, 50)) +1;
+			}
+			if(numZombies>0 && hasBeenInGoalHRZone)
+			{
+				if(zombiePosWeight < 1) { zombiePosWeight += 0.02; }
+//				screenMidDistance = zombiePosWeight * zDistance + playerDistance;
+				var screenLeftDistanceZ = (zDistance + playerDistance - screenWidthDistance)/2 - 4;
+				var screenLeftDistanceNoZ = playerDistance - screenWidthDistance/2 - 2;
+				//lerp
+				var ease = Math.sin( Math.sin(zombiePosWeight*(Math.PI / 2)) );
+				screenLeftDistance = (1-ease)*screenLeftDistanceNoZ + ease*screenLeftDistanceZ;
+			}
+			else
+			{
+//				screenMidDistance = playerDistance;
+				screenLeftDistance = playerDistance - screenWidthDistance/2 - 2;
+			}
+            
+//			screenLeftDistance = screenMidDistance = screenWidthDistance/2;
+			
             var dt = 0;
             var trackHeight = canvas.height - badBG.height;
             var trackThickness = 4;
@@ -1114,7 +1116,6 @@ define({
             
             context.clearRect(0, 0, canvas.width, canvas.height);            
             var trackWidth = canvas.width - 0 - runner.sprite.width;
-            var r = race.getOngoingRace();
 
 			
 			//draw good bg
@@ -1164,8 +1165,8 @@ define({
                 context.fillText(banner, canvas.width/2, 25);
             }
             
-            if (banner === false && zombieDistance !== false) {
-                var delta = r.getDistance() - zombieDistance;
+            if (banner === false && zDistance !== false) {
+                var delta = playerDistance - zDistance;
                 delta = ~~delta;
                 var postfix = 'ahead';
                 var prefix = '';
@@ -1216,12 +1217,12 @@ define({
 				var fillProportion = 0;
 				if(TRACK_LENGTH < Infinity) 
 				{
-					fillProportion = r.getDistance()/TRACK_LENGTH;
+					fillProportion = playerDistance/TRACK_LENGTH;
 				}
 
 				else if(targetTime < Infinity)
 				{
-					fillProportion = r.getDuration()/targetTime;
+					fillProportion = playerDistance/targetTime;
 				}
 				else
 				{
@@ -1425,7 +1426,7 @@ define({
 			{
 
 				//run
-				var d = r.getDistance();
+				var d = playerDistance;
 				var targetdist = TRACK_LENGTH;
 				var u = r.getShortDistanceUnits();
 				if (u == 'm') {
@@ -1460,7 +1461,7 @@ define({
 				
 				//show distance run on right
 				context.textAlign = 'right';
-				var d = r.getDistance();
+				var d = playerDistance;
 				var u = r.getShortDistanceUnits();
 				if (u == 'm') {
 					d = d / 1000;
@@ -1473,7 +1474,7 @@ define({
 			
             scale = 10/screenWidthDistance;
             
-            var playerXPos = 0 + distanceToTrackPos(r.getDistance())
+            var playerXPos = 0 + distanceToTrackPos(playerDistance)
             
             var opponentType = game.getCurrentOpponentType()
 //            opponentType = 'dinosaur';
@@ -1481,7 +1482,7 @@ define({
             {
 	            case 'zombie':
 					// Zombies
-					if (zombieDistance !== false && hasBeenInGoalHRZone) {
+					if (zDistance !== false && hasBeenInGoalHRZone) {
 						for (var i=0;i<numZombies;i++) {
 							var zombie = zombies[i];
 							var x_offset = ((i*(zombie.width*0.3))+(i%2)*5 + zombie.width*0.3) * scale;
@@ -1489,7 +1490,7 @@ define({
 //							if (i%2==1) context.globalAlpha = 0.75;
 //							else context.globalAlpha = 1;
 							context.globalAlpha = 1;
-							var zombiePos = 0 + distanceToTrackPos(zombieDistance) - x_offset;
+							var zombiePos = 0 + distanceToTrackPos(zDistance) - x_offset;
 		//                    zombiePos -= screenLeftDistance;
 							if(!isDead || zombiePos < playerXPos - 10)
 							{	
@@ -1512,16 +1513,16 @@ define({
 					}
 					break;
 				case 'dinosaur':
-					if(zombieDistance != false && currentHRZone!='Recovery' ) {
-						var dinoPos = 0 + distanceToTrackPos(zombieDistance);
+					if(zDistance != false && currentHRZone!='Recovery' ) {
+						var dinoPos = 0 + distanceToTrackPos(zDistance);
 						var dinoScale = scale * 1.5;
 						dino.drawscaled(context, dinoPos - dino.width * 0.6 * dinoScale, canvas.height - (dino.height - 25) * dinoScale - trackHeight - 5* scale, dt, dinoScale);
 					}
 					break;
 				case 'boulder':
-					if(zombieDistance != false) 
+					if(zDistance != false) 
 					{
-						var boulderPos = 0 + distanceToTrackPos(zombieDistance);
+						var boulderPos = 0 + distanceToTrackPos(zDistance);
 						context.save();
 						boulder.rotation += dt*boulder.rotationSpeed;
 						context.translate(boulderPos, canvas.height - boulder.height * scale - trackHeight - 5*scale);
@@ -1546,7 +1547,7 @@ define({
              	runner = runnerAnimations.zombieDead;
             }
             runner.sprite.drawscaled(context, playerXPos, canvas.height -playerOffset , dt, playerScale);
-            
+        	
 			if(!countingdown)
             {
 				// Heart Rate
@@ -1744,7 +1745,7 @@ define({
 						context.font = '24px Samsung Sans';
 						context.fillText('m', distXPos, distYPos + 38);
 						//number
-						var delta = Math.round(r.getDistance() - zombieDistance);
+						var delta = Math.round(playerDistance - zDistance);
 						context.font = '56px Samsung Sans';
 						context.fillText(delta, distXPos, distYPos +4);
 					}
@@ -1892,8 +1893,8 @@ define({
         }
        
         function distanceToTrackPos(distance)
-        {
-        	var trackWidth = canvas.width - 0 - runner.sprite.width;
+        {        	
+        	var trackWidth = canvas.width - 0 -  runner.sprite.width;
         	var pos = trackWidth * (distance - screenLeftDistance) / (screenWidthDistance);
         	return pos;
         }
