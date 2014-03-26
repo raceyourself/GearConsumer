@@ -15,6 +15,8 @@ define({
 
         console.log('app::def');
 
+        console.log('Hello, or as they say in your region: ' + _['hello']);
+        
         var e = req.core.event;
 
         function init() {
