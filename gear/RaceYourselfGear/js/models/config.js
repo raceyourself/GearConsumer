@@ -26,7 +26,8 @@ define({
                 adaptPeriod: 10,			//seconds after change of zone before zombies can close
                 warmupPeriod: 5*60,			//seconds
                 dinoUnlockDist: 20,			//km
-                catchupTime: 500			//num ticks for zombies to catch up                
+                catchupTime: 500,			//num ticks for zombies to catch up  
+                elimUnlockDist: 50
             },
             config = {},
             STORAGE_KEY = 'config';
@@ -70,6 +71,11 @@ define({
 			return config.dinoUnlockDist;
 		}
 		
+		function getElimUnlockDist() {
+			if(!isFinite(config.elimUnlockDist)) return defaults.elimUnlockDist;
+			return config.elimUnlockDist;
+		}
+		
 		function getCatchupTime() {
 			if(!isFinite(config.catchupTime)) return defaults.catchupTime;
 			return config.catchupTime;
@@ -107,6 +113,7 @@ define({
             getAdaptPeriod : getAdaptPeriod,
             getWarmupPeriod : getWarmupPeriod,
             getDinoUnlockDist : getDinoUnlockDist,
+            getElimUnlockDist: getElimUnlockDist,
             getCatchupTime : getCatchupTime            
         };
     }

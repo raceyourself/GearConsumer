@@ -43,6 +43,8 @@ define({
             
             document.getElementById('dino-mode-btn').classList.toggle('locked-game', game.isLocked('dino'));
             
+            document.getElementById('eliminator-mode-btn').classList.toggle('locked-game', game.isLocked('eliminator'));
+            
             e.listen('tizen.back', onBack);
         }
         
@@ -58,7 +60,8 @@ define({
         function bindEvents() {
         	var zombieBtnEl = document.getElementById('zombie-mode-btn'),
         		dinoBtnEl = document.getElementById('dino-mode-btn'),
-        		moreGamesEl = document.getElementById('moregames');
+        		moreGamesEl = document.getElementById('moregames'),
+        		elimBtnEl = document.getElementById('eliminator-mode-btn');
         	
         	 page.addEventListener('pageshow', onPageShow);
              page.addEventListener('pagehide', onPageHide);
@@ -66,6 +69,7 @@ define({
              zombieBtnEl.addEventListener('click', onZombieBtnClick);
              dinoBtnEl.addEventListener('click', onDinoBtnClick);
              moreGamesEl.addEventListener('click', onMoreGames);
+             elimBtnEl.addEventListener('click', onElimBtnClick);
         }
 
         function isScrolling() {
@@ -97,6 +101,13 @@ define({
             e.fire('trainingtype.show');
         }
         
+        function onElimBtnClick(event) {
+        	if(isScrolling()) return;
+        	if(game.isLocked('eliminator')) return;
+        	game.setCurrentGame('racegame');
+        	e.fire('trainingtype.show');
+        }
+         
         function onMoreGames(event) {
             if (isScrolling()) return;
             provider.sendWebLinkReq('http://www.raceyourself.com/');

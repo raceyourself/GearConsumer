@@ -29,6 +29,9 @@ define({
                 },
                 'dino' : {
                     locked: true
+                },
+                'eliminator' : {
+                	locked: true
                 }
             },
             STORAGE_KEY = 'games',

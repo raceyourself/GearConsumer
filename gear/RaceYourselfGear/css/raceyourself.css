@@ -249,13 +249,49 @@ img {
 
 .zombie-ok {
 	width: 100%;
-	height: 20%;
+	height: 30%;
 	color: white;
 	background-color: #46be46;
 	position: absolute;
 	left: 0px;
-	bottom: 2px;
-	padding: 15px;
+	bottom: 0px;
+	padding: 20px;
+	font-size: 38px;
+}
+
+.elim-tutorial-img5 {
+	position: relative;
+	top: 8px;
+	right: 7px;
+}
+
+.elim-tutorial-img4 {
+	position: relative;
+	top: 10px;
+}
+
+.elim-tutorial-img3 {
+	top:18px;
+	right: 7px;
+	position: relative;
+}
+
+.elim-tutorial-img2 {
+	position: relative;
+	top: 18px;
+	right: 7px;
+}
+
+.elim-tutorial-img1 {
+	top: 55px;
+	right: 7px;
+	position: relative;
+}
+
+.eliminator-tutorial {
+	padding-right: 7px;
+	padding-left: 7px;
+	font-size: 32px;
 }
 
 .setter-units {

@@ -82,6 +82,7 @@ define({
             dino = null,
             boulder = null,
             dinoGameImage = null,
+            elimGameImage = null,
             boulderGameImage = null,
             dinoUnlockImageFS = null,
             finishedImage = null,
@@ -262,6 +263,12 @@ define({
 		}
 
 
+		function onUnlockEliminator() 
+		{
+			showUnlockNotification('eliminator', 5);
+		}
+		
+		
         function onPageShow() {
         	if (!loaded) {
         		waiting = true;
@@ -299,6 +306,7 @@ define({
             
 			e.listen('game.unlock.dino', onUnlockDino);
 			e.listen('game.unlock.boulder', onUnlockBoulder);
+			e.listen('game.unlock.eliminator', onUnlockEliminator)
 			e.listen('achievement.awarded', onAchievementAwarded);
 			page.addEventListener('click', onTapHandler);
             isDead = false;
@@ -408,6 +416,7 @@ define({
             clearTimeout(bannerTimeout)
             e.die('game.unlock.dino', onUnlockDino);
             e.die('game.unlock.boulder', onUnlockBoulder);
+            e.die('game.unlock.eliminator', onUnlockEliminator);
             e.die('achievement.awarded', onAchievementAwarded);
 			page.removeEventListener('click', onTapHandler);
         }        
@@ -1839,6 +1848,9 @@ define({
             		case 'dino':
             			dinoGameImage.draw(context, 0, 0, 0);
             			break;
+            		case 'eliminator':
+            			elimGameImage.draw(context, 0, 0, 0);
+            			break;
 					case 'boulder':
 						boulderGameImage.draw(context, 0, 0, 0);
 						break;
@@ -2076,6 +2088,10 @@ define({
 			//dino game image
 			loadImage('images/race_dino_unlocked_ingame.png', function() {
 				dinoGameImage = new Sprite(this, this.width, 1000);
+			});
+			
+			loadImage('images/Game_Eliminator/screen_menu_game_eliminator_unlocked.png', function() {
+				elimGameImage = new Sprite(this, this.width, 1000);
 			});
 			
 			//boulder game image
