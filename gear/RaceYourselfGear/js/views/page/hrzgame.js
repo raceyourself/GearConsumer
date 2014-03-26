@@ -205,6 +205,8 @@ define({
 
 		function showUnlockNotification(game, time)
 		{
+			//switch to game screen
+			sectionChanger.setActiveSection(3, 500);
 			//vibrate
 			navigator.vibrate([10, 10, 10, 10, 10, 10, 10]);
 			unlockNotification = game;
@@ -1136,9 +1138,10 @@ define({
 				context.save();
 				context.translate(canvas.width - gpsRing.width/2 * GPSscale, gpsRing.height/2 * GPSscale);
 				gpsRing.drawscaled(context, - gpsRing.width/2*GPSscale, -gpsRing.height/2 * GPSscale, 0, GPSscale);
-				if(gpsAvailable && hasGPSUpdate)
+//				if(gpsAvailable && hasGPSUpdate)
+				if(true)
 				{
-					gpsDot.drawscaled(context, - gpsDot.width/2*GPSscale, -gpsDot.height/2 * GPSscale, 0, GPSscale);
+					gpsDot.drawscaled(context, - gpsDot.width/2*GPSscale, -gpsDot.height/2 * GPSscale + 0.5*GPSscale, 0, GPSscale);
 				}
 				context.restore();
 
