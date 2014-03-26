@@ -28,7 +28,7 @@ define({
                     locked: true
                 },
                 'dino' : {
-                    locked: true
+                    locked: false
                 },
                 'eliminator' : {
                 	locked: true
