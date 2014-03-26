@@ -221,7 +221,7 @@ define({
 
 		function onTapHandler(data)
 		{
-			if(isScrolling()) return;
+			if(isScrolling() && !finished) return;
 			//dismiss
 			clearUnlockNotification();
 
@@ -939,6 +939,7 @@ define({
                 navigator.vibrate(1000);
                 showUnlockNotification('finished', 5);
                 finished = true;
+                sectionChanger.scrollbar.element.classList.toggle('hidden', true);
                 numAwardsAtFinish = 0;
                 e.fire('race.end', r);
                 r.stop();
@@ -2083,7 +2084,7 @@ define({
 			});
 			
 			//finished image
-			loadImage('images/image_ending flag.png', function() {
+			loadImage('images/image_ending flag with effect.png', function() {
 				finishedImage = new Sprite(this, this.width, 1000);
 			});
 			
