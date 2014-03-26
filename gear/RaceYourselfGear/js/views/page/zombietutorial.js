@@ -52,7 +52,7 @@ define({
         	 page.addEventListener('pageshow', onPageShow);
              page.addEventListener('pagehide', onPageHide);
              
-             document.getElementById('zombie-tutorial-end-btn').addEventListener('click', onZombieEndClick);
+             document.getElementById('start-race-btn').addEventListener('click', onZombieEndClick);
         }
 
         function onZombieEndClick() {
