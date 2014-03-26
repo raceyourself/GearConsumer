@@ -141,8 +141,8 @@
             <ul class="ui-listview">
                 <li class="li-has-radio">
                     <label>
-                        KM
-                        <input type="radio" name="radio-distance-units" value="KM"/>
+                        Km
+                        <input type="radio" name="radio-distance-units" value="Km"/>
                     </label>
                 </li>
                 <li class="li-has-radio">
@@ -331,14 +331,20 @@
     			</li>
     			<li class="li-has-multiline">
     				<a href="#" id="distance-units-btn">
-    					KM/miles
-    					<span class="li-text-sub" id="distance-text">KM</span>
+    					Km/miles
+    					<span class="li-text-sub" id="distance-text">Km</span>
     				</a>
     			</li>
     			<li class="li-has-multiline">
     				<a href="#" id="pace-units-btn">
     					Pace/speed
     					<span class="li-text-sub" id="pace-text">Min/km</span>
+    				</a>
+    			</li>
+    			<li class="li-has-multiline">
+    				<a href="#" id="vibrate-btn">
+    					Vibration
+    					<span class="li-text-sub" id="vibrate-text">On/Off</span>
     				</a>
     			</li>
     			<li class="li-has-multiline">
@@ -353,6 +359,28 @@
     				</a>
     			</li>
     		</ul>
+    	</div>
+    </div>
+    
+    <div class="ui-page" id="vibratesetting">
+    	<header class="ui-header" data-position="fixed">
+    		<h2 class="ui-title">Vibration</h2>
+    	</header>
+    	<div class="ui-content">
+    		<ul class="ui-listview">
+                <li class="li-has-radio">
+                    <label>
+                        On
+                        <input type="radio" name="radio-vibrate-active" value="On"/>
+                    </label>
+                </li>
+                <li class="li-has-radio">
+                    <label>
+                        Off
+                        <input type="radio" name="radio-vibrate-active" value="Off"/>
+                    </label>
+                </li>
+            </ul>
     	</div>
     </div>
     
@@ -375,7 +403,7 @@
     	<header class="ui-header" data-position="fixed">
     		<h2 class="ui-title">History</h2>
     	</header>
-    	<div class="ui-content">
+    	<div class="ui-content padding-history">
     		You have not yet completed any races - your previous races will be shown here.
 		</div>
     </div>
