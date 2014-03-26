@@ -85,6 +85,7 @@ define({
             boulderGameImage = null,
             dinoUnlockImageFS = null,
             finishedImage = null,
+            awardImage = null,
             numZombies = 0,
             zombieDistance = false,
             zombieInterval = false,
@@ -351,7 +352,7 @@ define({
         
         function onAchievementAwarded(data)
         {
-        	setNotification( green, '#fff', 'Award Unlocked!', 3*1000);
+        	setNotification( green, '#fff', 'Award Unlocked!', null, 3*1000);
 			navigator.vibrate([100, 50, 100, 50]);
 			if(finished)
 			{
@@ -899,7 +900,7 @@ define({
         
         function progressToGame()
         {
-        	setNotification(green, '#fff', 'Race Starting', 2000);
+        	setNotification(green, '#fff', 'Race Starting', null, 2000);
 			sectionChanger.setActiveSection(3, 1000);
 			setTimeout(startCountdown, 1000);
         }
@@ -974,8 +975,8 @@ define({
                 return;
             }
             
-            if (lastDistanceAwarded < r.getDistance()) {
-                var distance = r.getDistance();
+            if (lastDistanceAwarded < r.getMetricDistance()) {
+                var distance = r.getMetricDistance();
                 r.addPoints((distance - lastDistanceAwarded)*ppm);
                 lastDistanceAwarded = distance;
             }
@@ -1847,13 +1848,22 @@ define({
 						context.textBaseline = 'middle';
 						context.fillStyle = '#fff';
 						context.fillText('Training Complete', centreX, 40);
+						var margin = 5;
+						context.textBaseline = 'bottom';
 						if(numAwardsAtFinish == 1)
 						{
-							context.fillText('1 Award Unlocked', centreX, canvas.height - 30);
+							context.fillText('1 Award Unlocked', centreX, canvas.height - margin - margin*3 - awardImage.height);
 						}
 						else if(numAwardsAtFinish >1)
 						{
-							context.fillText(numAwardsAtFinish + ' Awards Unlocked', centreX, canvas.height - 30);
+							context.fillText(numAwardsAtFinish + ' Awards Unlocked', centreX, canvas.height - margin - margin*3 - awardImage.height);
+						}
+						if (numAwardsAtFinish > 0) {
+							var width = (awardImage.width+margin)*numAwardsAtFinish - margin;
+							var left = centreX - width/2;
+							for (var i=0; i < numAwardsAtFinish; i++) {
+								awardImage.draw(context, left + (awardImage.width+margin)*i, canvas.height - margin*3 - awardImage.height, 0);
+							}
 						}
 						
 						break;
@@ -2074,6 +2084,10 @@ define({
 			//finished image
 			loadImage('images/image_ending flag.png', function() {
 				finishedImage = new Sprite(this, this.width, 1000);
+			});
+			
+			loadImage('images/awarded.png', function() {
+				awardImage = new Sprite(this, this.width, 1000);
 			});
 			
 			//dashed pattern
