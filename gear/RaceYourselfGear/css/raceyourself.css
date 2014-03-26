@@ -390,3 +390,12 @@ img {
 .competed {
 	background-color: #252525;
 }
+
+.loading-bar {
+	position: fixed;
+	bottom: 0px;
+	left: 0px;
+	width: 0%;
+	height: 5px;
+	background-color: white;
+}
