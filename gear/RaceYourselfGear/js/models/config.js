@@ -26,7 +26,8 @@ define({
                 adaptPeriod: 10,			//seconds after change of zone before zombies can close
                 warmupPeriod: 5*60,			//seconds
                 dinoUnlockDist: 20,			//km
-                catchupTime: 500			//num ticks for zombies to catch up                
+                catchupTime: 500,			//num ticks for zombies to catch up                
+                lapLength: 100
             },
             config = {},
             STORAGE_KEY = 'config';
@@ -74,6 +75,11 @@ define({
 			if(!isFinite(config.catchupTime)) return defaults.catchupTime;
 			return config.catchupTime;
 		}
+		
+		function getLapLength() {
+			if(!isFinite(config.lapLength)) return defaults.lapLength;
+			return defaults.lapLength;
+		}
         
         function saveConfig(configuration) {
             if (s.add(STORAGE_KEY, configuration)) {
@@ -107,7 +113,8 @@ define({
             getAdaptPeriod : getAdaptPeriod,
             getWarmupPeriod : getWarmupPeriod,
             getDinoUnlockDist : getDinoUnlockDist,
-            getCatchupTime : getCatchupTime            
+            getCatchupTime : getCatchupTime,
+            getLapLength : getLapLength           
         };
     }
 

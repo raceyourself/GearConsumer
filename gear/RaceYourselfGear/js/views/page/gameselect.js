@@ -77,7 +77,7 @@ define({
         
         function onZombieBtnClick(event) {
             if (isScrolling()) return;
-        	game.setCurrentGame('hrzgame');
+        	game.setCurrentGame('racegame');
         	game.setCurrentOpponentType('zombie');
         	if(settings.getZombieTutorial()) {
         		e.fire('trainingtype.show');
