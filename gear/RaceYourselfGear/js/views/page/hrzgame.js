@@ -2110,10 +2110,10 @@ define({
 			//dino image
 			image = new Image();
 			image.onload = function() {
-				dino = new Sprite(this, this.width/10, 1000);
+				dino = new Sprite(this, this.width/5, 750);
 			}
 			image.onerror = function() { throw "could not load" + this.src; }
-			image.src = 'images/animation_dino.png';
+			image.src = 'images/animation_dino_small_running.png';
 			
 			//boulder image
 			image = new Image();
