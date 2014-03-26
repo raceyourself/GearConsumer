@@ -717,6 +717,7 @@ define({
 			if( Date.now() - lastHRtime > 10*1000 )
 			{
 				hrNotFound = true;			
+				e.fire('heartrate.lost');
 			}
 	
 			//Update Heart Rate related mechanics

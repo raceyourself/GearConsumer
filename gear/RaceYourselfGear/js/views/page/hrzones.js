@@ -43,12 +43,16 @@ define({
             lightRed = '#731216',
             white = '#fff',
             black = '#000',
-            grey = '606060',            
-            headerHeight = 39,
+            grey = 'b2b2b2',            
+            greyBG = '1e1e1e',
+            darkGreen = '0C190C',
+            headerHeight = 50,
             segmentHeight = 62,
             dir = 1,
             heartBeatOnFrames = 0,
-            heartBeatOn = false;
+            heartBeatOn = false,
+            heartRateNotFound = false,
+            textRotation = { phase: 0, period: 2 , lastUpdateTime: 0};
 
         function show() {
         }
@@ -56,6 +60,7 @@ define({
         function onPageShow() {
             e.listen('hrm.change', onHeartRateChange);
             e.listen('heart.beat', onHeartBeat);
+            e.listen('heartrate.lost', onHeartRateLost);
 			canvas.width = canvas.offsetWidth;
             canvas.height = canvas.offsetHeight;
             //above assignment gives bad values. hard-coding screen dimensions
@@ -72,8 +77,7 @@ define({
 		   	
             animate();
             
-            //set hr zone thresholds
-            
+            textRotation.lastUpdateTime = Date.now();
         }
 
 		function onHeartBeat() {
@@ -81,6 +85,10 @@ define({
 			heartBeatOnFrames = false;
 		}
 
+		function onHeartRateLost() {
+			heartRateNotFound = true;
+		}
+		
 		function initHRZones() {
 		
 			var min20, max20, min75, max75;
@@ -135,11 +143,11 @@ define({
 			}
 		}
 	
-
         function onPageHide() {
             e.die('hrm.change', onHeartRateChange);
             e.die('hrzone.change', onZoneChange);
 			e.die('hrzone.change', onZoneChange);
+			e.die('heartrate.lost', onHeartRateLost);
         }
         
         function onBack() {
@@ -200,24 +208,43 @@ define({
 
 			//header
 			var headerString;
-			if(hr < currentZone.min || hr > currentZone.max)
+			var headerStyle;
+			var headerBGStyle;
+			if(heartRateNotFound)
 			{
-				context.fillStyle = red;
-				headerString = 'get into your target zone';
+				headerBGStyle = red;
+				headerStyle = white;
+				headerString = 'Heart rate not found';
+			}
+			else if(hr < currentZone.min || hr > currentZone.max)
+			{
+				headerBGStyle = red;
+				headerStyle = white;
+				headerString = 'Get into your target zone';
 			}
 			else
 			{
-				context.fillStyle = grey;
-				headerString = 'your heart rate zones';
+				headerBGStyle = greyBG;
+				headerStyle = grey;
+				headerString = 'Heart rate zones';
 			}
+			context.fillStyle = headerBGStyle;
 			context.fillRect(0,0, canvas.width, headerHeight);
-			context.font = '24 Samsung Sans';
+			context.font = '32 Samsung Sans';
 			context.textAlign = 'center';
 			context.textBaseline = 'middle';
-			context.fillStyle = white;
+			context.fillStyle = headerStyle;
 			context.fillText(headerString, canvas.width/2, headerHeight/2);
 			
 			var currentHeight = canvas.height - 3*segmentHeight;
+			
+			/// Zones
+			
+			var dt = (Date.now() - textRotation.lastUpdateTime) / 1000;
+			textRotation.lastUpdateTime = Date.now();
+			textRotation.phase += dt;
+			textRotation.phase = textRotation.phase % textRotation.period;
+			var textPhaseProportion = textRotation.phase/textRotation.period;
 			
 			//red block at top if needed			
 			if(hr > zones.speed.max)
@@ -239,9 +266,14 @@ define({
 			context.textAlign = 'left';
 			context.textBaseline = 'middle';
 			var targetHRHeight = 0;
+			var isInTargetZone = false;
+			var isInThisZone = false;
 			
 			for(var zone in zones)
 			{
+				isInTargetZone = false;
+				isInThisZone = false;			
+				
 				//line at top
 				context.beginPath();
 				context.moveTo(0, currentHeight - segmentHeight);
@@ -250,10 +282,11 @@ define({
 				
 				//fill & text for zone
 				var colour = white; 
-				if(hr >= zones[zone].min && hr < zones[zone].max)
+				if(hr >= zones[zone].min && hr < zones[zone].max && !heartRateNotFound)
 				{
 					var fillColour;
 					//we are currently in this zone
+					isInThisZone = true;
 					
 					if( zones[zone] == currentZone )
 					{
@@ -261,6 +294,7 @@ define({
 						//green fill, white text
 						fillColour = green;
 						colour = white;
+						isInTargetZone = true;
 					}
 					else
 					{
@@ -278,6 +312,12 @@ define({
 				}
 				else
 				{
+					//colour in the target zone with a dull green if we're not in it
+					if(zones[zone] == currentZone)
+					{
+						context.fillStyle = darkGreen;
+						context.fillRect(0, currentHeight - segmentHeight, canvas.width, segmentHeight);
+					}
 					colour = grey;
 					if( zones[zone] == currentZone )
 					{
@@ -286,9 +326,26 @@ define({
 					}
 				}
 
+				//text inside box
 				context.fillStyle = colour;
 				context.textAlign = 'left';
-				context.fillText(zones[zone].name, 10, currentHeight - segmentHeight/2);
+				var boxString = zones[zone].name;
+				if(!isInTargetZone && isInThisZone)
+				{
+					if(textPhaseProportion > 0.5)
+					{
+						//show encouragement/guidance string
+						if(hr > currentZone.max)
+						{
+							boxString = 'too high';
+						}
+						if(hr < currentZone.min)
+						{
+							boxString = 'too low';
+						}
+					}					
+				}
+				context.fillText(boxString, 10, currentHeight - segmentHeight/2);
 			
 				//black capsule
 				var r = 12;
@@ -354,7 +411,8 @@ define({
         	hrYPos = Math.min(canvas.height - heartRadius, hrYPos);
         	hrYPos = Math.max(headerHeight + heartRadius, hrYPos);
         	
-        	
+        	if(heartRateNotFound) { hrYPos = canvas.height/2; }
+        	        	
         	//circle
         	context.beginPath();
         	context.arc( hrXPos, hrYPos, heartRadius, 0, Math.PI*2, false);
@@ -369,6 +427,12 @@ define({
         		heartIcon = heart.red;
         	}
         	
+        	if(heartRateNotFound)
+        	{
+        		heartIcon = heart.black;
+        		heartScale = 0.9;
+			}
+        	
         	//draw icon
         	heartIcon.drawscaled(context, hrXPos - heartScale*heartIcon.width/2, hrYPos - heartScale*heartIcon.height/2 - 32, 0, heartScale);
         	
@@ -378,7 +442,7 @@ define({
 			context.textBaseline = "middle";
 			context.fillStyle = '#000';
 			var hrText = '' + hr;
-			if(false) { hrText = '--'; }
+			if(heartRateNotFound) { hrText = '--'; }
 			context.fillText(hrText, hrXPos, hrYPos + 8);
 			//bpm
 			context.font = '24px Samsung Sans';
