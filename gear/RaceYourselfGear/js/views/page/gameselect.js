@@ -14,7 +14,8 @@ define({
         'models/sapRaceYourself',
         'views/page/pregame',
         'views/page/trainingtype',
-        'views/page/zombietutorial'
+        'views/page/zombietutorial',
+        'views/page/eliminatortutorial'
     ],
     def: function viewsPageGameSelect(req) {
         'use strict';
@@ -105,7 +106,12 @@ define({
         	if(isScrolling()) return;
         	if(game.isLocked('eliminator')) return;
         	game.setCurrentGame('racegame');
-        	e.fire('trainingtype.show');
+        	if(settings.getEliminatorTutorial()) {
+        		e.fire('trainingtype.show');
+        	} else {
+        		e.fire('eliminatortutorial.show');
+        	}
+        	
         }
          
         function onMoreGames(event) {

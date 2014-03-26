@@ -25,6 +25,7 @@ define({
                 points: 0,
                 age: 0,
                 zombieTutorial: false,
+                eliminatorTutorial: false,
                 firstTimeAge: true,
                 distanceunits: 'Km',
                 paceunits: 'Min/km',
@@ -66,6 +67,11 @@ define({
         function getZombieTutorial() {
         	if(!isFinite(settings.zombieTutorial)) return defaults.zombieTutorial;
         	return settings.zombieTutorial;
+        }
+        
+        function getEliminatorTutorial() {
+        	if(!isFinite(settings.eliminatorTutorial)) return defaults.eliminatorTutorial;
+        	return settings.eliminatorTutorial;
         }
         
         function getFirstTimeAge() {
@@ -131,6 +137,11 @@ define({
         	return saveSettings();
         }
         
+        function setEliminatorTutorial(eliminatorTutorial) {
+        	settings.eliminatorTutorial = eliminatorTutorial;
+        	return saveSettings();
+        }
+        
         function setFirstTimeAge(firstTimeAge) {
         	settings.firstTimeAge = firstTimeAge;
         	return saveSettings();
@@ -152,10 +163,12 @@ define({
         
         function setAudioActive(audio) {
         	settings.audioActive = audio;
+        	return saveSettings();
         }
         
         function setVibrateActive(vibrate) {
         	settings.vibrateActive = vibrate;
+        	return saveSettings();
         }
         
         function addPoints(points) {
@@ -192,6 +205,8 @@ define({
             setAgeRange: setAgeRange,
             getZombieTutorial: getZombieTutorial,
             setZombieTutorial: setZombieTutorial,
+            getEliminatorTutorial: getEliminatorTutorial,
+            setEliminatorTutorial: setEliminatorTutorial,
             getFirstTimeAge: getFirstTimeAge,
             setFirstTimeAge: setFirstTimeAge,
             getDistanceUnits: getDistanceUnits,
