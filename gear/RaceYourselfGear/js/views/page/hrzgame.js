@@ -165,7 +165,10 @@ define({
             heartBeatOnFrameCount = 0,
             numAwardsAtFinish = 0,
             unlockNotificationActive = false,
-            hasBeenInGoalHRZone = false;
+            hasBeenInGoalHRZone = false,
+            loaded = false,
+            loading = false,
+            pendingAssets = 0;
 
 			
 
@@ -257,6 +260,10 @@ define({
 
 
         function onPageShow() {
+        	if (!loaded) {
+        		loadAssets();
+        		return;
+        	}
             visible = true;
             finished = false;
             sectionChanger = new SectionChanger(changer, {
@@ -1908,6 +1915,18 @@ define({
             canvas = document.getElementById('race-canvas');
             context = canvas.getContext('2d');
             
+            if (hrm.isAvailable()) {
+                hrm.start();
+                // Availability will change if start fails
+            } 
+            if (!hrm.isAvailable()) {
+            	hrmMock.start();
+            }                       
+            
+            bindEvents();
+        }
+        
+        function loadAssets() {
             // Set up animation transitions
             runnerAnimations.idle.previous = null;
             runnerAnimations.idle.next = runnerAnimations.running;
@@ -1916,84 +1935,38 @@ define({
             runnerAnimations.sprinting.previous = runnerAnimations.running;
             runnerAnimations.sprinting.next = null;
             
-            var image = new Image();            
-            image.onload = function() {
+            loadImage('images/animation_runner_green_still.png', function() {
                 runnerAnimations.idle.sprite = new Sprite(this, this.width, 1000);
                 runner = runnerAnimations.running;
-            }
-            image.onerror = function() {
-                throw "Could not load " + this.src;
-            }
-            image.src = 'images/animation_runner_green_still.png';
+            });
 
-
-            image = new Image();
-            image.onload = function() {
+            loadImage('images/animation_runner_green.png', function() {
                 runnerAnimations.running.sprite = new Sprite(this, this.width / 6, 500);
                 runnerAnimations.sprinting.sprite = new Sprite(this, this.width / 6, 500);
-            }
-            image.onerror = function() {
-                throw "Could not load " + this.src;
-            }
-            image.src = 'images/animation_runner_green.png';
+            });
 
-			image = new Image();
-            image.onload = function() {
+            loadImage('images/animation_runner_red.png', function() {
                 runnerAnimations.running_red.sprite = new Sprite(this, this.width / 6, 500);
                 runnerAnimations.sprinting_red.sprite = new Sprite(this, this.width / 6, 500);
-            }
-            image.onerror = function() {
-                throw "Could not load " + this.src;
-            }
-            image.src = 'images/animation_runner_red.png';
+            });
 
-			image = new Image();
-            image.onload = function() {
+            loadImage('images/animation_runner_red_stationary.png', function() {
                 runnerAnimations.idle_red.sprite = new Sprite(this, this.width, 500);
-            }
-            image.onerror = function() {
-                throw "Could not load " + this.src;
-            }
-            image.src = 'images/animation_runner_red_stationary.png';
+            });
             
-			image = new Image();
-            image.onload = function() {
+            loadImage('images/animation_cloud.png', function() {
                 runnerAnimations.zombieDead.sprite = new Sprite(this, this.width / 2, 1000);
-            }
-            image.onerror = function() {
-                throw "Could not load " + this.src;
-            }
-            image.src = 'images/animation_cloud.png';
+            });
 
-            /*
-            image = new Image();
-            image.onload = function() {
-                runnerAnimations.sprinting.sprite = new Sprite(this, this.width / 6, 2500);
-            }
-            image.onerror = function() {
-                throw "Could not load " + this.src;
-            }
-            image.src = 'images/runner-sprinting-anim.png';
-            */
-
-            image = new Image();
-            image.onload = function() {
+            loadImage('images/animation_zombie1.png', function() {
                 zombies.push(new Sprite(this, this.width / 6, 1000));
-            }
-            image.onerror = function() {
-                throw "Could not load " + this.src;
-            }
-            image.src = 'images/animation_zombie1.png';
+            });
 
 			//zombie idle
-            image = new Image();
-            image.onload = function() {
+            loadImage('images/animation_zombie_stationary.png', function() {
                 zombieIdle = new Sprite(this, this.width, 1000);
-            }
-            image.onerror = function() {
-                throw "Could not load " + this.src;
-            }
-            image.src = 'images/animation_zombie_stationary.png';
+            });
+            
             
             zombieMoan = new Audio('audio/zombie_moan.wav');
             zombieMoan.onerror = function() {
@@ -2009,12 +1982,10 @@ define({
             }           
             
 			dinoRoar = new Audio('audio/T Rex Roar.wav');
-			dinoRoar.onload = function () {
-				dionKill = this;
-			}
             dinoRoar.onerror = function() {
                 throw "Could not load " + this.src;
             }
+            dinoKill = dinoRoar;
             
             //chime
             chime = new Audio('audio/Chime.wav');
@@ -2022,170 +1993,120 @@ define({
             
             
             //heart     
-        	image = new Image();
-        	image.onload = function() {
+            loadImage('images/image_heart_green.png', function() {
         		heartGreen = new Sprite(this, this.width, 1000);
         		heartGreen.scale = 0.5;
-        	}
-            image.onerror = function() {
-                throw "Could not load " + this.src;
-            }
-            image.src = 'images/image_heart_green.png';
+        	});
 
-        	image = new Image();
-        	image.onload = function() {
+            loadImage('images/image_heart_red.png', function() {
         		heartRed = new Sprite(this, this.width, 1000);
         		heartRed.scale = 0.5;
-        	}
-            image.onerror = function() {
-                throw "Could not load " + this.src;
-            }
-            image.src = 'images/image_heart_red.png';
+        	});
             
-			image = new Image();
-        	image.onload = function() {
+            loadImage('images/image_heart_black.png', function() {
         		heartBlack = new Sprite(this, this.width, 1000);
         		heartBlack.scale = 0.5;
-        	}
-            image.onerror = function() {
-                throw "Could not load " + this.src;
-            }
-            image.src = 'images/image_heart_black.png';
+        	});
             
                         
             //gps
-            image = new Image();
-            image.onload = function() {
+			loadImage('images/image_gps target.png', function() {
             	gpsRing = new Sprite(this, this.width, 10);
-			}
-			image.onerror = function() { throw "could not load" + this.src; }
-			image.src = 'images/image_gps target.png';
+			});
 
-
-
-            image = new Image();
-            image.onload = function() {
+			loadImage('images/image_gps green circle.png', function() {
             	gpsDot = new Sprite(this, this.width, 10);
-			}
-			image.onerror = function() { throw "could not load" + this.src; }
-			image.src = 'images/image_gps green circle.png';
+			});
 
-
-
-
-						
 			//sweat points
-			image = new Image();
-			image.onload = function() {
+			loadImage('images/image_sweat_point_green.png', function() {
 				sweat = new Sprite(this, this.width, 1000);
 				animatedSprites.push(sweat);
-			}
-			image.onerror = function() { throw "could not load" + this.src; }
-			image.src = 'images/image_sweat_point_green.png';
+			});
 
-			image = new Image();
-			image.onload = function() {
+			loadImage('images/image_sweat_point_red.png', function() {
 				sweat_red = new Sprite(this, this.width, 1000);
 				animatedSprites.push(sweat_red);
-			}
-			image.onerror = function() { throw "could not load" + this.src; }
-			image.src = 'images/image_sweat_point_red.png';
+			});
 			            
             //dead image
-			image = new Image();
-			image.onload = function() {
+			loadImage('images/image_skull.png', function() {
 				deadImage = new Sprite(this, this.width, 1000);
-			}
-			image.onerror = function() { throw "could not load" + this.src; }
-			image.src = 'images/image_skull.png';
+			});
                         
  			//dead player image
-			image = new Image();
-			image.onload = function() {
+			loadImage('images/image_skull.png', function() {
 				deadRunnerImage = new Sprite(this, this.width, 1000);
-			}
-			image.onerror = function() { throw "could not load" + this.src; }
-			image.src = 'images/image_skull.png';
+			});
 			      
 			//dino image
-			image = new Image();
-			image.onload = function() {
+			loadImage('images/animation_dino_small_running.png', function() {
 				dino = new Sprite(this, this.width/5, 750);
-			}
-			image.onerror = function() { throw "could not load" + this.src; }
-			image.src = 'images/animation_dino_small_running.png';
+			});
 			
 			//boulder image
-			image = new Image();
-			image.onload = function() {
+			loadImage('images/image_boulder_achievement_screen.png', function() {
 				boulder = new Sprite(this, this.width, 1000);
 				boulder.rotation = 0;
 				boulder.rotationSpeed = 0.2;
-			}
-			image.onerror = function() { throw "could not load" + this.src; }
-			image.src = 'images/image_boulder_achievement_screen.png';			
+			});
 			
 			//dino game image
-			image = new Image();
-			image.onload = function() {
+			loadImage('images/race_dino_unlocked_ingame.png', function() {
 				dinoGameImage = new Sprite(this, this.width, 1000);
-			}
-			image.onerror = function() { throw "could not load" + this.src; }
-			image.src = 'images/race_dino_unlocked_ingame.png';
+			});
 			
 			//boulder game image
-			image = new Image();
-			image.onload = function() {
+			loadImage('images/image_boulder_achievement_screen.png', function() {
 				boulderGameImage = new Sprite(this, this.width, 1000);
-			}
-			image.onerror = function() { throw "could not load" + this.src; }
-			image.src = 'images/image_boulder_achievement_screen.png';	
+			});
 			
 			//finished image
-			image = new Image();
-			image.onload = function() {
+			loadImage('images/image_ending flag.png', function() {
 				finishedImage = new Sprite(this, this.width, 1000);
-			}
-			image.onerror = function() { throw "could not load" + this.src; }
-			image.src = 'images/image_ending flag.png';	
+			});
 			
 			//dashed pattern
-			image = new Image();
-			image.onload = function() {
+			loadImage('images/dashedLine.png', function() {
 				dottedPattern = context.createPattern(this, "repeat");
-			}
-			image.onerror = function() {throw "could not load" + this.src; }
-			image.src = 'images/dashedLine.png';
+			});
 			
-			image = new Image();
-			image.onload = function() {
+			loadImage('images/icon-speed_whiteBG.png', function() {
 				paceIcon = new Sprite(this, this.width, 1000);
-			}
-			image.onerror = function() {throw "could not load" + this.src; }
-			image.src = 'images/icon-speed_whiteBG.png';
+			});
 						
-			image = new Image();
-			image.onload = function() {
+			loadImage('images/bg_good.jpg', function() {
 				goodBG = this;
-			}
-			image.onerror = function() {throw "could not load" + this.src; }
-			image.src = 'images/bg_good.jpg';
+			});
 			
-			image = new Image();
-			image.onload = function() {
+			loadImage('images/bg_bad.jpg', function() {
 				badBG = this;
-			}
-			image.onerror = function() {throw "could not load" + this.src; }
-			image.src = 'images/bg_bad.jpg';
-            if (hrm.isAvailable()) {
-                hrm.start();
-                // Availability will change if start fails
-            } 
-            if (!hrm.isAvailable()) {
-            	hrmMock.start();
-            }                       
-            
-            bindEvents();
+			});
+			
+        	loading = true;
+        }
+        
+        function loadImage(url, onload) {
+        	pendingAssets++;
+        	var image = new Image();
+        	image.onerror = function() {
+        		throw 'could not load' + this.src;      	
+        	}
+        	image.onload = function() {
+        		pendingAssets--;
+        		onload.call(this);
+        		if (loading && pendingAssets == 0) {
+        			onAssetsLoaded();
+        		}
+        	};
+        	image.src = url;
+        }
+        
+        function onAssetsLoaded() {
+        	console.log('Assets loaded');
+        	loading = false;
+        	loaded = true;
+        	onPageShow();
         }
 
         e.listeners({
