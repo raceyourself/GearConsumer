@@ -69,10 +69,11 @@ define({
             var html = '<p><b>' + msg + '</b></p>' + url.substr(url.lastIndexOf('/')+1) + ':' + line;
             if (error !== undefined && error.stack !== undefined) html = '<p>' + error.stack + '</p>';
             document.getElementById('error-message').innerHTML = html;
+            window.addEventListener('pageshow', function(ev) { ev.stopPropagation(); ev.preventDefault(); }, true);
             window.addEventListener('pagehide', function(ev) { ev.stopPropagation(); ev.preventDefault(); }, true);
             gear.ui.changePage('#error-page');
             document.getElementById('error-page').addEventListener('click', function() {
-                app.closeApplication();                
+            	app.closeApplication();
             });
         }
 
