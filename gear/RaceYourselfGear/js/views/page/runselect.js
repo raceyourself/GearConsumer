@@ -5,7 +5,7 @@
  */
 
 define({
-    name: 'views/page/gameselect',
+    name: 'views/page/runselect',
     requires: [
         'core/event',
         'models/race',
@@ -14,23 +14,24 @@ define({
         'models/sapRaceYourself',
         'views/page/pregame',
         'views/page/trainingtype',
-        'views/page/zombietutorial',
+        'views/page/opponentselect',
         'views/page/eliminatortutorial'
     ],
-    def: function viewsPageGameSelect(req) {
+    def: function viewsPageRunSelect(req) {
         'use strict';
 
         var e = req.core.event,
          	app = req.models.application,
          	page = null,
          	game = req.models.game,
+         	race = req.models.race,
          	settings = req.models.settings,
          	provider = req.models.sapRaceYourself,
             changer,
             sectionChanger;
 
         function show() {
-            gear.ui.changePage('#newgames');
+            gear.ui.changePage('#runselect');
         }
         
         
@@ -41,10 +42,6 @@ define({
                 orientation: "horizontal",
                 scrollbar: "bar"
             });
-            
-            document.getElementById('dino-mode-btn').classList.toggle('locked-game', game.isLocked('dino'));
-            
-            document.getElementById('eliminator-mode-btn').classList.toggle('locked-game', game.isLocked('eliminator'));
             
             e.listen('tizen.back', onBack);
             sectionChanger.setActiveSection(3, 0);
@@ -69,18 +66,43 @@ define({
         }
         
         function bindEvents() {
-        	var zombieBtnEl = document.getElementById('zombie-mode-btn'),
-        		dinoBtnEl = document.getElementById('dino-mode-btn'),
-        		moreGamesEl = document.getElementById('moregames'),
-        		elimBtnEl = document.getElementById('eliminator-mode-btn');
+        	var moreGamesEl = document.getElementById('moregames'),
+        		elimBtnEl = document.getElementById('elim-mode-btn'),
+        		fitnessBtnEl = document.getElementById('fitness-mode-btn'),
+        		weightBtnEl = document.getElementById('weight-mode-btn'),
+        		strengthBtnEl = document.getElementById('strength-mode-btn');
         	
         	 page.addEventListener('pageshow', onPageShow);
              page.addEventListener('pagehide', onPageHide);
              
-             zombieBtnEl.addEventListener('click', onZombieBtnClick);
-             dinoBtnEl.addEventListener('click', onDinoBtnClick);
              moreGamesEl.addEventListener('click', onMoreGames);
              elimBtnEl.addEventListener('click', onElimBtnClick);
+             fitnessBtnEl.addEventListener('click', onHRRaceClick);
+             weightBtnEl.addEventListener('click', onHRRaceClick);
+             strengthBtnEl.addEventListener('click', onHRRaceClick);
+        }
+        
+        function onHRRaceClick(event) {
+        	//console.log(this.id);
+        	switch(this.id) {
+        	case 'fitness-mode-btn':
+        		race.setGoal('Endurance');
+        		break;
+        		
+        	case 'weight-mode-btn':
+        		race.setGoal('WeightLoss');
+        		break;
+        		
+        	case 'strength-mode-btn':
+        		race.setGoal('Strength');
+        		break;
+        		
+        	default:
+        		console.log('Button not found - ' + this.id);
+        		break;
+        	}
+        	
+        	e.fire('opponentselect.show');
         }
 
         function isScrolling() {
@@ -89,35 +111,17 @@ define({
             if (Math.abs(sectionChanger.lastTouchPointY - sectionChanger.startTouchPointY) > 5) return true;
             return false;
         }
-        
-        function onZombieBtnClick(event) {
-            if (isScrolling()) return;
-        	game.setCurrentGame('hrzgame');
-        	game.setCurrentOpponentType('zombie');
-        	if(settings.getZombieTutorial()) {
-        		e.fire('trainingtype.show');
-        	}
-        	else {
-        		e.fire('zombietutorial.show');
-        	}
-        	
-        	
-        }
-        
-        function onDinoBtnClick(event) {
-            if (isScrolling()) return;
-            if (game.isLocked('dino')) return;
-            game.setCurrentGame('hrzgame');
-            game.setCurrentOpponentType('dinosaur');
-            e.fire('trainingtype.show');
-        }
-        
+       
         function onElimBtnClick(event) {
         	if(isScrolling()) return;
-        	if(game.isLocked('eliminator')) return;
+        	
         	game.setCurrentGame('racegame');
         	if(settings.getEliminatorTutorial()) {
-        		e.fire('trainingtype.show');
+        		if(settings.getFirstTimeAge()) {
+            		e.fire('ageselect.show', 'choosegoal');
+            	} else {
+            		e.fire('choosegoal.show');
+            	}
         	} else {
         		e.fire('eliminatortutorial.show');
         	}
@@ -130,13 +134,13 @@ define({
         }
         
         function init() {
-            page = document.getElementById('newgames');
-            changer = document.getElementById("game-select-sectionchanger");
+            page = document.getElementById('runselect');
+            changer = document.getElementById("run-select-sectionchanger");
             bindEvents();
         }
 
         e.listeners({
-            'gameselect.show': show,
+            'runselect.show': show,
         });
 
         return {

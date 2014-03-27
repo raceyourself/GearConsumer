@@ -31,7 +31,8 @@ define({
                 paceunits: 'Min/km',
                 currentTarget: "",
                 audioActive: true,
-                vibrateActive: true
+                vibrateActive: true,
+                firstTimeSelect: true
             },
             settings = {},
             STORAGE_KEY = 'settings';
@@ -99,6 +100,11 @@ define({
         function getVibrateActive() {
         	if(!isFinite(settings.vibrateActive)) return defaults.vibrateActive;
         	return settings.vibrateActive;
+        }
+        
+        function getFirstTimeSelect() {
+        	if(!isFinite(settings.firstTimeSelect)) return defaults.firstTimeSelect;
+        	return settings.firstTimeSelect;
         }
         
         function saveSettings() {
@@ -171,6 +177,11 @@ define({
         	return saveSettings();
         }
         
+        function setFirstTimeSelect(select) {
+        	settings.firstTimeSelect = select;
+        	return saveSettings();
+        }
+        
         function addPoints(points) {
             // TODO: Move points to a separate model?
             var currentPoints = settings.points += points;
@@ -218,7 +229,9 @@ define({
             getAudioActive: getAudioActive,
             setAudioActive: setAudioActive,
             getVibrateActive: getVibrateActive,
-            setVibrateActive: setVibrateActive
+            setVibrateActive: setVibrateActive,
+            getFirstTimeSelect: getFirstTimeSelect,
+            setFirstTimeSelect: setFirstTimeSelect
         };
     }
 
