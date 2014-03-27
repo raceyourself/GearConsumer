@@ -12,7 +12,7 @@ define({
         'models/game',
         'models/settings',
         'views/page/pregame',
-        'views/page/trainingtype'
+        'views/page/no-bluetooth'
     ],
     def: function viewsPageEliminatorTutorial(req) {
         'use strict';
@@ -58,7 +58,11 @@ define({
         function onEliminatorEndClick() {
             if (isScrolling()) return;
         	settings.setEliminatorTutorial(true);
-        	e.fire('trainingtype.show');
+        	 if(sap.isConnected() || !sap.isAvailable()) {
+             	e.fire('pregame.show');
+             } else {
+             	e.fire('no-bluetooth.show');
+             }
         }
         
         
