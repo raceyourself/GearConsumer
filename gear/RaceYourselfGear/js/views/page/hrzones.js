@@ -11,7 +11,8 @@ define({
         'models/sapRaceYourself',
         'models/sprite',
         'models/hrm',
-        'models/settings'
+        'models/settings',
+        'models/game'
     ],
     def: function viewsPageHeartRateZones(req) {
         'use strict';
@@ -19,6 +20,7 @@ define({
         var e = req.core.event,
             Sprite = req.models.sprite.Sprite,
             settings = req.models.settings,
+            game = req.models.game,
             page = null,
             changer,
             canvas,
@@ -53,8 +55,9 @@ define({
             heartBeatOn = false,
             heartRateNotFound = false,
             textRotation = { phase: 0, period: 2 , lastUpdateTime: 0},
-            hrDrift = { target: 50, current: 50 };
-
+            hrDrift = { target: 50, current: 50 },
+			
+			infoOnly = false;
 
         function show() {
         }
@@ -80,6 +83,16 @@ define({
             animate();
             
             textRotation.lastUpdateTime = Date.now();
+            
+            var currentGame = game.getCurrentGame();
+            if(currentGame == 'racegame')
+            {
+            	infoOnly = true;
+            }
+            else
+            {
+            	infoOnly = false;
+            }
         }
 
 		function onHeartBeat() {
@@ -232,7 +245,7 @@ define({
 				headerStyle = white;
 				headerString = 'Heart rate not found';
 			}
-			else if(hr < currentZone.min || hr > currentZone.max)
+			else if(hr < currentZone.min || hr > currentZone.max && !infoOnly)
 			{
 				headerBGStyle = red;
 				headerStyle = white;
@@ -263,7 +276,7 @@ define({
 			var textPhaseProportion = textRotation.phase/textRotation.period;
 			
 			//red block at top if needed			
-			if(hrDrift.current > zones.speed.max)
+			if(hrDrift.current > zones.speed.max && !infoOnly)
 			{
 				var boxHeight = canvas.height -4*segmentHeight - headerHeight;
 				context.fillStyle = red;
@@ -300,13 +313,15 @@ define({
 				
 				//fill & text for zone
 				var colour = white; 
-				if(hrDrift.current >= zones[zone].min && hrDrift.current < zones[zone].max && !heartRateNotFound)
+				var highlightThisZone = hrDrift.current >= zones[zone].min && hrDrift.current < zones[zone].max && !heartRateNotFound;
+//				highlightThisZone = highlightThisZone || infoOnly
+				if(highlightThisZone)
 				{
 					var fillColour;
 					//we are currently in this zone
 					isInThisZone = true;
 					
-					if( zones[zone] == currentZone )
+					if( zones[zone] == currentZone || infoOnly)
 					{
 						//this is also the target zone.
 						//green fill, white text
@@ -334,7 +349,7 @@ define({
 						context.fillRect(0, currentHeight - segmentHeight, canvas.width, segmentHeight);
 					}
 					colour = grey;
-					if( zones[zone] == currentZone )
+					if( zones[zone] == currentZone && !infoOnly)
 					{
 						colour = green;
 						bold = true;
@@ -357,17 +372,22 @@ define({
 				{
 					boxString = zones[zone].name;
 				}
+				if(infoOnly)
+				{
+					boxString = zones[zone].name;
+//					context.fillStyle = white;
+				}
 				if(!isInTargetZone && isInThisZone)
 				{
 //					if(textPhaseProportion > 0.5)
-					if(true)
+					if(!infoOnly)
 					{
 						//show encouragement/guidance string
-						if(hr > currentZone.max)
+						if(hrDrift.current > currentZone.max)
 						{
 							boxString = 'too high';
 						}
-						if(hr < currentZone.min)
+						if(hrDrift.current < currentZone.min)
 						{
 							boxString = 'too low';
 						}
@@ -403,6 +423,7 @@ define({
 				{
 					context.fillStyle = grey;
 				}
+				if(infoOnly) { context.fillStyle = grey; }
 				context.textAlign = 'center';
 				context.font = 'bold 25px Samsung Sans';
 				context.fillText(zones[zone].max, canvas.width/2, currentHeight - segmentHeight);
@@ -455,6 +476,8 @@ define({
         	{
         		heartIcon = heart.red;
         	}
+        	
+        	if(infoOnly) { heartIcon = heart.red; }
         	
         	if(heartRateNotFound)
         	{

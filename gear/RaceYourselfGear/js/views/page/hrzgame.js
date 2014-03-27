@@ -2061,7 +2061,7 @@ define({
 
 			//zombie idle
             loadImage('images/animation_zombie_stationary.png', function() {
-                zombieIdle = new Sprite(this, this.width, 1000);
+                zombieIdle = new Sprite(this, this.width/14, 2000);
             });
             
             

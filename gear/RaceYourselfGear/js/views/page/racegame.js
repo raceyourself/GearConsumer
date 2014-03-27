@@ -308,8 +308,10 @@ define({
                 e.listen('pedometer.step', step);
 ////                e.listen('hrm.change', onHeartRateChange);
 
-//                startCountdown();
+                startCountdown();
             }
+
+			sectionChanger.setActiveSection(1, 0);
 
 			//reset any existing animations
 			for(var i=0; i<animatedSprites.length; i++)
@@ -382,7 +384,6 @@ define({
             
             
             
-			startRun();
         }
         
         function addGhost(time)
@@ -413,7 +414,6 @@ define({
 ////            startZombies();
 			lastRender = Date.now();
 			
-        	sectionChanger.setActiveSection(1, 0);
 			
 			timeCurrentLapStarted = Date.now();
 			
@@ -520,6 +520,8 @@ define({
 		}
         function go() {
 
+			startRun();
+			
             requestRender();
             countingdown = false;
             clearTimeout(bannerTimeout);
@@ -1908,8 +1910,11 @@ define({
             loadImage('images/animation_runner_red.png', function() {
                 runnerAnimations.running_red.sprite = new Sprite(this, this.width / 6, 500);
                 runnerAnimations.sprinting_red.sprite = new Sprite(this, this.width / 6, 500);
-                ghostImage = this;
             });
+            
+            loadImage('images/animation_runner_white.png', function() {
+				ghostImage = this;
+			});
 
             loadImage('images/animation_runner_red_stationary.png', function() {
                 runnerAnimations.idle_red.sprite = new Sprite(this, this.width, 500);
