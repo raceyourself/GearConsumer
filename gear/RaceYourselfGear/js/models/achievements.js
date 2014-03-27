@@ -240,7 +240,61 @@ define({
                         });
                     },
                     progress: function() {
-                    	var unlockDist = config.getDinoUnlockDist() * 1000;
+                    	var unlockDist = config.getElimUnlockDist() * 1000;
+                        return Number(Math.min(unlockDist, progress.total.distance)*100/unlockDist).toFixed(1).replace('.0', '') + '%';
+                    }
+                },
+                'Endurance' : {
+                    title: 'Race Yourself Fitter Mode',
+                    description: 'Unlocked the Race Yourself Fitter mode by playing a game of Eliminator',
+                    points: 0,
+                    uses: 1,
+                    init: function() {
+                        e.listen('race.end', function(event) {
+                        	var race = event.detail;
+                        	if(race.getRaceType()=='racegame')
+                        		achieve('Endurance');
+                        		game.unlock('Endurance');
+                        });
+                    },
+                    progress: function() {
+                    	if (!!achieved['Endurance']) return '100%';
+                        return '0%';
+                    }
+                },
+                'WeightLoss' : {
+                    title: 'Race Yourself Slimmer Mode',
+                    description: 'Unlocked the Race Yourself Slimmer mode by running 5km',
+                    points: 0,
+                    uses: 1,
+                    init: function() {
+                        e.listen('race.progress', function(event) {
+                        	if (progress.total.distance >= config.getWeightUnlockDist() * 1000) {
+                                achieve('WeightLoss');
+                                game.unlock('WeightLoss');
+                            }
+                        });
+                    },
+                    progress: function() {
+                    	var unlockDist = config.getWeightUnlockDist() * 1000;
+                        return Number(Math.min(unlockDist, progress.total.distance)*100/unlockDist).toFixed(1).replace('.0', '') + '%';
+                    }
+                },
+                'Strength' : {
+                    title: 'Race Yourself Faster Mode',
+                    description: 'Unlocked the Race Yourself Faster mode by running 10km',
+                    points: 0,
+                    uses: 1,
+                    init: function() {
+                        e.listen('race.progress', function(event) {
+                        	if (progress.total.distance >= config.getStrengthUnlockDist() * 1000) {
+                                achieve('Strength');
+                                game.unlock('Strength');
+                            }
+                        });
+                    },
+                    progress: function() {
+                    	var unlockDist = config.getStrengthUnlockDist() * 1000;
                         return Number(Math.min(unlockDist, progress.total.distance)*100/unlockDist).toFixed(1).replace('.0', '') + '%';
                     }
                 },

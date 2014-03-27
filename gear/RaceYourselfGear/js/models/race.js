@@ -24,6 +24,7 @@ define({
             s = req.core.storage,
             pedometer = req.models.pedometer,
             mock = req.models.mocks.pedometer,
+            game = req.models.game,
             provider = req.models.sapRaceYourself,
             settings = req.models.settings,
             units = req.helpers.units,
@@ -63,6 +64,8 @@ define({
             this.initialCalories = null;
             this.calories = 0;
             this.track = [];
+            this.raceType = game.getCurrentGame();
+            this.opponentType = game.getCurrentOpponentType();
             this.running = false;
             this.stopped = false;
             this.pointsEarned = 0;
@@ -241,6 +244,23 @@ define({
             getAchievements: function getAchievements() {
                 return this.achievements.slice(0);
             },
+            
+            getCurrentOpponentType: function getCurrentOpponentType() {
+            	return this.opponentType;
+            },
+            
+            setCurrentOpponentType: function setCurrentOpponentType(opponent) {
+            	this.opponentType = opponent;
+            },
+            
+            getRaceType: function getRaceType() {
+            	return this.raceType;
+            },
+            
+            setRaceType: function setRaceType(type) {
+            	this.raceType = type;
+            },
+            
             
             triggerProgress: function triggerProgress() {
                 var lastSnapshot = this.progressSnapshot || {
