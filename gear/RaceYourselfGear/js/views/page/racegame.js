@@ -182,7 +182,9 @@ define({
 			timeIcon = null,
 			lastLapTime = 0,
 			timeOfLastStep,
-			timeSpeedLastNonZero;
+			timeSpeedLastNonZero,
+			gameOver = false,
+			lapStartDist = 0;
 			
 
 			
@@ -274,6 +276,7 @@ define({
 /// ---> /in common with zombie game
 
         function onPageShow() {
+        	gameOver = false;
             document.getElementById('eliminator-end').classList.toggle('hidden', true);
             document.getElementById('eliminator-highscore').classList.toggle('hidden', true);
             visible = true;
@@ -464,12 +467,20 @@ define({
         
         function onAgain() {
         	numLaps = 0;
+			ghostRunners = [];
             document.getElementById('eliminator-end').classList.toggle('hidden', true);
             document.getElementById('eliminator-highscore').classList.toggle('hidden', true);
+            gameOver = false;
+            playerIsAhead = true;
+            timeAheadnessSwitched = Date.now();
         	restart();
         }
         
         function onQuit() {
+			var r = race.getOngoingRace();
+			e.fire('race.end', r);
+			r.stop();
+
             e.fire('newmain.show');
         }
         
@@ -522,7 +533,7 @@ define({
         	bannerTimeout = setTimeout(clearbanner, countDownParams.stageDuration * 1000);
 			countDownParams.startTime = Date.now();
 ////			zombiePosWeight = 0;
-
+			lapStartDist = race.getOngoingRace().getDistance();
 
 ///////// Eliminator
 			for(var i=0; i<ghostRunners.length; i++)
@@ -533,7 +544,6 @@ define({
 			
 			timeCurrentLapStarted = Date.now();
 			
-			numLaps++;
 			
 ///////// /Eliminator
 
@@ -588,7 +598,7 @@ define({
 			var timeInLap = (Date.now() - timeCurrentLapStarted) / 1000;
 			
 			var r = race.getOngoingRace();
-			var playerLapDistance = r.getDistance() % TRACK_LENGTH;
+			var playerLapDistance = (r.getDistance() - lapStartDist) % TRACK_LENGTH;
 			var playerIsAheadNow = true;
 			
 			//update runner distances
@@ -600,6 +610,7 @@ define({
 				if(ghost.lapDistance > lapLength)
 				{
 					ghost.lapDistance = lapLength;
+					gameOverEliminated();
 				}
 				
 				//check if we are still in the lead
@@ -624,15 +635,46 @@ define({
 			}
 			else
 			{
-				if(Date.now() - timeSpeedLastNonZero > 5000)
+				if(!notification.active)
 				{
-					setNotification( flashingRed, '#fff', 'Run to Move Forward', null, 2000);
+					if(Date.now() - timeSpeedLastNonZero > 5000)
+					{
+						setNotification( flashingRed, '#fff', 'Run to Move Forward', null, 2000);
+					}
 				}
 			}
 		}
 
 
-        
+        function gameOverEliminated()
+        {
+			if(!gameOver)
+			{
+				gameOver = true;
+				//show notification
+				setNotification(red, '#fff', 'Eliminated!', null, 3000);
+
+				navigator.vibrate([100, 100, 100, 100, 100, 100, 100]);
+			
+				setTimeout( function() {
+					if (numLaps <= settings.getEliminatorHighScore()) {
+						document.getElementById('eliminator-score-value').innerHTML = numLaps;
+						document.getElementById('eliminator-best-value').innerHTML = settings.getEliminatorHighScore();
+						document.getElementById('eliminator-end').classList.toggle('hidden');
+					} else {
+						settings.setEliminatorHighScore(numLaps);
+						document.getElementById('eliminator-new-hs-value').innerHTML = numLaps;
+						document.getElementById('eliminator-highscore').classList.toggle('hidden');
+					}
+					}, 2000);
+				finished = true;
+//				var r = race.getOngoingRace();
+//				e.fire('race.end', r);
+//				r.stop();
+			
+				chime.play();
+			}
+        }
         
         function progressToGame()
         {
@@ -692,7 +734,7 @@ define({
             
             
 ////////////// Eliminator            
-            if (r.getDistance() >= nextLapDistance)
+            if (r.getDistance() >= lapStartDist + TRACK_LENGTH)
             {
             	// add new ghost
             	var lapTime = (Date.now() - timeCurrentLapStarted)/1000;
@@ -700,7 +742,8 @@ define({
             	
             	
             	//set next lap distance
-            	nextLapDistance += config.getLapLength();
+//            	nextLapDistance += config.getLapLength();
+				lapStartDist = race.getOngoingRace().getDistance();
             	
             	//show 'go'
             	
@@ -720,37 +763,20 @@ define({
             	if(playerIsAhead)
             	{
             	   	restart();
+            	   	numLaps++;
 					//show notification
 					setNotification(green, '#fff', 'Lap Complete', null, 3000);
 					chime.play();
 					navigator.vibrate([10, 10, 10, 10]);
-					lastLapTime = lapTime;
+					lastLapTime = lapTime.toFixed(1);
 					showLapCompleteBox = true;
 					setTimeout(hideLapCompleteBox, 5000);
-					addGhost(lapTime);
+					addGhost(lastLapTime);
 
             	}
             	else
             	{
-					//show notification
-					setNotification(green, '#fff', 'Eliminated!', null, 3000);
-
-					navigator.vibrate([100, 100, 100, 100, 100, 100, 100]);
-					
-					if (numLaps <= settings.getEliminatorHighScore()) {
-						document.getElementById('eliminator-score-value').innerHTML = numLaps;
-						document.getElementById('eliminator-best-value').innerHTML = settings.getEliminatorHighScore();
-			            document.getElementById('eliminator-end').classList.toggle('hidden');
-					} else {
-			            settings.setEliminatorHighScore(numLaps);
-			            document.getElementById('eliminator-new-hs-value').innerHTML = numLaps;
-			            document.getElementById('eliminator-highscore').classList.toggle('hidden');
-					}
-					finished = true;
-					e.fire('race.end', r);
-					r.stop();
-					
-					chime.play();
+					gameOverEliminated();
             	}
             	
             }
@@ -783,7 +809,7 @@ define({
 ////            if(!isDead)
 ////            {
                 //Update player anim
-                if(r.getSpeed() <= 0.01)
+                if(r.getSpeed() <= 1)
                 {
                     runner.sprite.onEnd(function(dt) {
                         runner.sprite.onEnd(null);
@@ -876,7 +902,7 @@ define({
 
 ////////// Eliminator
 			screenWidthDistance = 13;
-			var playerLapDistance = r.getDistance() % TRACK_LENGTH;
+			var playerLapDistance = r.getDistance() - lapStartDist;
 			//drift from left to right as we get further through the lap
 			//go from 0.2 to 0.8 of the way across the screen.
 			var lapProportion = playerLapDistance / TRACK_LENGTH;
@@ -1014,7 +1040,7 @@ define({
 					fillProportion = 0;
 				}
 */
-				fillProportion = (r.getDistance() % TRACK_LENGTH) / TRACK_LENGTH;
+				fillProportion = ((r.getDistance() - lapStartDist) % TRACK_LENGTH) / TRACK_LENGTH;
 				
 				if(false)	//old capsule version
 				{
@@ -1274,7 +1300,7 @@ define({
 			
             scale = 10/screenWidthDistance;
             
-            var playerXPos = 0 + distanceToTrackPos(r.getDistance())
+            var playerXPos = 0 + distanceToTrackPos(r.getDistance() - lapStartDist)
             
             var opponentType = game.getCurrentOpponentType()
 //            opponentType = 'dinosaur';
@@ -1789,7 +1815,7 @@ define({
         function distanceToTrackPos(distance)
         {
 ////////// Eliminator        
-        	var lapDistance = distance % TRACK_LENGTH;
+        	var lapDistance = distance;
 ////////// /Eliminator
         
         	var trackWidth = canvas.width - 0 - runner.sprite.width;

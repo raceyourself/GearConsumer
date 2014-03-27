@@ -1000,7 +1000,7 @@ define({
             if(!isDead)
             {
                 //Update player anim
-                if(r.getSpeed() <= 0.01)
+                if(r.getSpeed() <= 0.1)
                 {
                     runner.sprite.onEnd(function(dt) {
                         runner.sprite.onEnd(null);
