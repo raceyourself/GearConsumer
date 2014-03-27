@@ -49,6 +49,10 @@ define({
             e.listen('tizen.back', onBack);
             sectionChanger.setActiveSection(3, 0);
 
+            document.getElementById('fitness-mode-btn').classList.toggle('locked-game', game.isLocked('Endurance'));
+            document.getElementById('weight-mode-btn').classList.toggle('locked-game', game.isLocked('WeightLoss'));
+            document.getElementById('strength-mode-btn').classList.toggle('locked-game', game.isLocked('Strength'));
+            
             if(settings.getFirstTimeSelect()) {
             	setTimeout(function() {
             		sectionChanger.setActiveSection(0, 1000);
@@ -86,17 +90,20 @@ define({
         }
         
         function onHRRaceClick(event) {
-        	//console.log(this.id);
+        	if(isScrolling()) return;
         	switch(this.id) {
         	case 'fitness-mode-btn':
+        		if (game.isLocked('Endurance')) return;
         		race.setGoal('Endurance');
         		break;
         		
         	case 'weight-mode-btn':
+        		if (game.isLocked('WeightLoss')) return;
         		race.setGoal('WeightLoss');
         		break;
         		
         	case 'strength-mode-btn':
+        		if (game.isLocked('Strength')) return;
         		race.setGoal('Strength');
         		break;
         		
