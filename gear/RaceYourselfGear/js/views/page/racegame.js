@@ -437,6 +437,8 @@ define({
             e.die('tizen.back', onBack);
             e.die('motion.wristup', onWristUp);
             visible = false;
+            document.getElementById('eliminator-end').classList.toggle('hidden', true);
+            document.getElementById('eliminator-highscore').classList.toggle('hidden', true);
             clearInterval(fpsInterval);
 			clearTimeout(warmupTimeout);
 ////            clearTimeout(intervalTimeout);
