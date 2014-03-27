@@ -40,7 +40,7 @@ define({
                 scrollbar: "bar"
             });
             
-            document.getElementById('dino-mode-btn').classList.toggle('locked-game', game.isLocked('dino'));
+            //document.getElementById('dino-mode-btn').classList.toggle('locked-game', game.isLocked('dino'));
             
             e.listen('tizen.back', onBack);
             
@@ -98,7 +98,7 @@ define({
         
         function onDinoBtnClick(event) {
             if (isScrolling()) return;
-            if (game.isLocked('dino')) return;
+            //if (game.isLocked('dino')) return;
             game.setCurrentGame('hrzgame');
             game.setCurrentOpponentType('dinosaur');
             if(settings.getFirstTimeAge()) {
