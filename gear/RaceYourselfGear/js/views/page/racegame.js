@@ -180,7 +180,9 @@ define({
 			timeAheadnessSwitched = 0,
 			showLapCompleteBox = false	,
 			timeIcon = null,
-			lastLapTime = 0;
+			lastLapTime = 0,
+			timeOfLastStep,
+			timeSpeedLastNonZero;
 			
 
 			
@@ -358,6 +360,8 @@ define({
 			tickInterval = setInterval(tick, intervalTime);
 			lastTickTime = Date.now();
 
+			timeSpeedLastNonZero = Date.now();
+			
 ////////////	/Eliminator
             
             
@@ -401,7 +405,7 @@ define({
         
         function onAchievementAwarded(data)
         {
-        	setNotification( green, '#fff', 'Award Unlocked!', 3*1000);
+        	setNotification( green, '#fff', 'Award Unlocked!', null, 3*1000);
 			navigator.vibrate([100, 50, 100, 50]);
 			if(finished)
 			{
@@ -429,7 +433,7 @@ define({
                 r.stop();
                 lastRender = null;                
                 e.die('pedometer.step', step);
-                e.die('hrm.change', onHeartRateChange);
+////                e.die('hrm.change', onHeartRateChange);
             }
             if (!!raf) cancelAnimationFrame(raf);
 ////            clearInterval(zombieInterval);
@@ -601,6 +605,19 @@ define({
 				playerIsAhead = playerIsAheadNow;
 				timeAheadnessSwitched = Date.now();
 			}
+			
+			//check if we're actually moving
+			if(r.getSpeed() > 1)
+			{
+				timeSpeedLastNonZero = Date.now();
+			}
+			else
+			{
+				if(Date.now() - timeSpeedLastNonZero > 5000)
+				{
+					setNotification( flashingRed, '#fff', 'Run to Move Forward', null, 2000);
+				}
+			}
 		}
 
 
@@ -608,7 +625,7 @@ define({
         
         function progressToGame()
         {
-        	setNotification(green, '#fff', 'Race Starting', 2000);
+        	setNotification(green, '#fff', 'Race Starting', null, 2000);
 			sectionChanger.setActiveSection(1, 1000);
 			setTimeout(startCountdown, 1000);
         }
@@ -1090,7 +1107,8 @@ define({
 					if(notification.colour == 'flashingRed')
 						{ context.fillStyle = flashingRedParams.colour; }
 //					context.fillRect( whiteInset, canvas.height - trackHeight + trackThickness/2 + whiteInset, canvas.width - 2 * whiteInset, trackHeight - trackThickness - 2 * whiteInset);
-					context.fillRect( whiteInset, canvas.height - trackHeight + trackThickness/2 + whiteInset, canvas.width - 2 * whiteInset, trackHeight - trackThickness - 2 * whiteInset, 8);
+					drawRoundedCornerBoxPath( whiteInset, canvas.height - trackHeight + trackThickness/2 + whiteInset, canvas.width - 2 * whiteInset, trackHeight - trackThickness - 2 * whiteInset, 8);
+					context.fill();
 				}
 				//text
 				context.font = '24px Samsung Sans';
