@@ -274,6 +274,8 @@ define({
 /// ---> /in common with zombie game
 
         function onPageShow() {
+            document.getElementById('eliminator-end').classList.toggle('hidden', true);
+            document.getElementById('eliminator-highscore').classList.toggle('hidden', true);
             visible = true;
             finished = false;
             sectionChanger = new SectionChanger(changer, {
@@ -725,7 +727,9 @@ define({
 					setNotification(green, '#fff', 'Eliminated!', null, 3000);
 
 					navigator.vibrate(1000);
-					showUnlockNotification('finished', 5);
+// TODO:					
+//		            document.getElementById('eliminator-end').classList.toggle('hidden');
+		            document.getElementById('eliminator-highscore').classList.toggle('hidden');
 					finished = true;
 					e.fire('race.end', r);
 					r.stop();
