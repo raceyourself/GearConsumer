@@ -364,6 +364,8 @@ define({
 
 			timeSpeedLastNonZero = Date.now();
 			
+			numLaps = 0;
+			
 ////////////	/Eliminator
             
             
@@ -714,7 +716,7 @@ define({
 					//show notification
 					setNotification(green, '#fff', 'Lap Complete', null, 3000);
 					chime.play();
-					navigator.vibrate(1000);
+					navigator.vibrate([10, 10, 10, 10]);
 					lastLapTime = lapTime;
 					showLapCompleteBox = true;
 					setTimeout(hideLapCompleteBox, 5000);
@@ -726,7 +728,7 @@ define({
 					//show notification
 					setNotification(green, '#fff', 'Eliminated!', null, 3000);
 
-					navigator.vibrate(1000);
+					navigator.vibrate([100, 100, 100, 100, 100, 100, 100]);
 // TODO:					
 //		            document.getElementById('eliminator-end').classList.toggle('hidden');
 		            document.getElementById('eliminator-highscore').classList.toggle('hidden');
