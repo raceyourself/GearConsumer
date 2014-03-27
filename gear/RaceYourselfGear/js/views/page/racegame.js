@@ -386,6 +386,7 @@ define({
 			timeSpeedLastNonZero = Date.now();
 			
 			numLaps = 0;
+			lapStartDist = 0;
 			
 ////////////	/Eliminator
             
