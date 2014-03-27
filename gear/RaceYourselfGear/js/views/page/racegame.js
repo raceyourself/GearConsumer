@@ -456,6 +456,13 @@ define({
         	sectionChanger.setActiveSection(3, 1000);
         }        
         
+        function onAgain() {
+        	numLaps = 0;
+            document.getElementById('eliminator-end').classList.toggle('hidden', true);
+            document.getElementById('eliminator-highscore').classList.toggle('hidden', true);
+        	restart();
+        }
+        
         function onQuit() {
             e.fire('newmain.show');
         }
@@ -710,9 +717,16 @@ define({
 					setNotification(green, '#fff', 'Eliminated!', null, 3000);
 
 					navigator.vibrate(1000);
-// TODO:					
-//		            document.getElementById('eliminator-end').classList.toggle('hidden');
-		            document.getElementById('eliminator-highscore').classList.toggle('hidden');
+					
+					if (numLaps <= settings.getEliminatorHighScore()) {
+						document.getElementById('eliminator-score-value').innerHTML = numLaps;
+						document.getElementById('eliminator-best-value').innerHTML = settings.getEliminatorHighScore();
+			            document.getElementById('eliminator-end').classList.toggle('hidden');
+					} else {
+			            settings.setEliminatorHighScore(numLaps);
+			            document.getElementById('eliminator-new-hs-value').innerHTML = numLaps;
+			            document.getElementById('eliminator-highscore').classList.toggle('hidden');
+					}
 					finished = true;
 					e.fire('race.end', r);
 					r.stop();
@@ -1199,7 +1213,7 @@ define({
 				//target
 				context.textAlign = 'right';
 ////				context.fillText(Number(targetdist).toFixed(1) + u, canvas.width - progressBarInset, progressBarHeight);
-				context.fillText('100m', canvas.width - progressBarInset, progressBarHeight);
+				context.fillText(config.getLapLength()+'m', canvas.width - progressBarInset, progressBarHeight);
 
 			}
 			else if(targetTime < Infinity)
@@ -1773,6 +1787,10 @@ define({
         function bindEvents() {
             document.getElementById('game-yesquit-btn').addEventListener('click', onQuit);
             document.getElementById('game-noquit-btn').addEventListener('click', onBack);
+            document.getElementById('eliminator-hs-again-btn').addEventListener('click', onAgain);
+            document.getElementById('eliminator-hs-quit-btn').addEventListener('click', onQuit);
+            document.getElementById('eliminator-end-again-btn').addEventListener('click', onAgain);
+            document.getElementById('eliminator-end-quit-btn').addEventListener('click', onQuit);
         }
 
         function init() {

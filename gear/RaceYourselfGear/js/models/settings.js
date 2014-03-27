@@ -24,6 +24,7 @@ define({
                 distance: 5000,
                 time: 30,
                 points: 0,
+                eliminatorHighscore: 0,
                 age: 0,
                 zombieTutorial: false,
                 eliminatorTutorial: false,
@@ -59,6 +60,11 @@ define({
         function getPoints() {
         	if(!isFinite(settings.points)) return defaults.points;
         	return settings.points;
+        }
+        
+        function getEliminatorHighScore() {
+        	if(!isFinite(settings.eliminatorHighscore)) return defaults.eliminatorHighscore;
+        	return settings.eliminatorHighscore;
         }
         
         function getAgeRange() {
@@ -132,6 +138,11 @@ define({
         function setTime(time) {
             settings.time = time;
             return saveSettings();
+        }
+        
+        function setEliminatorHighScore(laps) {
+        	settings.eliminatorHighscore = laps;
+        	return saveSettings();
         }
         
         function setAgeRange(age) {
@@ -232,7 +243,9 @@ define({
             getVibrateActive: getVibrateActive,
             setVibrateActive: setVibrateActive,
             getFirstTimeSelect: getFirstTimeSelect,
-            setFirstTimeSelect: setFirstTimeSelect
+            setFirstTimeSelect: setFirstTimeSelect,
+            getEliminatorHighScore: getEliminatorHighScore,
+            setEliminatorHighScore: setEliminatorHighScore
         };
     }
 
