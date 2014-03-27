@@ -46,21 +46,6 @@ define({
                         return '0%';
                     }
                 },
-                'start' : {
-                    title: 'Beginner',
-                    description: 'Started the game',
-                    points: 1,
-                    uses: 1,
-                    init: function() {
-                        e.listen('race.new', function(event) {
-                            achieve('start');
-                        });
-                    },
-                    progress: function() {
-                        if (!!achieved['start']) return '100%';
-                        return '0%';
-                    }
-                },
                 'death' : {
                     title: 'First tussle',
                     description: 'Had fisticuffs with the evil undead',

@@ -72,6 +72,9 @@ define({
          */
         function addEventListener(eventName, handler) {
             listeners[eventName] = listeners[eventName] || [];
+            if (singletons[eventName] === true) {
+//            	console.error('Adding singleton ' + eventName);
+            }
             if (singletons[eventName] === true && listeners[eventName].length !== 0) throw new Error('Singleton event ' + eventName + ' already has a listener!');
             listeners[eventName].push(handler);
             window.addEventListener(eventName, handler);
@@ -84,6 +87,9 @@ define({
          */
         function removeEventListener(eventName, handler) {
             var i, handlerIndex, listenersLen;
+            if (singletons[eventName] === true) {
+//            	console.error('Removing singleton ' + eventName);
+            }
             if (handler !== undefined) {
                 // remove only this specific handler
                 window.removeEventListener(eventName, handler);

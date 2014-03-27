@@ -280,6 +280,7 @@ define({
 		
 		
         function onPageShow() {
+        	console.log('hrzgame:pageshow');
         	if (!loaded) {
         		waiting = true;
         		loadAssets();
@@ -402,6 +403,7 @@ define({
         }
         
         function onPageHide() {
+        	console.log('hrzgame:pagehide');
             e.die('tizen.back', onBack);
             e.die('motion.wristup', onWristUp);
             visible = false;
@@ -412,7 +414,10 @@ define({
             clearTimeout(warningTimeoutLow);
 			clearTimeout(warningTimeoutHigh);
 			clearInterval(heartBeatInterval);
-            if (!!sectionChanger) sectionChanger.destroy();
+            if (!!sectionChanger) {
+            	sectionChanger.destroy();
+            	sectionChanger = false;
+            }
             
             var r = race.getOngoingRace();
             if (r !== null) {
@@ -1984,12 +1989,18 @@ define({
 
         
         function attachGame() {
+        	console.log('Attaching hrzgame');
             page.addEventListener('pageshow', onPageShow);
             page.addEventListener('pagehide', onPageHide);
+            document.getElementById('game-yesquit-btn').addEventListener('click', onQuit);
+            document.getElementById('game-noquit-btn').addEventListener('click', onBack);
         }
         function detachGame() {
+        	console.log('Detaching hrzgame');
             page.removeEventListener('pageshow', onPageShow);
             page.removeEventListener('pagehide', onPageHide);
+            document.getElementById('game-yesquit-btn').removeEventListener('click', onQuit);
+            document.getElementById('game-noquit-btn').removeEventListener('click', onBack);
         }
                 
         function onGpsStatus(event) {
@@ -1998,8 +2009,6 @@ define({
         }
         
         function bindEvents() {
-            document.getElementById('game-yesquit-btn').addEventListener('click', onQuit);
-            document.getElementById('game-noquit-btn').addEventListener('click', onBack);
         }
 
         function init() {
