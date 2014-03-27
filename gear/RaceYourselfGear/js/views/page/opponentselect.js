@@ -5,19 +5,19 @@
  */
 
 define({
-    name: 'views/page/gameselect',
+    name: 'views/page/opponentselect',
     requires: [
         'core/event',
         'models/race',
         'models/game',
         'models/settings',
         'models/sapRaceYourself',
-        'views/page/pregame',
+        'views/page/ageselect',
         'views/page/trainingtype',
         'views/page/zombietutorial',
-        'views/page/eliminatortutorial'
+        'views/page/choosegoal'
     ],
-    def: function viewsPageGameSelect(req) {
+    def: function viewsPageOpponentSelect(req) {
         'use strict';
 
         var e = req.core.event,
@@ -30,11 +30,9 @@ define({
             sectionChanger;
 
         function show() {
-            gear.ui.changePage('#newgames');
+            gear.ui.changePage('#opponentselect');
         }
         
-        
-
         function onPageShow() {
             sectionChanger = new SectionChanger(changer, {
                 circular: false,
@@ -44,19 +42,8 @@ define({
             
             document.getElementById('dino-mode-btn').classList.toggle('locked-game', game.isLocked('dino'));
             
-            document.getElementById('eliminator-mode-btn').classList.toggle('locked-game', game.isLocked('eliminator'));
-            
             e.listen('tizen.back', onBack);
-            sectionChanger.setActiveSection(3, 0);
-
-            if(settings.getFirstTimeSelect()) {
-            	setTimeout(function() {
-            		sectionChanger.setActiveSection(0, 1000);
-            	}, 1);
-            	settings.setFirstTimeSelect(false);
-            } else {
-            	sectionChanger.setActiveSection(0, 0);
-            }
+            
         }
         
         function onPageHide() {
@@ -69,18 +56,16 @@ define({
         }
         
         function bindEvents() {
-        	var zombieBtnEl = document.getElementById('zombie-mode-btn'),
-        		dinoBtnEl = document.getElementById('dino-mode-btn'),
-        		moreGamesEl = document.getElementById('moregames'),
-        		elimBtnEl = document.getElementById('eliminator-mode-btn');
+        	console.log('binding events for opponent');
         	
-        	 page.addEventListener('pageshow', onPageShow);
-             page.addEventListener('pagehide', onPageHide);
+        	var zombieBtnEl = document.getElementById('zombie-mode-btn'),
+        		dinoBtnEl = document.getElementById('dino-mode-btn');
+        
+        	page.addEventListener('pageshow', onPageShow);
+            page.addEventListener('pagehide', onPageHide);
              
-             zombieBtnEl.addEventListener('click', onZombieBtnClick);
-             dinoBtnEl.addEventListener('click', onDinoBtnClick);
-             moreGamesEl.addEventListener('click', onMoreGames);
-             elimBtnEl.addEventListener('click', onElimBtnClick);
+            zombieBtnEl.addEventListener('click', onZombieBtnClick);
+            dinoBtnEl.addEventListener('click', onDinoBtnClick);
         }
 
         function isScrolling() {
@@ -91,16 +76,23 @@ define({
         }
         
         function onZombieBtnClick(event) {
+        	console.log('zombie click detected');
             if (isScrolling()) return;
         	game.setCurrentGame('hrzgame');
         	game.setCurrentOpponentType('zombie');
         	if(settings.getZombieTutorial()) {
-        		e.fire('trainingtype.show');
+        		if(settings.getFirstTimeAge()) {
+        			console.log('showing age');
+            		e.fire('ageselect.show', 'choosegoal');
+            	} else {
+            		console.log('choosing goal');
+            		e.fire('choosegoal.show');
+            	}
         	}
         	else {
+        		console.log('showing zombie tutorial');
         		e.fire('zombietutorial.show');
         	}
-        	
         	
         }
         
@@ -109,34 +101,21 @@ define({
             if (game.isLocked('dino')) return;
             game.setCurrentGame('hrzgame');
             game.setCurrentOpponentType('dinosaur');
-            e.fire('trainingtype.show');
-        }
-        
-        function onElimBtnClick(event) {
-        	if(isScrolling()) return;
-        	if(game.isLocked('eliminator')) return;
-        	game.setCurrentGame('racegame');
-        	if(settings.getEliminatorTutorial()) {
-        		e.fire('trainingtype.show');
+            if(settings.getFirstTimeAge()) {
+        		e.fire('ageselect.show', 'choosegoal');
         	} else {
-        		e.fire('eliminatortutorial.show');
+        		e.fire('choosegoal.show');
         	}
-        	
         }
          
-        function onMoreGames(event) {
-            if (isScrolling()) return;
-            provider.sendWebLinkReq('http://www.raceyourself.com/');
-        }
-        
         function init() {
-            page = document.getElementById('newgames');
-            changer = document.getElementById("game-select-sectionchanger");
+            page = document.getElementById('opponentselect');
+            changer = document.getElementById("opponent-select-sectionchanger");
             bindEvents();
         }
 
         e.listeners({
-            'gameselect.show': show,
+            'opponentselect.show': show,
         });
 
         return {

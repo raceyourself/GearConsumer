@@ -10,7 +10,7 @@ define({
         'core/event',
         'models/application',
         'models/race',
-        'views/page/gameselect',
+        'views/page/runselect',
         'views/page/achievements',
         'views/page/settingspage',
         'views/page/racesummary',
@@ -56,7 +56,7 @@ define({
         }
         
         function onGameBtnClick() {
-        	e.fire('gameselect.show');
+        	e.fire('runselect.show');
         }
         
         function onAchievementsBtnClick() {
