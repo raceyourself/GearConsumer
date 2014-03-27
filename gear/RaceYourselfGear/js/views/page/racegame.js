@@ -175,7 +175,12 @@ define({
 			ghostRunners = [],
 			tickInterval = null,
 			ghostImage = null,
-			lastTickTime = null;
+			lastTickTime = null,
+			playerIsAhead = true,
+			timeAheadnessSwitched = 0,
+			showLapCompleteBox = false	,
+			timeIcon = null,
+			lastLapTime = 0;
 			
 
 			
@@ -339,14 +344,14 @@ define({
 			
 			TRACK_LENGTH = config.getLapLength();
 			
-			//TODO clear ghosts;
+			//clear ghosts;
 			ghostRunners = [];
 
 			//for now add some sample ghosts
-			addGhost(120);
-			addGhost(115);
-			addGhost(100);
-			addGhost(50);
+//			addGhost(120);
+//			addGhost(135);
+//			addGhost(100);
+//			addGhost(50);
 
 			// set up tick
 			var intervalTime = 33;
@@ -368,9 +373,14 @@ define({
         	newRunner.lapDistance = 0;
         	ghostRunners.push(newRunner);
         	
-        	//TODO sort based on speed for render order
+        	//Sort based on speed for render order - fastest first
+			ghostRunners.sort( function(a,b) { return a.lapTime - b.lapTime; } );
 
-			//TODO cull the slowest if too many
+			//cull the slowest if too many
+			if(ghostRunners.length >= 5)
+			{
+				ghostRunners.remove
+			}
 
         }
         
@@ -562,6 +572,10 @@ define({
 			
 			var timeInLap = (Date.now() - timeCurrentLapStarted) / 1000;
 			
+			var r = race.getOngoingRace();
+			var playerLapDistance = r.getDistance() % TRACK_LENGTH;
+			var playerIsAheadNow = true;
+			
 			//update runner distances
 			for(var i=0; i<ghostRunners.length; i++)
 			{
@@ -572,6 +586,20 @@ define({
 				{
 					ghost.lapDistance = lapLength;
 				}
+				
+				//check if we are still in the lead
+				if(ghost.lapDistance > playerLapDistance)
+				{
+					playerIsAheadNow = false;
+				}
+			}
+			
+			//flip this bool, but with some stickingess
+			var timeSinceLastSwitch = Date.now() - timeAheadnessSwitched;
+			if(timeSinceLastSwitch > 500)
+			{
+				playerIsAhead = playerIsAheadNow;
+				timeAheadnessSwitched = Date.now();
 			}
 		}
 
@@ -640,18 +668,15 @@ define({
             {
             	// add new ghost
             	var lapTime = (Date.now() - timeCurrentLapStarted)/1000;
-				addGhost(lapTime);
+
             	
-            	//show notification
-            	setNotification(green, '#fff', 'Lap Complete', null, 1000);
             	
             	//set next lap distance
             	nextLapDistance += config.getLapLength();
             	
             	//show 'go'
-            	//TODO
             	
-            	//check if the fastest ghost finished before us
+/*            	//check if the fastest ghost finished before us
             	var playerWon = true;
 				for(var i=0; i<ghostRunners.length; i++)
 				{
@@ -659,21 +684,36 @@ define({
 					if(ghost.lapDistance >= TRACK_LENGTH)
 					{
 						playerWon = false;
-						navigator.vibrate(1000);
-						showUnlockNotification('finished', 5);
-						finished = true;
-						e.fire('race.end', r);
-	                	r.stop();
+
 					}
 				}
+*/
             	
-            	if(playerWon)
+            	if(playerIsAhead)
             	{
             	   	restart();
+					//show notification
+					setNotification(green, '#fff', 'Lap Complete', null, 3000);
+					chime.play();
+					navigator.vibrate(1000);
+					lastLapTime = lapTime;
+					showLapCompleteBox = true;
+					setTimeout(hideLapCompleteBox, 5000);
+					addGhost(lapTime);
+
             	}
             	else
             	{
-            		
+					//show notification
+					setNotification(green, '#fff', 'Eliminated!', null, 3000);
+
+					navigator.vibrate(1000);
+					showUnlockNotification('finished', 5);
+					finished = true;
+					e.fire('race.end', r);
+					r.stop();
+					
+					chime.play();
             	}
             	
             }
@@ -728,6 +768,11 @@ define({
             
             requestRender();
         }
+
+		function hideLapCompleteBox() 
+		{
+			showLapCompleteBox = false;
+		}
 
 		function continueToResults()
 		{
@@ -1274,24 +1319,57 @@ define({
         	context.globalAlpha = 1;
         	
         	
-        	//Lap counter
-        	var counterHeight = 100;
-        	var counterXPos = canvas.width/2;
-        	var counterRadius = 135/2;
-        	//circle
-        	context.beginPath();
-        	context.arc( counterXPos, counterHeight, counterRadius, 0, 2*Math.PI, false);
-        	context.fillStyle = green;
-        	//TODO red or green dependenton ahead/behind
-        	context.fill();
-        	//text
-        	context.font = '85px Samsung Sans';
-        	context.fillStyle = '#fff';
-        	context.textAlign = 'center';
-        	context.textBaseline = 'middle';
-        	context.fillText( numLaps, counterXPos, counterHeight - 10);
-        	context.font = '24px Samsung Sans';
-        	context.fillText('laps', counterXPos, counterHeight + 40);
+        	//Lap counter / lap complete notice
+			var counterHeight = 100;
+			var counterXPos = canvas.width/2;
+			var counterRadius = 135/2;
+
+        	if(!showLapCompleteBox)
+        	{
+				//circle
+				context.beginPath();
+				context.arc( counterXPos, counterHeight, counterRadius, 0, 2*Math.PI, false);
+				context.fillStyle = playerIsAhead? green : red;
+			
+				context.fill();
+				//text
+				context.font = '85px Samsung Sans';
+				context.fillStyle = '#fff';
+				context.textAlign = 'center';
+				context.textBaseline = 'middle';
+	//        	context.fillText( numLaps, counterXPos, counterHeight - 10);
+				context.fillText( numLaps+1, counterXPos, counterHeight + 15);
+				context.font = '24px Samsung Sans';
+	//        	context.fillText('laps', counterXPos, counterHeight + 40);
+				context.fillText('lap', counterXPos, counterHeight -45);
+        	}
+        	else
+        	{
+        		//show lap complete box
+        		var w = counterRadius * 1.5;
+        		context.beginPath();
+        		context.arc(counterXPos - w/2, counterHeight, counterRadius, Math.PI/2, 1.5*Math.PI, false);
+        		context.lineTo(counterXPos + w/2, counterHeight - counterRadius);
+        		context.arc(counterXPos + w/2, counterHeight, counterRadius, 1.5 * Math.PI, 2.5 * Math.PI, false);
+        		context.closePath();
+        		context.fillStyle = '#fff';
+        		context.fill();
+        		//text
+        		context.font = '2	4px Samsung Sans';
+        		context.fillStyle = '#000';
+        		context.textAlign = 'center';
+        		context.textBaseline = 'middle';
+        		context.fillText ('Lap ' + numLaps + ' Complete', counterXPos, counterHeight - counterRadius/2 + 10);
+				//time icon
+				var timeHeight = counterHeight + counterRadius/2 - 10;
+				var timeIconScale = 1;
+				timeIcon.drawscaled(context, counterXPos - 25 - timeIconScale *timeIcon.width, timeHeight - timeIconScale * timeIcon.height/2, 0, timeIconScale);
+				//time text
+				context.textAlign = 'left';
+        		context.fillText ( lastLapTime + 's', counterXPos -15, timeHeight);
+				
+        	}
+        	
         	
 ////////// /Eliminator        	
         	context.globalAlpha = 1;
@@ -1970,6 +2048,13 @@ define({
 			image.onerror = function() {throw "could not load" + this.src; }
 			image.src = 'images/bg_bad.jpg';
 */
+
+			image = new Image();
+			image.onload = function() {
+				timeIcon = new Sprite(this, this.width, 1000);
+			}
+			image.onerror = function() {throw "could not load" + this.src; }
+			image.src = 'images/icon-time_black.png';
 
 	//leave hrm in, still want it for side screen
           if (hrm.isAvailable()) {
