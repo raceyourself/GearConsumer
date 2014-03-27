@@ -81,6 +81,8 @@ define({
             zombies = [],
             zombieIdle = null,
             dino = null,
+            dinoBiting = null,
+            dinoIdle = null,
             boulder = null,
             dinoGameImage = null,
             elimGameImage = null,
@@ -171,7 +173,8 @@ define({
             loaded = false,
             loading = false,
             waiting = false,
-            pendingAssets = 0;
+            pendingAssets = 0,
+            bgHeight = 246;
 
 			
 
@@ -854,6 +857,13 @@ define({
 				if(hr > maxHeartRate && !hrNotFound)
 				{
 					hrColour = '#ff0000';
+					if(!hasBeenInGoalHRZone)
+					{
+						hasBeenInGoalHRZone = true;
+						//start run
+						console.log('Reached target hr zone. Starting run');
+						setTimeout(progressToGame, 1000);
+					}
 				}
 				else if (hr > minHeartRate && !hrNotFound)
 				{
@@ -1081,7 +1091,7 @@ define({
 //			screenLeftDistance = screenMidDistance = screenWidthDistance/2;
 			
             var dt = 0;
-            var trackHeight = canvas.height - badBG.height;
+            var trackHeight = canvas.height - bgHeight;
             var trackThickness = 4;
 
             if (lastRender !== null) {
@@ -1134,11 +1144,11 @@ define({
 
 			
 			//draw good bg
-			context.drawImage(goodBG, 0, 0, canvas.width, canvas.height - trackHeight);
+/*			context.drawImage(goodBG, 0, 0, canvas.width, canvas.height - trackHeight);
 			context.globalAlpha = badFraction;
 			context.drawImage(badBG, 0, 0, canvas.width, canvas.height - trackHeight);
 			context.globalAlpha = 1;
-
+*/
 			//Header
 			//sweat points
 			if(true)
@@ -1224,7 +1234,6 @@ define({
 			var notificationHeight = canvas.height - 16;
 			var whiteInset = 8;
 			if(!notification.active)
-//			if(true)
 			{
 
 				//Progress bar
@@ -1316,12 +1325,14 @@ define({
 					context.fillStyle = '#000';
 					context.fillRect( 0, canvas.height - trackHeight + trackThickness/2, canvas.width, canvas.height);
 					context.fillStyle = '#fff';
-					context.fillRect( whiteInset, canvas.height - trackHeight + trackThickness/2 + whiteInset, canvas.width - 2 * whiteInset, trackHeight - trackThickness - 2 * whiteInset);
-					
+//					context.fillRect( whiteInset, canvas.height - trackHeight + trackThickness/2 + whiteInset, canvas.width - 2 * whiteInset, trackHeight - trackThickness - 2 * whiteInset);
+					drawRoundedCornerBoxPath( whiteInset, canvas.height - trackHeight + trackThickness/2 + whiteInset, canvas.width - 2*whiteInset, trackHeight - trackThickness - 2*whiteInset, 8);					
+					context.fill();
 					var greenInset = 6 + whiteInset;
 					context.fillStyle = green;
 					var fillDist = fillProportion * (canvas.width - 2*greenInset);
 					context.fillRect( greenInset, canvas.height - trackHeight + trackThickness/2 + greenInset, fillDist, trackHeight - trackThickness - 2*greenInset);
+//					drawRoundedCornerBoxPath					
 					progressBarInset = greenInset + 5;
 				}
 			}
@@ -1350,7 +1361,10 @@ define({
 					context.fillStyle = notification.colour;
 					if(notification.colour == 'flashingRed')
 						{ context.fillStyle = flashingRedParams.colour; }
-					context.fillRect( whiteInset, canvas.height - trackHeight + trackThickness/2 + whiteInset, canvas.width - 2 * whiteInset, trackHeight - trackThickness - 2 * whiteInset);
+//					context.fillRect( whiteInset, canvas.height - trackHeight + trackThickness/2 + whiteInset, canvas.width - 2 * whiteInset, trackHeight - trackThickness - 2 * whiteInset);
+					drawRoundedCornerBoxPath( whiteInset, canvas.height - trackHeight + trackThickness/2 + whiteInset, canvas.width - 2 * whiteInset, trackHeight - trackThickness - 2 * whiteInset, 8);
+					context.fill();
+
 				}
 				//text
 				context.font = '24px Samsung Sans';
@@ -1371,7 +1385,7 @@ define({
 			
 			//black line above track
 			context.fillStyle = '#000';
-			context.fillRect(0, badBG.height - 7, canvas.width, 10);
+			context.fillRect(0, bgHeight - 7, canvas.width, 10);
 			
             context.beginPath();
             context.moveTo(0, canvas.height - trackHeight);
@@ -1527,10 +1541,23 @@ define({
 					}
 					break;
 				case 'dinosaur':
-					if(zDistance != false && currentHRZone!='Recovery' && !isDead) {
+					if(zDistance != false && currentHRZone!='Recovery' && !isDead && hasBeenInGoalHRZone) {
 						var dinoPos = 0 + distanceToTrackPos(zDistance);
 						var dinoScale = scale * 1;
-						dino.drawscaled(context, dinoPos - dino.width * 0.6 * dinoScale, canvas.height - (dino.height - 25) * dinoScale - trackHeight - 5* scale, dt, dinoScale);
+						var dinoSprite;
+						var pace = r.getSpeed();
+						if(pace > 0 || zombiesCatchingUp)
+						{
+							if(zombieOffset > -5)
+							{ dinoSprite = dinoBiting; }
+							else
+							{ dinoSprite = dino; }
+						}
+						else
+						{
+							dinoSprite = dinoIdle;
+						}
+						dinoSprite.drawscaled(context, dinoPos - dino.width * 0.6 * dinoScale, canvas.height - (dino.height - 25) * dinoScale - trackHeight - 5* scale, dt, dinoScale);
 					}
 					break;
 				case 'boulder':
@@ -1550,18 +1577,7 @@ define({
 					break;
             }
             
-            // Self
-            //temp hack - make player bigger in death 'cloud' form
-            var playerScale = scale;
-            var playerOffset = runner.sprite.height * playerScale + trackHeight - 6*scale; 
-            if(isDead)
-            {
-             	playerScale *=1.6;	
-             	playerOffset += 30*playerScale; 
-                if (game.getCurrentOpponentType() == 'dinosaur') runner = runnerAnimations.dinoDead;
-                else runner = runnerAnimations.zombieDead;
-            }
-            runner.sprite.drawscaled(context, playerXPos, canvas.height -playerOffset , dt, playerScale);
+
         	
 			if(!countingdown)
             {
@@ -1789,6 +1805,30 @@ define({
             }
             /// DEBUG
             
+        	// Self
+            //temp hack - make player bigger in death 'cloud' form
+            var playerScale = scale;
+            var playerOffset = runner.sprite.height * playerScale + trackHeight - 6*scale; 
+            if(isDead)
+            {	
+                if (game.getCurrentOpponentType() == 'dinosaur') 
+                {
+                	runner = runnerAnimations.dinoDead;
+//                	playerOffset = 0;
+                	playerScale = canvas.width / runner.sprite.width;
+                	playerOffset += 20;
+                	playerXPos = canvas.width/2 - runner.sprite.width/2 * playerScale;
+
+				}
+                else
+                {
+                	runner = runnerAnimations.zombieDead;
+					playerScale *=1.6;	
+					playerOffset += 30*playerScale; 
+				}
+            }
+            runner.sprite.drawscaled(context, playerXPos, canvas.height -playerOffset , dt, playerScale);
+            
             //countdown        
             if(countingdown && banner!=false)
             {
@@ -1895,6 +1935,20 @@ define({
             
             context.save();
             frames++;
+        }
+        
+        //creates a new path which forms the shape of a box with rounded corners. Caller is responsible for then filling or stroking
+        function drawRoundedCornerBoxPath(minx, miny, width, height, radius)
+        {
+        	context.beginPath();
+        	context.arc(minx + radius, miny + radius, radius, Math.PI, Math.PI * 1.5, false);
+        	context.lineTo(minx + width - radius, miny);
+        	context.arc(minx + width - radius, miny + radius, radius, 1.5 * Math.PI, 2 * Math.PI, false);
+        	context.lineTo(minx + width, miny + height - radius);
+        	context.arc(minx + width - radius, miny + height - radius, radius, 0, 0.5 * Math.PI, false);
+        	context.lineTo(minx + radius, miny + height);
+        	context.arc(minx + radius, miny + height - radius, radius, 0.5 * Math.PI, Math.PI, false);
+        	context.closePath();
         }
         
         function mss(seconds) {
@@ -2086,6 +2140,12 @@ define({
 			loadImage('images/animation_dino_small_running.png', function() {
 				dino = new Sprite(this, this.width/5, 500);
 			});
+			loadImage('images/animation_dino_small_biting.png', function() {
+				dinoBiting = new Sprite(this, this.width/5, 500);
+			});
+			loadImage('images/animation_dino_small_stationary.png', function() {
+				dinoIdle = new Sprite(this, this.width/5, 500);
+			});
 			
 			//boulder image
 			loadImage('images/image_boulder_achievement_screen.png', function() {
@@ -2097,7 +2157,7 @@ define({
 			//dino game image
 			loadImage('images/race_dino_unlocked_ingame.png', function() {
 				dinoGameImage = new Sprite(this, this.width, 1000);
-			});
+			});			
 			
 			loadImage('images/Game_Eliminator/screen_menu_game_eliminator_unlocked.png', function() {
 				elimGameImage = new Sprite(this, this.width, 1000);
@@ -2126,13 +2186,13 @@ define({
 				paceIcon = new Sprite(this, this.width, 1000);
 			});
 						
-			loadImage('images/bg_good.jpg', function() {
-				goodBG = this;
-			});
+//			loadImage('images/bg_good.jpg', function() {
+//				goodBG = this;
+//			});
 			
-			loadImage('images/bg_bad.jpg', function() {
-				badBG = this;
-			});
+//			loadImage('images/bg_bad.jpg', function() {
+//				badBG = this;
+//			});
 			
         	loading = true;
         }

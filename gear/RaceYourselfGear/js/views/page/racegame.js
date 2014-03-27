@@ -180,7 +180,9 @@ define({
 			timeAheadnessSwitched = 0,
 			showLapCompleteBox = false	,
 			timeIcon = null,
-			lastLapTime = 0;
+			lastLapTime = 0,
+			timeOfLastStep,
+			timeSpeedLastNonZero;
 			
 
 			
@@ -272,6 +274,8 @@ define({
 /// ---> /in common with zombie game
 
         function onPageShow() {
+            document.getElementById('eliminator-end').classList.toggle('hidden', true);
+            document.getElementById('eliminator-highscore').classList.toggle('hidden', true);
             visible = true;
             finished = false;
             sectionChanger = new SectionChanger(changer, {
@@ -358,6 +362,10 @@ define({
 			tickInterval = setInterval(tick, intervalTime);
 			lastTickTime = Date.now();
 
+			timeSpeedLastNonZero = Date.now();
+			
+			numLaps = 0;
+			
 ////////////	/Eliminator
             
             
@@ -393,7 +401,7 @@ define({
 ////            startZombies();
 			lastRender = Date.now();
 			
-        	sectionChanger.setActiveSection(3, 0);
+        	sectionChanger.setActiveSection(1, 0);
 			
 			timeCurrentLapStarted = Date.now();
 			
@@ -401,7 +409,7 @@ define({
         
         function onAchievementAwarded(data)
         {
-        	setNotification( green, '#fff', 'Award Unlocked!', 3*1000);
+        	setNotification( green, '#fff', 'Award Unlocked!', null, 3*1000);
 			navigator.vibrate([100, 50, 100, 50]);
 			if(finished)
 			{
@@ -429,7 +437,7 @@ define({
                 r.stop();
                 lastRender = null;                
                 e.die('pedometer.step', step);
-                e.die('hrm.change', onHeartRateChange);
+////                e.die('hrm.change', onHeartRateChange);
             }
             if (!!raf) cancelAnimationFrame(raf);
 ////            clearInterval(zombieInterval);
@@ -451,8 +459,15 @@ define({
         }
         
         function onWristUp() {
-        	sectionChanger.setActiveSection(3, 1000);
+        	sectionChanger.setActiveSection(1, 1000);
         }        
+        
+        function onAgain() {
+        	numLaps = 0;
+            document.getElementById('eliminator-end').classList.toggle('hidden', true);
+            document.getElementById('eliminator-highscore').classList.toggle('hidden', true);
+        	restart();
+        }
         
         function onQuit() {
             e.fire('newmain.show');
@@ -601,6 +616,19 @@ define({
 				playerIsAhead = playerIsAheadNow;
 				timeAheadnessSwitched = Date.now();
 			}
+			
+			//check if we're actually moving
+			if(r.getSpeed() > 1)
+			{
+				timeSpeedLastNonZero = Date.now();
+			}
+			else
+			{
+				if(Date.now() - timeSpeedLastNonZero > 5000)
+				{
+					setNotification( flashingRed, '#fff', 'Run to Move Forward', null, 2000);
+				}
+			}
 		}
 
 
@@ -608,8 +636,8 @@ define({
         
         function progressToGame()
         {
-        	setNotification(green, '#fff', 'Race Starting', 2000);
-			sectionChanger.setActiveSection(3, 1000);
+        	setNotification(green, '#fff', 'Race Starting', null, 2000);
+			sectionChanger.setActiveSection(1, 1000);
 			setTimeout(startCountdown, 1000);
         }
 
@@ -695,7 +723,7 @@ define({
 					//show notification
 					setNotification(green, '#fff', 'Lap Complete', null, 3000);
 					chime.play();
-					navigator.vibrate(1000);
+					navigator.vibrate([10, 10, 10, 10]);
 					lastLapTime = lapTime;
 					showLapCompleteBox = true;
 					setTimeout(hideLapCompleteBox, 5000);
@@ -707,8 +735,17 @@ define({
 					//show notification
 					setNotification(green, '#fff', 'Eliminated!', null, 3000);
 
-					navigator.vibrate(1000);
-					showUnlockNotification('finished', 5);
+					navigator.vibrate([100, 100, 100, 100, 100, 100, 100]);
+					
+					if (numLaps <= settings.getEliminatorHighScore()) {
+						document.getElementById('eliminator-score-value').innerHTML = numLaps;
+						document.getElementById('eliminator-best-value').innerHTML = settings.getEliminatorHighScore();
+			            document.getElementById('eliminator-end').classList.toggle('hidden');
+					} else {
+			            settings.setEliminatorHighScore(numLaps);
+			            document.getElementById('eliminator-new-hs-value').innerHTML = numLaps;
+			            document.getElementById('eliminator-highscore').classList.toggle('hidden');
+					}
 					finished = true;
 					e.fire('race.end', r);
 					r.stop();
@@ -1050,9 +1087,11 @@ define({
 				{
 					context.fillStyle = '#000';
 					context.fillRect( 0, canvas.height - trackHeight + trackThickness/2, canvas.width, canvas.height);
+
 					context.fillStyle = '#fff';
-					context.fillRect( whiteInset, canvas.height - trackHeight + trackThickness/2 + whiteInset, canvas.width - 2 * whiteInset, trackHeight - trackThickness - 2 * whiteInset);
-					
+//					context.fillRect(whiteInset, canvas.height - trackHeight + trackThickness/2 + whiteInset, canvas.width - 2 * whiteInset, trackHeight - trackThickness - 2 * whiteInset);
+					drawRoundedCornerBoxPath(whiteInset, canvas.height - trackHeight + trackThickness/2 + whiteInset, canvas.width - 2 * whiteInset, trackHeight - trackThickness - 2 * whiteInset, 8);
+					context.fill();
 					var greenInset = 6 + whiteInset;
 					context.fillStyle = green;
 					var fillDist = fillProportion * (canvas.width - 2*greenInset);
@@ -1081,11 +1120,15 @@ define({
 				{
 					//draw box
 					context.fillStyle = '#000';
-					context.fillRect( 0, canvas.height - trackHeight + trackThickness/2, canvas.width, canvas.height);
+//					context.fillRect( 0, canvas.height - trackHeight + trackThickness/2, canvas.width, canvas.height);
+					drawRoundedCornerBoxPath( 0, canvas.height - trackHeight + trackThickness/2, canvas.width, canvas.height);
+					context.fill();
 					context.fillStyle = notification.colour;
 					if(notification.colour == 'flashingRed')
 						{ context.fillStyle = flashingRedParams.colour; }
-					context.fillRect( whiteInset, canvas.height - trackHeight + trackThickness/2 + whiteInset, canvas.width - 2 * whiteInset, trackHeight - trackThickness - 2 * whiteInset);
+//					context.fillRect( whiteInset, canvas.height - trackHeight + trackThickness/2 + whiteInset, canvas.width - 2 * whiteInset, trackHeight - trackThickness - 2 * whiteInset);
+					drawRoundedCornerBoxPath( whiteInset, canvas.height - trackHeight + trackThickness/2 + whiteInset, canvas.width - 2 * whiteInset, trackHeight - trackThickness - 2 * whiteInset, 8);
+					context.fill();
 				}
 				//text
 				context.font = '24px Samsung Sans';
@@ -1195,7 +1238,7 @@ define({
 				//target
 				context.textAlign = 'right';
 ////				context.fillText(Number(targetdist).toFixed(1) + u, canvas.width - progressBarInset, progressBarHeight);
-				context.fillText('100m', canvas.width - progressBarInset, progressBarHeight);
+				context.fillText(config.getLapLength()+'m', canvas.width - progressBarInset, progressBarHeight);
 
 			}
 			else if(targetTime < Infinity)
@@ -1306,7 +1349,7 @@ define({
 			var additionalAlpha = 0.3;
 
 			//first runner should be brighter
-			context.globalAlpha = 1.0;
+			context.globalAlpha = 0.9;
 
 ////////// Eliminator
 			//Ghosts
@@ -1715,6 +1758,20 @@ define({
             frames++;
         }
         
+                
+        //creates a new path which forms the shape of a box with rounded corners. Caller is responsible for then filling or stroking
+        function drawRoundedCornerBoxPath(minx, miny, width, height, radius)
+        {
+        	context.beginPath();
+        	context.arc(minx + radius, miny + radius, radius, Math.PI, Math.PI * 1.5, false);
+        	context.lineTo(minx + width - radius, miny);
+        	context.arc(minx + width - radius, miny + radius, radius, 1.5 * Math.PI, 2 * Math.PI, false);
+        	context.lineTo(minx + width, miny + height - radius);
+        	context.arc(minx + width - radius, miny + height - radius, radius, 0, 0.5 * Math.PI, false);
+        	context.lineTo(minx + radius, miny + height);
+        	context.arc(minx + radius, miny + height - radius, radius, 0.5 * Math.PI, Math.PI, false);
+        	context.closePath();
+        }
         
         function mss(seconds) {
             if (!isFinite(seconds)) return '--:--';
@@ -1769,6 +1826,10 @@ define({
         function bindEvents() {
             document.getElementById('game-yesquit-btn').addEventListener('click', onQuit);
             document.getElementById('game-noquit-btn').addEventListener('click', onBack);
+            document.getElementById('eliminator-hs-again-btn').addEventListener('click', onAgain);
+            document.getElementById('eliminator-hs-quit-btn').addEventListener('click', onQuit);
+            document.getElementById('eliminator-end-again-btn').addEventListener('click', onAgain);
+            document.getElementById('eliminator-end-quit-btn').addEventListener('click', onQuit);
         }
 
         function init() {
@@ -1815,7 +1876,7 @@ define({
             image.onerror = function() {
                 throw "Could not load " + this.src;
             }
-            image.src = 'images/animation_runner_red.png';
+            image.src = 'images/animation_runner_white.png';
 
 			image = new Image();
             image.onload = function() {
