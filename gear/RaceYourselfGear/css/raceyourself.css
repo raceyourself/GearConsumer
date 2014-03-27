@@ -263,6 +263,18 @@ img {
 	font-size: 38px;
 }
 
+.zombie2-ok {
+	width: 100%;
+	height: 25%;
+	color: white;
+	background-color: #46be46;
+	position: absolute;
+	left: 0px;
+	bottom: 0px;
+	padding: 15px;
+	font-size: 38px;
+}
+
 .elim-tutorial-img5 {
 	position: relative;
 	top: 8px;

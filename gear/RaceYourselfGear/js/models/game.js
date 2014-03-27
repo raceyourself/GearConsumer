@@ -29,9 +29,18 @@ define({
                     locked: true
                 },
                 'dino' : {
-                    locked: false
+                    locked: true
                 },
                 'eliminator' : {
+                	locked: true
+                },
+                'WeightLoss' : {
+                	locked: true
+                },
+                'Endurance' : {
+                	locked: true
+                },
+                'Strength' : {
                 	locked: true
                 }
             },
