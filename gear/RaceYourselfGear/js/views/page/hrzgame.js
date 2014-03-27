@@ -1000,7 +1000,7 @@ define({
             if(!isDead)
             {
                 //Update player anim
-                if(r.getSpeed() <= 0.01)
+                if(r.getSpeed() <= 0.1)
                 {
                     runner.sprite.onEnd(function(dt) {
                         runner.sprite.onEnd(null);
@@ -1557,7 +1557,7 @@ define({
 						{
 							dinoSprite = dinoIdle;
 						}
-						dinoSprite.drawscaled(context, dinoPos - dino.width * 0.6 * dinoScale, canvas.height - (dino.height - 25) * dinoScale - trackHeight - 5* scale, dt, dinoScale);
+						dinoSprite.drawscaled(context, dinoPos - dino.width * 0.6 * dinoScale, canvas.height - (dino.height - 32) * dinoScale - trackHeight - 5* scale, dt, dinoScale);
 					}
 					break;
 				case 'boulder':
