@@ -235,6 +235,7 @@ define({
 					continueToResults();
 				}
 				unlockNotificationActive = false;
+				return;
 			}
 			
 //			if(warmingUp)
@@ -243,7 +244,12 @@ define({
 //				{
 //					endWarmup();
 //				}
+//			    return;
 //			}
+			
+			if (sectionChanger) {
+				sectionChanger.nextSection(500);
+			}
 		}
         
         function isScrolling() {
