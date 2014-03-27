@@ -270,7 +270,7 @@ define({
         function saveAchievements() {
             clearTimeout(flushTimeout);
             flushTimeout = false;
-            if (s.add(STORAGE_KEY, {achieved: achieved, progress: progress})) {
+            if (s.add(STORAGE_KEY, {achieved: achieved, progress: progress, version: 1})) {
                 return true;
             }
             return false;
