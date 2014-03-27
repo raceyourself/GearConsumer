@@ -413,6 +413,72 @@ img {
 	font-size: 28px;
 }
 
+#eliminator-highscore {
+	background: url('../images/Game_Eliminator/image_hexagon_big_w_effect.png');
+}
+
+#eliminator-new-hs {
+	margin: 20px auto;
+	margin-bottom: 0px;
+	color: black;
+	font-size: 32px;
+	line-height: 95%;	
+	text-align: center;
+}
+
+#eliminator-new-hs-value {
+	color: black;
+	font-size: 80px;
+	line-height: 100%;
+}
+
+#eliminator-end {
+	background: url('../images/Game_Eliminator/TODO.png');
+	padding-top: 15px;	
+}
+
+#eliminator-score {
+	clear: left;
+	float: left;
+	margin-left: 0px;
+	font-size: 38px;
+	line-height: 100px;
+}
+#eliminator-score-value {
+	float: left;
+	margin-left: 10px;
+	font-size: 70px;
+	line-height: 100px;
+	width: 93px;
+	color: black;
+}
+
+#eliminator-best {
+	clear: left;
+	float: left;
+	margin-left: 60px;
+	font-size: 38px;
+	line-height: 100px;
+}
+#eliminator-best-value {
+	float: left;
+	margin-left: 10px;
+	font-size: 70px;
+	line-height: 100px;
+	width: 93px;
+	color: black;
+}
+
+.eliminator .left-btn {
+	min-height: 90px;
+	padding: 5px 15px;
+}
+
+.eliminator .right-btn {
+	min-height: 90px;
+	line-height: 60px;
+}
+
 #about {
 	font-size: 21px;	
 	line-height: 100%;
