@@ -393,7 +393,7 @@ define({
 ////            startZombies();
 			lastRender = Date.now();
 			
-        	sectionChanger.setActiveSection(3, 0);
+        	sectionChanger.setActiveSection(1, 0);
 			
 			timeCurrentLapStarted = Date.now();
 			
@@ -451,7 +451,7 @@ define({
         }
         
         function onWristUp() {
-        	sectionChanger.setActiveSection(3, 1000);
+        	sectionChanger.setActiveSection(1, 1000);
         }        
         
         function onQuit() {
@@ -609,7 +609,7 @@ define({
         function progressToGame()
         {
         	setNotification(green, '#fff', 'Race Starting', 2000);
-			sectionChanger.setActiveSection(3, 1000);
+			sectionChanger.setActiveSection(1, 1000);
 			setTimeout(startCountdown, 1000);
         }
 
@@ -1050,9 +1050,11 @@ define({
 				{
 					context.fillStyle = '#000';
 					context.fillRect( 0, canvas.height - trackHeight + trackThickness/2, canvas.width, canvas.height);
+
 					context.fillStyle = '#fff';
-					context.fillRect( whiteInset, canvas.height - trackHeight + trackThickness/2 + whiteInset, canvas.width - 2 * whiteInset, trackHeight - trackThickness - 2 * whiteInset);
-					
+//					context.fillRect(whiteInset, canvas.height - trackHeight + trackThickness/2 + whiteInset, canvas.width - 2 * whiteInset, trackHeight - trackThickness - 2 * whiteInset);
+					drawRoundedCornerBoxPath(whiteInset, canvas.height - trackHeight + trackThickness/2 + whiteInset, canvas.width - 2 * whiteInset, trackHeight - trackThickness - 2 * whiteInset, 8);
+					context.fill();
 					var greenInset = 6 + whiteInset;
 					context.fillStyle = green;
 					var fillDist = fillProportion * (canvas.width - 2*greenInset);
@@ -1081,11 +1083,14 @@ define({
 				{
 					//draw box
 					context.fillStyle = '#000';
-					context.fillRect( 0, canvas.height - trackHeight + trackThickness/2, canvas.width, canvas.height);
+//					context.fillRect( 0, canvas.height - trackHeight + trackThickness/2, canvas.width, canvas.height);
+					drawRoundedCornerBoxPath( 0, canvas.height - trackHeight + trackThickness/2, canvas.width, canvas.height);
+					context.fill();
 					context.fillStyle = notification.colour;
 					if(notification.colour == 'flashingRed')
 						{ context.fillStyle = flashingRedParams.colour; }
-					context.fillRect( whiteInset, canvas.height - trackHeight + trackThickness/2 + whiteInset, canvas.width - 2 * whiteInset, trackHeight - trackThickness - 2 * whiteInset);
+//					context.fillRect( whiteInset, canvas.height - trackHeight + trackThickness/2 + whiteInset, canvas.width - 2 * whiteInset, trackHeight - trackThickness - 2 * whiteInset);
+					context.fillRect( whiteInset, canvas.height - trackHeight + trackThickness/2 + whiteInset, canvas.width - 2 * whiteInset, trackHeight - trackThickness - 2 * whiteInset, 8);
 				}
 				//text
 				context.font = '24px Samsung Sans';
@@ -1306,7 +1311,7 @@ define({
 			var additionalAlpha = 0.3;
 
 			//first runner should be brighter
-			context.globalAlpha = 1.0;
+			context.globalAlpha = 0.9;
 
 ////////// Eliminator
 			//Ghosts
@@ -1715,6 +1720,20 @@ define({
             frames++;
         }
         
+                
+        //creates a new path which forms the shape of a box with rounded corners. Caller is responsible for then filling or stroking
+        function drawRoundedCornerBoxPath(minx, miny, width, height, radius)
+        {
+        	context.beginPath();
+        	context.arc(minx + radius, miny + radius, radius, Math.PI, Math.PI * 1.5, false);
+        	context.lineTo(minx + width - radius, miny);
+        	context.arc(minx + width - radius, miny + radius, radius, 1.5 * Math.PI, 2 * Math.PI, false);
+        	context.lineTo(minx + width, miny + height - radius);
+        	context.arc(minx + width - radius, miny + height - radius, radius, 0, 0.5 * Math.PI, false);
+        	context.lineTo(minx + radius, miny + height);
+        	context.arc(minx + radius, miny + height - radius, radius, 0.5 * Math.PI, Math.PI, false);
+        	context.closePath();
+        }
         
         function mss(seconds) {
             if (!isFinite(seconds)) return '--:--';
@@ -1815,7 +1834,7 @@ define({
             image.onerror = function() {
                 throw "Could not load " + this.src;
             }
-            image.src = 'images/animation_runner_red.png';
+            image.src = 'images/animation_runner_white.png';
 
 			image = new Image();
             image.onload = function() {

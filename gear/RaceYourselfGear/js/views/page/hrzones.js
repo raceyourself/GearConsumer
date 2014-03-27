@@ -290,6 +290,8 @@ define({
 				isInTargetZone = false;
 				isInThisZone = false;			
 				
+				var bold = false;
+				
 				//line at top
 				context.beginPath();
 				context.moveTo(0, currentHeight - segmentHeight);
@@ -335,6 +337,7 @@ define({
 					if( zones[zone] == currentZone )
 					{
 						colour = green;
+						bold = true;
 						//TODO flash
 					}
 				}
@@ -349,10 +352,15 @@ define({
 				//text inside box
 				context.fillStyle = colour;
 				context.textAlign = 'left';
-				var boxString = zones[zone].name;
+				var boxString = '';
+				if(zones[zone] == currentZone)
+				{
+					boxString = zones[zone].name;
+				}
 				if(!isInTargetZone && isInThisZone)
 				{
-					if(textPhaseProportion > 0.5)
+//					if(textPhaseProportion > 0.5)
+					if(true)
 					{
 						//show encouragement/guidance string
 						if(hr > currentZone.max)
@@ -365,7 +373,7 @@ define({
 						}
 					}					
 				}
-				context.font = '24px Samsung Sans';
+				context.font = bold? 'bold 24px Samsung Sans': '24px Samsung Sans';
 				context.fillText(boxString, 10, currentHeight - segmentHeight/2);
 			
 				//black capsule
@@ -396,7 +404,7 @@ define({
 					context.fillStyle = grey;
 				}
 				context.textAlign = 'center';
-				context.font = '25px Samsung Sans';
+				context.font = 'bold 25px Samsung Sans';
 				context.fillText(zones[zone].max, canvas.width/2, currentHeight - segmentHeight);
 			
 				currentHeight += segmentHeight;

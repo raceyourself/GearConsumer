@@ -81,6 +81,8 @@ define({
             zombies = [],
             zombieIdle = null,
             dino = null,
+            dinoBiting = null,
+            dinoIdle = null,
             boulder = null,
             dinoGameImage = null,
             elimGameImage = null,
@@ -1229,7 +1231,6 @@ define({
 			var notificationHeight = canvas.height - 16;
 			var whiteInset = 8;
 			if(!notification.active)
-//			if(true)
 			{
 
 				//Progress bar
@@ -1321,12 +1322,14 @@ define({
 					context.fillStyle = '#000';
 					context.fillRect( 0, canvas.height - trackHeight + trackThickness/2, canvas.width, canvas.height);
 					context.fillStyle = '#fff';
-					context.fillRect( whiteInset, canvas.height - trackHeight + trackThickness/2 + whiteInset, canvas.width - 2 * whiteInset, trackHeight - trackThickness - 2 * whiteInset);
-					
+//					context.fillRect( whiteInset, canvas.height - trackHeight + trackThickness/2 + whiteInset, canvas.width - 2 * whiteInset, trackHeight - trackThickness - 2 * whiteInset);
+					drawRoundedCornerBoxPath( whiteInset, canvas.height - trackHeight + trackThickness/2 + whiteInset, canvas.width - 2*whiteInset, trackHeight - trackThickness - 2*whiteInset, 8);					
+					context.fill();
 					var greenInset = 6 + whiteInset;
 					context.fillStyle = green;
 					var fillDist = fillProportion * (canvas.width - 2*greenInset);
 					context.fillRect( greenInset, canvas.height - trackHeight + trackThickness/2 + greenInset, fillDist, trackHeight - trackThickness - 2*greenInset);
+//					drawRoundedCornerBoxPath					
 					progressBarInset = greenInset + 5;
 				}
 			}
@@ -1355,7 +1358,10 @@ define({
 					context.fillStyle = notification.colour;
 					if(notification.colour == 'flashingRed')
 						{ context.fillStyle = flashingRedParams.colour; }
-					context.fillRect( whiteInset, canvas.height - trackHeight + trackThickness/2 + whiteInset, canvas.width - 2 * whiteInset, trackHeight - trackThickness - 2 * whiteInset);
+//					context.fillRect( whiteInset, canvas.height - trackHeight + trackThickness/2 + whiteInset, canvas.width - 2 * whiteInset, trackHeight - trackThickness - 2 * whiteInset);
+					drawRoundedCornerBoxPath( whiteInset, canvas.height - trackHeight + trackThickness/2 + whiteInset, canvas.width - 2 * whiteInset, trackHeight - trackThickness - 2 * whiteInset, 8);
+					context.fill();
+
 				}
 				//text
 				context.font = '24px Samsung Sans';
@@ -1535,7 +1541,20 @@ define({
 					if(zDistance != false && currentHRZone!='Recovery' && !isDead && hasBeenInGoalHRZone) {
 						var dinoPos = 0 + distanceToTrackPos(zDistance);
 						var dinoScale = scale * 1;
-						dino.drawscaled(context, dinoPos - dino.width * 0.6 * dinoScale, canvas.height - (dino.height - 25) * dinoScale - trackHeight - 5* scale, dt, dinoScale);
+						var dinoSprite;
+						var pace = r.getSpeed();
+						if(pace > 0 || zombiesCatchingUp)
+						{
+							if(zombieOffset > -5)
+							{ dinoSprite = dinoBiting; }
+							else
+							{ dinoSprite = dino; }
+						}
+						else
+						{
+							dinoSprite = dinoIdle;
+						}
+						dinoSprite.drawscaled(context, dinoPos - dino.width * 0.6 * dinoScale, canvas.height - (dino.height - 25) * dinoScale - trackHeight - 5* scale, dt, dinoScale);
 					}
 					break;
 				case 'boulder':
@@ -1915,6 +1934,20 @@ define({
             frames++;
         }
         
+        //creates a new path which forms the shape of a box with rounded corners. Caller is responsible for then filling or stroking
+        function drawRoundedCornerBoxPath(minx, miny, width, height, radius)
+        {
+        	context.beginPath();
+        	context.arc(minx + radius, miny + radius, radius, Math.PI, Math.PI * 1.5, false);
+        	context.lineTo(minx + width - radius, miny);
+        	context.arc(minx + width - radius, miny + radius, radius, 1.5 * Math.PI, 2 * Math.PI, false);
+        	context.lineTo(minx + width, miny + height - radius);
+        	context.arc(minx + width - radius, miny + height - radius, radius, 0, 0.5 * Math.PI, false);
+        	context.lineTo(minx + radius, miny + height);
+        	context.arc(minx + radius, miny + height - radius, radius, 0.5 * Math.PI, Math.PI, false);
+        	context.closePath();
+        }
+        
         function mss(seconds) {
             if (!isFinite(seconds)) return '--:--';
             
@@ -2104,6 +2137,12 @@ define({
 			loadImage('images/animation_dino_small_running.png', function() {
 				dino = new Sprite(this, this.width/5, 500);
 			});
+			loadImage('images/animation_dino_small_biting.png', function() {
+				dinoBiting = new Sprite(this, this.width/5, 500);
+			});
+			loadImage('images/animation_dino_small_stationary.png', function() {
+				dinoIdle = new Sprite(this, this.width/5, 500);
+			});
 			
 			//boulder image
 			loadImage('images/image_boulder_achievement_screen.png', function() {
@@ -2115,7 +2154,7 @@ define({
 			//dino game image
 			loadImage('images/race_dino_unlocked_ingame.png', function() {
 				dinoGameImage = new Sprite(this, this.width, 1000);
-			});
+			});			
 			
 			loadImage('images/Game_Eliminator/screen_menu_game_eliminator_unlocked.png', function() {
 				elimGameImage = new Sprite(this, this.width, 1000);
