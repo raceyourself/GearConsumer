@@ -155,18 +155,22 @@
     
     <div class="ui-page" id="opponentselect">
     <header class="ui-header" data-position="fixed">
-    		<h2 class="ui-title">Choose</h2>
+    		<h2 class="ui-title">Choose Opponent</h2>
     	</header>
     	<div id="opponent-select-sectionchanger" class="ui-content">
     		<div>
     			<section class="section-active">  				
     				<a href="#" id="zombie-mode-btn">
-    					<img class="enemy-select" src="images/screen_characters_zombie.png"/>
+    					<canvas id="zombie-canvas" width="320" height="320">
+    					
+    					</canvas>
     				</a>
     			</section>
     			<section>
     				<a href="#" id="dino-mode-btn">
-    					<img class="enemy-select" src="images/screen_characters_dino.png"/>
+    					<canvas id="dino-canvas" width="320" height="320">
+    					
+    					</canvas>
     				</a>
     			</section>
     			<section>
@@ -254,16 +258,16 @@
     	<div id="zombie-tutorial-sectionchanger" class="ui-content">
     		<div >
     			<section class="section-active zombie-tutorial" >
-    				<img src="images/screen_menu_game_zombie_tutorial1.jpg"/>
+    				<img src="images/New Games/tutorialHR_1.png"/>
     			</section>
     			<section class="zombie-tutorial">  				
-    				<img src="images/screen_menu_game_zombie_tutorial2.jpg"/>
+    				<img src="images/New Games/tutorialHR_2.png"/>
     			</section>
     			<section class="zombie-tutorial">
-    				<img src="images/screen_menu_game_zombie_tutorial3.jpg" />
+    				<img src="images/New Games/tutorialHR_3.png" />
     			</section>
     			<section class="zombie-tutorial">
-    				<img src="images/screen_menu_game_zombie_tutorial4.jpg"/>
+    				<img src="images/New Games/tutorialHR_4.png"/>
     				<div class="zombie2-ok center" id="start-race-btn" >Race Now </div>
     			</section>
     		</div>

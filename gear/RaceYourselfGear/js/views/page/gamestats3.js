@@ -63,12 +63,12 @@ define({
         }
 
         function init() {
-            page = document.getElementById('race-game');
-            caughtEl = document.getElementById('caught-stat');
-            sspeedEl = document.getElementById('sspeed-stat');
-            idealEl = document.getElementById('ideal-hr-stat');
-            timer = new Timer(1000, 'views.page.gamestats3.tick');
-            bindEvents();
+//            page = document.getElementById('race-game');
+//            caughtEl = document.getElementById('caught-stat');
+//            sspeedEl = document.getElementById('sspeed-stat');
+//            idealEl = document.getElementById('ideal-hr-stat');
+//            timer = new Timer(1000, 'views.page.gamestats3.tick');
+//            bindEvents();
         }
 
         e.listeners({
