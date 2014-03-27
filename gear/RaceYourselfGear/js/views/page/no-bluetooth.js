@@ -11,7 +11,8 @@ define({
         'models/sapRaceYourself',
         'models/game',
         'models/sap',
-        'views/page/pregame'
+        'views/page/pregame',
+        'views/page/hrzgame'
     ],
     def: function viewsPageNoBluetooth(req) {
         'use strict';
@@ -54,8 +55,8 @@ define({
                 	e.fire('pregame.show');
                 }
             }, 1000);
-            
-            
+                        
+            e.fire(game.getCurrentGame()+'.preload');
         }
 
         function onSkipClick(ev) {

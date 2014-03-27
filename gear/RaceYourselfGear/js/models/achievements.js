@@ -226,6 +226,24 @@ define({
                         return Number(Math.min(unlockDist, progress.total.distance)*100/unlockDist).toFixed(1).replace('.0', '') + '%';
                     }
                 },
+                'eliminator' : {
+                    title: 'Eliminator Mode',
+                    description: 'Unlocked the Eliminator game by running a total of ' + config.getElimUnlockDist() + 'km',
+                    points: 0,
+                    uses: 1,
+                    init: function() {
+                        e.listen('race.progress', function(event) {
+                            if (progress.total.distance >= config.getElimUnlockDist() * 1000) {
+                                achieve('eliminator');
+                                game.unlock('eliminator');
+                            }
+                        });
+                    },
+                    progress: function() {
+                    	var unlockDist = config.getDinoUnlockDist() * 1000;
+                        return Number(Math.min(unlockDist, progress.total.distance)*100/unlockDist).toFixed(1).replace('.0', '') + '%';
+                    }
+                },
                 // Dedication
                 'thrice_weekly' : {
                     title: 'Addict',

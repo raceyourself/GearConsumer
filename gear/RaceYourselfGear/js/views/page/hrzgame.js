@@ -65,7 +65,8 @@ define({
                     running_red: { name: 'running_red', sprite: null, speedThreshold: 0.1},
                     sprinting: { name: 'sprinting', sprite: null, speedThreshold: 4},
                     sprinting_red: { name: 'sprinting_red', sprite: null, speedThreshold: 4},
-                    zombieDead: { name: 'zombieDead', sprite: null, speedThreshold: -1}
+                    zombieDead: { name: 'zombieDead', sprite: null, speedThreshold: -1},
+                    dinoDead: { name: 'dinoDead', sprite: null, speedThreshold: -1}
             },
             notification = {
             		active: false,
@@ -82,11 +83,12 @@ define({
             dino = null,
             boulder = null,
             dinoGameImage = null,
+            elimGameImage = null,
             boulderGameImage = null,
             dinoUnlockImageFS = null,
             finishedImage = null,
+            awardImage = null,
             numZombies = 0,
-            zombieDistance = false,
             zombieInterval = false,
             zombieSpeed = 0,
             completionSound = null,
@@ -221,7 +223,7 @@ define({
 
 		function onTapHandler(data)
 		{
-			if(isScrolling()) return;
+			if(isScrolling() && !finished) return;
 			//dismiss
 			clearUnlockNotification();
 
@@ -262,6 +264,12 @@ define({
 		}
 
 
+		function onUnlockEliminator() 
+		{
+			showUnlockNotification('eliminator', 5);
+		}
+		
+		
         function onPageShow() {
         	if (!loaded) {
         		waiting = true;
@@ -299,6 +307,7 @@ define({
             
 			e.listen('game.unlock.dino', onUnlockDino);
 			e.listen('game.unlock.boulder', onUnlockBoulder);
+			e.listen('game.unlock.eliminator', onUnlockEliminator)
 			e.listen('achievement.awarded', onAchievementAwarded);
 			page.addEventListener('click', onTapHandler);
             isDead = false;
@@ -351,7 +360,7 @@ define({
         
         function onAchievementAwarded(data)
         {
-        	setNotification( green, '#fff', 'Award Unlocked!', 3*1000);
+        	setNotification( green, '#fff', 'Award Unlocked!', null, 3*1000);
 			navigator.vibrate([100, 50, 100, 50]);
 			if(finished)
 			{
@@ -408,6 +417,7 @@ define({
             clearTimeout(bannerTimeout)
             e.die('game.unlock.dino', onUnlockDino);
             e.die('game.unlock.boulder', onUnlockBoulder);
+            e.die('game.unlock.eliminator', onUnlockEliminator);
             e.die('achievement.awarded', onAchievementAwarded);
 			page.removeEventListener('click', onTapHandler);
         }        
@@ -672,7 +682,6 @@ define({
                 zombies[i].time = animDelay;
             }
             zombieOffset = zombieStartOffset;
-            zombieDistance = zombieOffset;
 //            int intervalTime = Math.min(350, 750-(wave*50));
 			var intervalTime = 33;
             zombieInterval = setInterval(zombieTick, intervalTime);
@@ -698,33 +707,9 @@ define({
         	}
         	
         	var r = race.getOngoingRace();
-        	zombieDistance = r.getDistance() + zombieOffset;
             requestRender();
             step();
-            
-            //general update of track window
-            if(!isDead)
-            {
-				screenWidthDistance = Math.max( 13, Math.min( -zombieOffset + 2, 50)) +1;
-			}
-			if(numZombies>0 && hasBeenInGoalHRZone)
-			{
-				if(zombiePosWeight < 1) { zombiePosWeight += 0.02; }
-//				screenMidDistance = zombiePosWeight * zombieDistance + r.getDistance();
-				var screenLeftDistanceZ = (zombieDistance + r.getDistance() - screenWidthDistance)/2 - 4;
-				var screenLeftDistanceNoZ = r.getDistance() - screenWidthDistance/2 - 2;
-				//lerp
-				var ease = Math.sin( Math.sin(zombiePosWeight*(Math.PI / 2)) );
-				screenLeftDistance = screenLeftDistanceNoZ + ease * (screenLeftDistanceZ - screenLeftDistanceNoZ);
-			}
-			else
-			{
-//				screenMidDistance = r.getDistance();
-				screenLeftDistance = r.getDistance() - screenWidthDistance/2 - 2;
-			}
-			
-//			screenLeftDistance = screenMidDistance = screenWidthDistance/2;
-			
+            			
 			//check how long since heartrate
 			if( Date.now() - lastHRtime > 10*1000 )
 			{
@@ -823,7 +808,6 @@ define({
         
         function stopZombies() {
             clearInterval(zombieInterval);
-            zombieDistance = false;            
         }
         
         
@@ -899,7 +883,7 @@ define({
         
         function progressToGame()
         {
-        	setNotification(green, '#fff', 'Race Starting', 2000);
+        	setNotification(green, '#fff', 'Race Starting', null, 2000);
 			sectionChanger.setActiveSection(3, 1000);
 			setTimeout(startCountdown, 1000);
         }
@@ -947,11 +931,6 @@ define({
 //                lastRender = null;
 //                stopZombies();
 				isDead = true;
-                runner.sprite.onEnd(function(dt) {
-                    runner.sprite.onEnd(null);
-                    runner = runnerAnimations.zombieDead;
-                    runner.sprite.time = dt;
-                });
                 requestRender();
                 clearTimeout(bannerTimeout);
                 bannerTimeout = setTimeout(nextWave, 10000);
@@ -965,6 +944,7 @@ define({
                 navigator.vibrate(1000);
                 showUnlockNotification('finished', 5);
                 finished = true;
+                sectionChanger.scrollbar.element.classList.toggle('hidden', true);
                 numAwardsAtFinish = 0;
                 e.fire('race.end', r);
                 r.stop();
@@ -974,8 +954,8 @@ define({
                 return;
             }
             
-            if (lastDistanceAwarded < r.getDistance()) {
-                var distance = r.getDistance();
+            if (lastDistanceAwarded < r.getMetricDistance()) {
+                var distance = r.getMetricDistance();
                 r.addPoints((distance - lastDistanceAwarded)*ppm);
                 lastDistanceAwarded = distance;
             }
@@ -1062,6 +1042,35 @@ define({
 
         function render() {
             if (!visible) return;
+            
+        	var r = race.getOngoingRace();
+        	var playerDistance = r.getMetricDistance();
+        	var zOffset = zombieOffset;
+        	var zDistance = playerDistance + zombieOffset;
+        	
+            //general update of track window
+            if(!isDead)
+            {
+				screenWidthDistance = Math.max( 13, Math.min( -zOffset + 2, 50)) +1;
+			}
+			if(numZombies>0 && hasBeenInGoalHRZone)
+			{
+				if(zombiePosWeight < 1) { zombiePosWeight += 0.02; }
+//				screenMidDistance = zombiePosWeight * zDistance + playerDistance;
+				var screenLeftDistanceZ = (zDistance + playerDistance - screenWidthDistance)/2 - 4;
+				var screenLeftDistanceNoZ = playerDistance - screenWidthDistance/2 - 2;
+				//lerp
+				var ease = Math.sin( Math.sin(zombiePosWeight*(Math.PI / 2)) );
+				screenLeftDistance = (1-ease)*screenLeftDistanceNoZ + ease*screenLeftDistanceZ;
+			}
+			else
+			{
+//				screenMidDistance = playerDistance;
+				screenLeftDistance = playerDistance - screenWidthDistance/2 - 2;
+			}
+            
+//			screenLeftDistance = screenMidDistance = screenWidthDistance/2;
+			
             var dt = 0;
             var trackHeight = canvas.height - badBG.height;
             var trackThickness = 4;
@@ -1113,7 +1122,6 @@ define({
             
             context.clearRect(0, 0, canvas.width, canvas.height);            
             var trackWidth = canvas.width - 0 - runner.sprite.width;
-            var r = race.getOngoingRace();
 
 			
 			//draw good bg
@@ -1147,9 +1155,8 @@ define({
 				context.save();
 				context.translate(canvas.width - gpsRing.width/2 * GPSscale, gpsRing.height/2 * GPSscale);
 				gpsRing.drawscaled(context, - gpsRing.width/2*GPSscale, -gpsRing.height/2 * GPSscale, 0, GPSscale);
-//				if(gpsAvailable && hasGPSUpdate)
-				if(true)
-				{
+
+				if(hasGPSUpdate) {
 					gpsDot.drawscaled(context, - gpsDot.width/2*GPSscale, -gpsDot.height/2 * GPSscale + 0.5*GPSscale, 0, GPSscale);
 				}
 				context.restore();
@@ -1163,8 +1170,8 @@ define({
                 context.fillText(banner, canvas.width/2, 25);
             }
             
-            if (banner === false && zombieDistance !== false) {
-                var delta = r.getDistance() - zombieDistance;
+            if (banner === false && zDistance !== false) {
+                var delta = playerDistance - zDistance;
                 delta = ~~delta;
                 var postfix = 'ahead';
                 var prefix = '';
@@ -1472,7 +1479,7 @@ define({
 			
             scale = 10/screenWidthDistance;
             
-            var playerXPos = 0 + distanceToTrackPos(r.getDistance())
+            var playerXPos = 0 + distanceToTrackPos(playerDistance)
             
             var opponentType = game.getCurrentOpponentType()
 //            opponentType = 'dinosaur';
@@ -1480,7 +1487,7 @@ define({
             {
 	            case 'zombie':
 					// Zombies
-					if (zombieDistance !== false && hasBeenInGoalHRZone) {
+					if (zDistance !== false && hasBeenInGoalHRZone) {
 						for (var i=0;i<numZombies;i++) {
 							var zombie = zombies[i];
 							var x_offset = ((i*(zombie.width*0.3))+(i%2)*5 + zombie.width*0.3) * scale;
@@ -1488,7 +1495,7 @@ define({
 //							if (i%2==1) context.globalAlpha = 0.75;
 //							else context.globalAlpha = 1;
 							context.globalAlpha = 1;
-							var zombiePos = 0 + distanceToTrackPos(zombieDistance) - x_offset;
+							var zombiePos = 0 + distanceToTrackPos(zDistance) - x_offset;
 		//                    zombiePos -= screenLeftDistance;
 							if(!isDead || zombiePos < playerXPos - 10)
 							{	
@@ -1511,16 +1518,16 @@ define({
 					}
 					break;
 				case 'dinosaur':
-					if(zombieDistance != false && currentHRZone!='Recovery' ) {
-						var dinoPos = 0 + distanceToTrackPos(zombieDistance);
+					if(zDistance != false && currentHRZone!='Recovery' && !isDead) {
+						var dinoPos = 0 + distanceToTrackPos(zDistance);
 						var dinoScale = scale * 1.5;
 						dino.drawscaled(context, dinoPos - dino.width * 0.6 * dinoScale, canvas.height - (dino.height - 25) * dinoScale - trackHeight - 5* scale, dt, dinoScale);
 					}
 					break;
 				case 'boulder':
-					if(zombieDistance != false) 
+					if(zDistance != false) 
 					{
-						var boulderPos = 0 + distanceToTrackPos(zombieDistance);
+						var boulderPos = 0 + distanceToTrackPos(zDistance);
 						context.save();
 						boulder.rotation += dt*boulder.rotationSpeed;
 						context.translate(boulderPos, canvas.height - boulder.height * scale - trackHeight - 5*scale);
@@ -1542,10 +1549,11 @@ define({
             {
              	playerScale *=1.6;	
              	playerOffset += 30*playerScale; 
-             	runner = runnerAnimations.zombieDead;
+                if (game.getCurrentOpponentType() == 'dinosaur') runner = runnerAnimations.dinoDead;
+                else runner = runnerAnimations.zombieDead;
             }
             runner.sprite.drawscaled(context, playerXPos, canvas.height -playerOffset , dt, playerScale);
-            
+        	
 			if(!countingdown)
             {
 				// Heart Rate
@@ -1743,7 +1751,7 @@ define({
 						context.font = '24px Samsung Sans';
 						context.fillText('m', distXPos, distYPos + 38);
 						//number
-						var delta = Math.round(r.getDistance() - zombieDistance);
+						var delta = Math.round(playerDistance - zDistance);
 						context.font = '56px Samsung Sans';
 						context.fillText(delta, distXPos, distYPos +4);
 					}
@@ -1836,6 +1844,9 @@ define({
             		case 'dino':
             			dinoGameImage.draw(context, 0, 0, 0);
             			break;
+            		case 'eliminator':
+            			elimGameImage.draw(context, 0, 0, 0);
+            			break;
 					case 'boulder':
 						boulderGameImage.draw(context, 0, 0, 0);
 						break;
@@ -1847,13 +1858,22 @@ define({
 						context.textBaseline = 'middle';
 						context.fillStyle = '#fff';
 						context.fillText('Training Complete', centreX, 40);
+						var margin = 5;
+						context.textBaseline = 'bottom';
 						if(numAwardsAtFinish == 1)
 						{
-							context.fillText('1 Award Unlocked', centreX, canvas.height - 30);
+							context.fillText('1 Award Unlocked', centreX, canvas.height - margin - margin*3 - awardImage.height);
 						}
 						else if(numAwardsAtFinish >1)
 						{
-							context.fillText(numAwardsAtFinish + ' Awards Unlocked', centreX, canvas.height - 30);
+							context.fillText(numAwardsAtFinish + ' Awards Unlocked', centreX, canvas.height - margin - margin*3 - awardImage.height);
+						}
+						if (numAwardsAtFinish > 0) {
+							var width = (awardImage.width+margin)*numAwardsAtFinish - margin;
+							var left = centreX - width/2;
+							for (var i=0; i < numAwardsAtFinish; i++) {
+								awardImage.draw(context, left + (awardImage.width+margin)*i, canvas.height - margin*3 - awardImage.height, 0);
+							}
 						}
 						
 						break;
@@ -1882,8 +1902,8 @@ define({
         }
        
         function distanceToTrackPos(distance)
-        {
-        	var trackWidth = canvas.width - 0 - runner.sprite.width;
+        {        	
+        	var trackWidth = canvas.width - 0 -  runner.sprite.width;
         	var pos = trackWidth * (distance - screenLeftDistance) / (screenWidthDistance);
         	return pos;
         }
@@ -1966,6 +1986,10 @@ define({
             
             loadImage('images/animation_cloud.png', function() {
                 runnerAnimations.zombieDead.sprite = new Sprite(this, this.width / 2, 1000);
+            });
+
+            loadImage('images/animation_dino_eating.png', function() {
+                runnerAnimations.dinoDead.sprite = new Sprite(this, this.width / 11, 1375);
             });
 
             loadImage('images/animation_zombie1.png', function() {
@@ -2066,14 +2090,22 @@ define({
 				dinoGameImage = new Sprite(this, this.width, 1000);
 			});
 			
+			loadImage('images/Game_Eliminator/screen_menu_game_eliminator_unlocked.png', function() {
+				elimGameImage = new Sprite(this, this.width, 1000);
+			});
+			
 			//boulder game image
 			loadImage('images/image_boulder_achievement_screen.png', function() {
 				boulderGameImage = new Sprite(this, this.width, 1000);
 			});
 			
 			//finished image
-			loadImage('images/image_ending flag.png', function() {
+			loadImage('images/image_ending flag with effect.png', function() {
 				finishedImage = new Sprite(this, this.width, 1000);
+			});
+			
+			loadImage('images/awarded.png', function() {
+				awardImage = new Sprite(this, this.width, 1000);
 			});
 			
 			//dashed pattern

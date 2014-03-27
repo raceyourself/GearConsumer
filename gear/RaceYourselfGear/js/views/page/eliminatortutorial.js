@@ -5,7 +5,7 @@
  */
 
 define({
-    name: 'views/page/zombietutorial',
+    name: 'views/page/eliminatortutorial',
     requires: [
         'core/event',
         'models/race',
@@ -14,7 +14,7 @@ define({
         'views/page/pregame',
         'views/page/trainingtype'
     ],
-    def: function viewsPageZombieTutorial(req) {
+    def: function viewsPageEliminatorTutorial(req) {
         'use strict';
 
         var e = req.core.event,
@@ -26,7 +26,7 @@ define({
             sectionChanger;
 
         function show() {
-            gear.ui.changePage('#zombietutorial');
+            gear.ui.changePage('#eliminatortutorial');
         }
 
         function onPageShow() {
@@ -52,12 +52,12 @@ define({
         	 page.addEventListener('pageshow', onPageShow);
              page.addEventListener('pagehide', onPageHide);
              
-             document.getElementById('start-race-btn').addEventListener('click', onZombieEndClick);
+             document.getElementById('start-elim-race-btn').addEventListener('click', onEliminatorEndClick);
         }
 
-        function onZombieEndClick() {
+        function onEliminatorEndClick() {
             if (isScrolling()) return;
-        	settings.setZombieTutorial(true);
+        	settings.setEliminatorTutorial(true);
         	e.fire('trainingtype.show');
         }
         
@@ -72,13 +72,13 @@ define({
         
         
         function init() {
-            page = document.getElementById('zombietutorial');
-            changer = document.getElementById("zombie-tutorial-sectionchanger");
+            page = document.getElementById('eliminatortutorial');
+            changer = document.getElementById("eliminator-tutorial-sectionchanger");
             bindEvents();
         }
 
         e.listeners({
-            'zombietutorial.show': show,
+            'eliminatortutorial.show': show,
         });
 
         return {

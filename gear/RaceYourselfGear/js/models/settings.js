@@ -25,11 +25,13 @@ define({
                 points: 0,
                 age: 0,
                 zombieTutorial: false,
+                eliminatorTutorial: false,
                 firstTimeAge: true,
-                distanceunits: 'KM',
+                distanceunits: 'Km',
                 paceunits: 'Min/km',
                 currentTarget: "",
-                audioActive: true
+                audioActive: true,
+                vibrateActive: true
             },
             settings = {},
             STORAGE_KEY = 'settings';
@@ -67,6 +69,11 @@ define({
         	return settings.zombieTutorial;
         }
         
+        function getEliminatorTutorial() {
+        	if(!isFinite(settings.eliminatorTutorial)) return defaults.eliminatorTutorial;
+        	return settings.eliminatorTutorial;
+        }
+        
         function getFirstTimeAge() {
         	if(!isFinite(settings.firstTimeAge)) return defaults.firstTimeAge;
         	return settings.firstTimeAge;
@@ -87,6 +94,11 @@ define({
         function getAudioActive() {
         	if(!isFinite(settings.audioActive)) return defaults.audioActive;
         	return settings.audioActive;
+        }
+        
+        function getVibrateActive() {
+        	if(!isFinite(settings.vibrateActive)) return defaults.vibrateActive;
+        	return settings.vibrateActive;
         }
         
         function saveSettings() {
@@ -125,6 +137,11 @@ define({
         	return saveSettings();
         }
         
+        function setEliminatorTutorial(eliminatorTutorial) {
+        	settings.eliminatorTutorial = eliminatorTutorial;
+        	return saveSettings();
+        }
+        
         function setFirstTimeAge(firstTimeAge) {
         	settings.firstTimeAge = firstTimeAge;
         	return saveSettings();
@@ -146,6 +163,12 @@ define({
         
         function setAudioActive(audio) {
         	settings.audioActive = audio;
+        	return saveSettings();
+        }
+        
+        function setVibrateActive(vibrate) {
+        	settings.vibrateActive = vibrate;
+        	return saveSettings();
         }
         
         function addPoints(points) {
@@ -182,6 +205,8 @@ define({
             setAgeRange: setAgeRange,
             getZombieTutorial: getZombieTutorial,
             setZombieTutorial: setZombieTutorial,
+            getEliminatorTutorial: getEliminatorTutorial,
+            setEliminatorTutorial: setEliminatorTutorial,
             getFirstTimeAge: getFirstTimeAge,
             setFirstTimeAge: setFirstTimeAge,
             getDistanceUnits: getDistanceUnits,
@@ -191,7 +216,9 @@ define({
             getCurrentTarget: getCurrentTarget,
             setCurrentTarget: setCurrentTarget,
             getAudioActive: getAudioActive,
-            setAudioActive: setAudioActive
+            setAudioActive: setAudioActive,
+            getVibrateActive: getVibrateActive,
+            setVibrateActive: setVibrateActive
         };
     }
 

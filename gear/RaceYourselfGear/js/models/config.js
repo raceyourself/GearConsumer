@@ -27,7 +27,8 @@ define({
                 warmupPeriod: 5*60,			//seconds
                 dinoUnlockDist: 20,			//km
                 catchupTime: 500,			//num ticks for zombies to catch up                
-                lapLength: 100
+                lapLength: 100  
+                elimUnlockDist: 50
             },
             config = {},
             STORAGE_KEY = 'config';
@@ -69,6 +70,11 @@ define({
 		function getDinoUnlockDist() {
 			if(!isFinite(config.dinoUnlockDist)) return defaults.dinoUnlockDist;
 			return config.dinoUnlockDist;
+		}
+		
+		function getElimUnlockDist() {
+			if(!isFinite(config.elimUnlockDist)) return defaults.elimUnlockDist;
+			return config.elimUnlockDist;
 		}
 		
 		function getCatchupTime() {
@@ -114,6 +120,7 @@ define({
             getWarmupPeriod : getWarmupPeriod,
             getDinoUnlockDist : getDinoUnlockDist,
             getCatchupTime : getCatchupTime,
+            getElimUnlockDist: getElimUnlockDist,
             getLapLength : getLapLength           
         };
     }

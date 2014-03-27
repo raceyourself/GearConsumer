@@ -28,7 +28,10 @@ define({
                     locked: true
                 },
                 'dino' : {
-                    locked: true
+                    locked: false
+                },
+                'eliminator' : {
+                	locked: true
                 }
             },
             STORAGE_KEY = 'games',
@@ -36,7 +39,8 @@ define({
             currentOpponent;
 
         function isLocked(game) {
-            return games[game].locked;
+        	var g = games[game] || defaults[game];
+            return g.locked;
         }
         
         function unlock(game) {

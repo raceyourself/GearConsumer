@@ -15,7 +15,8 @@ define({
         'views/page/audioactive',
         'views/page/distanceunits',
         'views/page/paceunits',
-        'views/page/about'
+        'views/page/about',
+        'views/page/vibratesetting'
     ],
     def: function viewsPageSettingsPage(req) {
         'use strict';
@@ -38,6 +39,13 @@ define({
             	audioTextEl.innerHTML = 'On';
             } else {
             	audioTextEl.innerHTML = 'Off';
+            }
+            
+            var vibrateTextEl = document.getElementById('vibrate-text');
+            if(settings.getVibrateActive()) {
+            	vibrateTextEl.innerHTML = 'On';
+            } else {
+            	vibrateTextEl.innerHTML = 'Off';
             }
             
             var distanceTextEl = document.getElementById('distance-text');
@@ -111,13 +119,17 @@ define({
             document.getElementById('distance-units-btn').addEventListener('click', onDistanceUnitsBtnClick);
             document.getElementById('pace-units-btn').addEventListener('click', onPaceUnitsBtnClick);
             document.getElementById('age-btn').addEventListener('click', onAgeBtnClick);
+            document.getElementById('vibrate-btn').addEventListener('click', onVibrateBtnClick);
             document.getElementById('about-btn').addEventListener('click', onAboutBtnClick);
-            
             
         }
         
         function onAudioActiveBtnClick() {
         	e.fire('audioactive.show');
+        }
+        
+        function onVibrateBtnClick() {
+        	e.fire('vibratesetting.show');
         }
         
         function onDistanceUnitsBtnClick() {
