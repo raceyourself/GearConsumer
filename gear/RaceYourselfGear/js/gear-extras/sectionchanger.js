@@ -216,12 +216,13 @@ extend(SectionChanger, Scroller, {
 	},
 
 	_resetLayout: function() {
-		var scrollerStyle = this.scroller.style,
-			sectionStyle = this.sections.style,
+		var sectionStyle = this.sections.style,
 			i, sectionLength;
 
-		scrollerStyle["width"] = "";
-		scrollerStyle["height"] = "";
+		if (this.scroller) {
+			this.scroller.style["width"] = "";
+			this.scroller.style["height"] = "";
+		}
 
 		for( i = 0, sectionLength = this.sections.length; i < sectionLength; i++ ){
 			sectionStyle = this.sections[i].style;
@@ -290,6 +291,10 @@ extend(SectionChanger, Scroller, {
 
 	getActiveSectionIndex: function() {
 		return this.activeIndex;
+	},
+	
+	nextSection: function( duration ) {
+		return this.setActiveSection((this.activeIndex+1)%this.sections.length, duration);
 	},
 
 	_start: function( e, pos ) {

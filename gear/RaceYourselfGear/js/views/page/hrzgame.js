@@ -212,7 +212,7 @@ define({
 		function showUnlockNotification(game, time)
 		{
 			//switch to game screen
-			sectionChanger.setActiveSection(3, 500);
+			sectionChanger.setActiveSection(1, 500);
 			//vibrate
 			navigator.vibrate([10, 10, 10, 10, 10, 10, 10]);
 			unlockNotification = game;
@@ -235,6 +235,7 @@ define({
 					continueToResults();
 				}
 				unlockNotificationActive = false;
+				return;
 			}
 			
 //			if(warmingUp)
@@ -243,7 +244,12 @@ define({
 //				{
 //					endWarmup();
 //				}
+//			    return;
 //			}
+			
+			if (sectionChanger) {
+				sectionChanger.nextSection(500);
+			}
 		}
         
         function isScrolling() {
@@ -279,7 +285,7 @@ define({
             visible = true;
             finished = false;
             sectionChanger = new SectionChanger(changer, {
-                circular: false,
+                circular: true,
                 orientation: "horizontal",
                 scrollbar: "bar"                	
             });
@@ -427,7 +433,7 @@ define({
         }
         
         function onWristUp() {
-        	sectionChanger.setActiveSection(3, 1000);
+        	sectionChanger.setActiveSection(1, 1000);
         }        
         
         function onQuit() {
@@ -884,7 +890,7 @@ define({
         function progressToGame()
         {
         	setNotification(green, '#fff', 'Race Starting', null, 2000);
-			sectionChanger.setActiveSection(3, 1000);
+			sectionChanger.setActiveSection(1, 1000);
 			setTimeout(startCountdown, 1000);
         }
 
@@ -944,7 +950,10 @@ define({
                 navigator.vibrate(1000);
                 showUnlockNotification('finished', 5);
                 finished = true;
-                sectionChanger.scrollbar.element.classList.toggle('hidden', true);
+                // Hide sectionchanger scrollbar. Optionally rewrite finish screen to be a html overlay with z-index > 1
+                if (sectionChanger && sectionChanger.scrollbar && sectionChanger.scrollbar.element) {
+                	sectionChanger.scrollbar.element.classList.toggle('hidden', true);
+                }
                 numAwardsAtFinish = 0;
                 e.fire('race.end', r);
                 r.stop();
