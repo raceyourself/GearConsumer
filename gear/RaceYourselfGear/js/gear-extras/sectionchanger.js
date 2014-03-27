@@ -291,6 +291,10 @@ extend(SectionChanger, Scroller, {
 	getActiveSectionIndex: function() {
 		return this.activeIndex;
 	},
+	
+	nextSection: function( duration ) {
+		return this.setActiveSection((this.activeIndex+1)%this.sections.length, duration);
+	},
 
 	_start: function( e, pos ) {
 		this._super( e, pos );

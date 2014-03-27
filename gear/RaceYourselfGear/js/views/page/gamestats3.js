@@ -77,7 +77,8 @@ define({
         });
 
         return {
-            init: init
+// View disabled        	
+//          init: init
         };
     }
 
