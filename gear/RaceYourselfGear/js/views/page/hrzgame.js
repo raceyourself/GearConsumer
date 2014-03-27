@@ -1520,7 +1520,7 @@ define({
 				case 'dinosaur':
 					if(zDistance != false && currentHRZone!='Recovery' && !isDead) {
 						var dinoPos = 0 + distanceToTrackPos(zDistance);
-						var dinoScale = scale * 1.5;
+						var dinoScale = scale * 1;
 						dino.drawscaled(context, dinoPos - dino.width * 0.6 * dinoScale, canvas.height - (dino.height - 25) * dinoScale - trackHeight - 5* scale, dt, dinoScale);
 					}
 					break;
@@ -2075,7 +2075,7 @@ define({
 			      
 			//dino image
 			loadImage('images/animation_dino_small_running.png', function() {
-				dino = new Sprite(this, this.width/5, 750);
+				dino = new Sprite(this, this.width/5, 500);
 			});
 			
 			//boulder image

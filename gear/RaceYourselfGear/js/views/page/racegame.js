@@ -1302,19 +1302,21 @@ define({
             var playerOffset = runner.sprite.height * playerScale + trackHeight - 6*scale; 
 
 			//ghost alpha to vary between 1 and this value, with a geometric decay towards it
-			var minGhostAlpha = 0.5;
-			var additionalAlpha = 1 - minGhostAlpha;
+			var minGhostAlpha = 0.1;
+			var additionalAlpha = 0.3;
 
-			context.globalAlpha = 0.5;
+			//first runner should be brighter
+			context.globalAlpha = 1.0;
 
 ////////// Eliminator
 			//Ghosts
 			for(var i=0; i<ghostRunners.length; i++)
         	{
         		var ghost = ghostRunners[i];
-//        		additionalAlpha *= 0.75;
-//				context.globalAlpha = minGhostAlpha + additionalAlpha;
         		ghost.drawscaled(context, distanceToTrackPos(ghost.lapDistance), canvas.height - playerOffset, dt, scale);
+        		additionalAlpha *= 0.7;
+				context.globalAlpha = minGhostAlpha + additionalAlpha;
+
         	}
         	context.globalAlpha = 1;
         	
