@@ -10,6 +10,7 @@ define({
         'core/event',
         'models/race',
         'models/game',
+        'models/sprite',
         'models/settings',
         'models/sapRaceYourself',
         'views/page/ageselect',
@@ -24,10 +25,19 @@ define({
          	app = req.models.application,
          	page = null,
          	game = req.models.game,
+         	Sprite = req.models.sprite.Sprite,
          	settings = req.models.settings,
          	provider = req.models.sapRaceYourself,
             changer,
-            sectionChanger;
+            sectionChanger,
+            dinoContext,
+            dinoCanvas,
+            dinoSprite,
+            zombieCanvas,
+            zombieContext,
+            zombieSprite,
+            raf = null,
+            lastRenderTime;
 
         function show() {
             gear.ui.changePage('#opponentselect');
@@ -40,14 +50,50 @@ define({
                 scrollbar: "bar"
             });
             
+            
             //document.getElementById('dino-mode-btn').classList.toggle('locked-game', game.isLocked('dino'));
+            lastRenderTime = Date.now();
+            animate();
+            
             
             e.listen('tizen.back', onBack);
             
         }
         
+        function animate(time) {
+            raf = requestAnimationFrame(animate);
+            render();
+        }
+        
+        function render() {
+        	dinoContext.clearRect(0, 0, dinoCanvas.width, dinoCanvas.height);
+        	var dt = Date.now() - lastRenderTime;
+        	lastRenderTime = Date.now();
+        	
+        	dinoSprite.drawscaled(dinoContext, dinoCanvas.width / 2 - dinoSprite.width * 1.5/2, (dinoCanvas.height /2 - 50) - dinoSprite.height * 1.5/2, dt, 1.5);
+        	
+        	zombieContext.clearRect(0, 0, zombieCanvas.width, zombieCanvas.height);
+        	
+        	zombieSprite.drawscaled(zombieContext, zombieCanvas.width/2 - zombieSprite.width * 1.5 / 2, (zombieCanvas.height / 2 - 25) - zombieSprite.height * 1.5/2, dt, 1.5);
+        }
+        
+        function loadImage(url, onload) {
+        	//pendingAssets++;
+        	var image = new Image();
+        	image.onerror = function() {
+        		throw 'could not load' + this.src;      	
+        	}
+        	image.onload = function() {
+        		//pendingAssets--;
+        		onload.call(this);
+        		
+        	};
+        	image.src = url;
+        }
+        
         function onPageHide() {
             e.die('tizen.back', onBack);
+            
             sectionChanger.destroy();
         }   
         
@@ -61,8 +107,23 @@ define({
         	var zombieBtnEl = document.getElementById('zombie-mode-btn'),
         		dinoBtnEl = document.getElementById('dino-mode-btn');
         
+        	dinoCanvas = document.getElementById('dino-canvas');
+        	
+        	dinoContext = dinoCanvas.getContext('2d');
+        	
+        	zombieCanvas = document.getElementById('zombie-canvas');
+        	zombieContext = zombieCanvas.getContext('2d');
+        	
         	page.addEventListener('pageshow', onPageShow);
             page.addEventListener('pagehide', onPageHide);
+            
+            loadImage('images/animation_dino_small_running.png', function() {
+				dinoSprite = new Sprite(this, this.width/5, 500);
+			});
+            
+            loadImage('images/animation_zombie_stationary.png', function() {
+				zombieSprite = new Sprite(this, this.width/14, 2000);
+			});
              
             zombieBtnEl.addEventListener('click', onZombieBtnClick);
             dinoBtnEl.addEventListener('click', onDinoBtnClick);
@@ -101,10 +162,18 @@ define({
             //if (game.isLocked('dino')) return;
             game.setCurrentGame('hrzgame');
             game.setCurrentOpponentType('dinosaur');
-            if(settings.getFirstTimeAge()) {
-        		e.fire('ageselect.show', 'choosegoal');
-        	} else {
-        		e.fire('choosegoal.show');
+            if(settings.getZombieTutorial()) {
+        		if(settings.getFirstTimeAge()) {
+        			console.log('showing age');
+            		e.fire('ageselect.show', 'choosegoal');
+            	} else {
+            		console.log('choosing goal');
+            		e.fire('choosegoal.show');
+            	}
+        	}
+        	else {
+        		console.log('showing zombie tutorial');
+        		e.fire('zombietutorial.show');
         	}
         }
          

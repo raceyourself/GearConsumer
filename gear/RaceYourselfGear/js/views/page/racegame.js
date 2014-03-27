@@ -286,6 +286,7 @@ define({
 /// ---> /in common with zombie game
 
         function onPageShow() {
+        	console.log('racegame:pageshow');
         	gameOver = false;
             document.getElementById('eliminator-end').classList.toggle('hidden', true);
             document.getElementById('eliminator-highscore').classList.toggle('hidden', true);
@@ -438,9 +439,12 @@ define({
         
       
         function onPageHide() {
+        	console.log('racegame:pagehide');
             e.die('tizen.back', onBack);
             e.die('motion.wristup', onWristUp);
             visible = false;
+            document.getElementById('eliminator-end').classList.toggle('hidden', true);
+            document.getElementById('eliminator-highscore').classList.toggle('hidden', true);
             clearInterval(fpsInterval);
 			clearTimeout(warmupTimeout);
 ////            clearTimeout(intervalTimeout);
@@ -448,7 +452,10 @@ define({
 ////            clearTimeout(warningTimeoutLow);
 ////			clearTimeout(warningTimeoutHigh);
 ////			clearInterval(heartBeatInterval);
-            if (!!sectionChanger) sectionChanger.destroy();
+            if (!!sectionChanger) {
+            	sectionChanger.destroy();
+            	sectionChanger = false;
+            }
             
             var r = race.getOngoingRace();
             if (r !== null) {
@@ -1885,12 +1892,26 @@ define({
 
         
         function attachGame() {
+        	console.log('Attaching racegame');
             page.addEventListener('pageshow', onPageShow);
             page.addEventListener('pagehide', onPageHide);
+            document.getElementById('game-yesquit-btn').addEventListener('click', onQuit);
+            document.getElementById('game-noquit-btn').addEventListener('click', onBack);
+            document.getElementById('eliminator-hs-again-btn').addEventListener('click', onAgain);
+            document.getElementById('eliminator-hs-quit-btn').addEventListener('click', onQuit);
+            document.getElementById('eliminator-end-again-btn').addEventListener('click', onAgain);
+            document.getElementById('eliminator-end-quit-btn').addEventListener('click', onQuit);
         }
         function detachGame() {
+        	console.log('Detaching racegame');
             page.removeEventListener('pageshow', onPageShow);
             page.removeEventListener('pagehide', onPageHide);
+            document.getElementById('game-yesquit-btn').removeEventListener('click', onQuit);
+            document.getElementById('game-noquit-btn').removeEventListener('click', onBack);
+            document.getElementById('eliminator-hs-again-btn').removeEventListener('click', onAgain);
+            document.getElementById('eliminator-hs-quit-btn').removeEventListener('click', onQuit);
+            document.getElementById('eliminator-end-again-btn').removeEventListener('click', onAgain);
+            document.getElementById('eliminator-end-quit-btn').removeEventListener('click', onQuit);
         }
                 
         function onGpsStatus(event) {
@@ -1899,12 +1920,6 @@ define({
         }
         
         function bindEvents() {
-            document.getElementById('game-yesquit-btn').addEventListener('click', onQuit);
-            document.getElementById('game-noquit-btn').addEventListener('click', onBack);
-            document.getElementById('eliminator-hs-again-btn').addEventListener('click', onAgain);
-            document.getElementById('eliminator-hs-quit-btn').addEventListener('click', onQuit);
-            document.getElementById('eliminator-end-again-btn').addEventListener('click', onAgain);
-            document.getElementById('eliminator-end-quit-btn').addEventListener('click', onQuit);
         }
 
         function init() {

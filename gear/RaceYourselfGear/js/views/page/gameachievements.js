@@ -85,9 +85,9 @@ define({
         }
 
         function init() {
-            page = document.getElementById('race-game');
-            list = document.getElementById('game-achievements-list');
-            bindEvents();
+//            page = document.getElementById('race-game');
+//            list = document.getElementById('game-achievements-list');
+//            bindEvents();
         }
 
         e.listeners({

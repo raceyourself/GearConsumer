@@ -13,6 +13,19 @@
 	overflow: initial;
 }
 
+.aboutage-format {
+	font-size: 24px;
+	padding-left: 20px;
+	padding-right: 20px;
+	text-align: center;
+}
+
+.empty {
+	float: right;
+	top: 5px;
+	position: relative;
+}
+
 .gps-screen {
 	padding: 50px;
 	color: white;
@@ -329,12 +342,16 @@ img {
 	margin: 0 0;
 }
 
+#achievement .ui-content {
+	padding: 10px;
+}
+
 #achievement-description {
 	padding-bottom: 30px;
 }
 
 #achievement-awarded, #achievement-progress {
-	font-size: 50%;
+	font-size: 75%;
 	padding-bottom: 10px;
 }
 

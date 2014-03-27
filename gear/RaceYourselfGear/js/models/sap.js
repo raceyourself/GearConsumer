@@ -28,7 +28,7 @@ define({
          */
         function sendData(channel, params) {
             if (!socket) {
-                console.error('Connect first!');
+//                console.error('Connect first!');
                 return false;
             }
 

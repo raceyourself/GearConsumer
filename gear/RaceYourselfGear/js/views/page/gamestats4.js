@@ -65,12 +65,12 @@ define({
         }
 
         function init() {
-            page = document.getElementById('race-game');
-            earnedEl = document.getElementById('sweat-earned-stat');
-            lostEl = document.getElementById('sweat-lost-stat');
-            totalEl = document.getElementById('sweat-total-stat');
-            timer = new Timer(1000, 'views.page.gamestats4.tick');
-            bindEvents();
+//            page = document.getElementById('race-game');
+//            earnedEl = document.getElementById('sweat-earned-stat');
+//            lostEl = document.getElementById('sweat-lost-stat');
+//            totalEl = document.getElementById('sweat-total-stat');
+//            timer = new Timer(1000, 'views.page.gamestats4.tick');
+//            bindEvents();
         }
 
         e.listeners({

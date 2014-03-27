@@ -155,18 +155,24 @@
     
     <div class="ui-page" id="opponentselect">
     <header class="ui-header" data-position="fixed">
-    		<h2 class="ui-title">Choose</h2>
+    		<h2 class="ui-title">Choose Opponent
+    		
+    		</h2>
     	</header>
     	<div id="opponent-select-sectionchanger" class="ui-content">
     		<div>
     			<section class="section-active">  				
     				<a href="#" id="zombie-mode-btn">
-    					<img class="enemy-select" src="images/screen_characters_zombie.png"/>
+    					<canvas id="zombie-canvas" width="320" height="320">
+    					
+    					</canvas>
     				</a>
     			</section>
     			<section>
     				<a href="#" id="dino-mode-btn">
-    					<img class="enemy-select" src="images/screen_characters_dino.png"/>
+    					<canvas id="dino-canvas" width="320" height="320">
+    					
+    					</canvas>
     				</a>
     			</section>
     			<section>
@@ -249,21 +255,24 @@
     
     <div class="ui-page" id="zombietutorial">
     	<header class="ui-header">
-    		<h2 class="ui-title">How to play</h2>
+    		<h2 class="ui-title">
+    			How to play
+    			<img id="i-tutorial-btn" src="images/New Games/i_button.png" class="empty" />
+    		</h2>
     	</header>
     	<div id="zombie-tutorial-sectionchanger" class="ui-content">
     		<div >
     			<section class="section-active zombie-tutorial" >
-    				<img src="images/screen_menu_game_zombie_tutorial1.jpg"/>
+    				<img src="images/New Games/tutorialHR_1.png"/>
     			</section>
     			<section class="zombie-tutorial">  				
-    				<img src="images/screen_menu_game_zombie_tutorial2.jpg"/>
+    				<img src="images/New Games/tutorialHR_2.png"/>
     			</section>
     			<section class="zombie-tutorial">
-    				<img src="images/screen_menu_game_zombie_tutorial3.jpg" />
+    				<img src="images/New Games/tutorialHR_3.png" />
     			</section>
     			<section class="zombie-tutorial">
-    				<img src="images/screen_menu_game_zombie_tutorial4.jpg"/>
+    				<img src="images/New Games/tutorialHR_4.png"/>
     				<div class="zombie2-ok center" id="start-race-btn" >Race Now </div>
     			</section>
     		</div>
@@ -370,7 +379,10 @@
     
     <div class="ui-page" id="ageselect">
     	<header class="ui-header" data-position="fixed">
-    		<h2 class="ui-title">Choose your age</h2>
+    		<h2 class="ui-title">Choose your age
+    			
+    			<img id="i-btn" src="images/New Games/i_button.png" class="empty" />
+    		</h2>
     	</header>
     	<div class="ui-content">
     		<ul class="ui-listview">
@@ -482,6 +494,34 @@
                     </label>
                 </li>
             </ul>
+    	</div>
+    </div>
+    
+    <div class="ui-page" id="aboutage">
+    	
+    	<div class="ui-content center aboutage-format">
+    		We need to ask this so we can give you accurate heart rate data, to make you faster and fitter!
+    		<br>
+    		We won't share this information with anyone
+    		<br><br>
+    		Tap anywhere to close
+    	</div>
+    </div>
+    
+    <div class="ui-page" id="aboutheartrate">
+    	<header class="ui-header" data-position="fixed">
+    		<h2 class="ui-title">Why heart rate</h2>
+    	</header>
+    	<div class="ui-content aboutage-format">
+    		Tracking your heart rate tells you exactly how hard, or how easy, you're running.
+			Heart-rate training is a great way to improve your health and fitness efficiently.
+
+			Measuring your heart rate can help you keep from making one of the most common mistakes that runners of 
+			all abilities make; running too fast too often, which puts you at risk for injury and burnout.
+
+			Have fun, stay safe and always consult a doctor before undertaking a new exercise regimen.
+    		<br><br>
+    		Tap anywhere to close
     	</div>
     </div>
     

@@ -46,22 +46,7 @@ define({
                         return '0%';
                     }
                 },
-                'start' : {
-                    title: 'Beginner',
-                    description: 'Started the game',
-                    points: 1,
-                    uses: 1,
-                    init: function() {
-                        e.listen('race.new', function(event) {
-                            achieve('start');
-                        });
-                    },
-                    progress: function() {
-                        if (!!achieved['start']) return '100%';
-                        return '0%';
-                    }
-                },
-                'death' : {
+/*                'death' : {
                     title: 'First tussle',
                     description: 'Had fisticuffs with the evil undead',
                     points: 10,
@@ -76,7 +61,7 @@ define({
                         if (!!achieved['death']) return '100%';
                         return '0%';
                     }
-                },
+                }, */
                 'run_in_zone' : {
                     title: 'Trainer',
                     description: 'Completed a run without leaving target heart rate zone',
@@ -159,7 +144,7 @@ define({
                     }
                 },
                 'half_marathon' : {
-                    title: 'Half marathon (wo)man',
+                    title: 'Half marathon',
                     description: 'Completed a half marathon',
                     points: 500,
                     uses: 1,
@@ -175,7 +160,7 @@ define({
                     }
                 },
                 'marathon' : {
-                    title: 'Marathon (wo)man',
+                    title: 'Marathon',
                     description: 'Completed a full marathon',
                     points: 1000,
                     uses: 1,
@@ -208,7 +193,7 @@ define({
                         return Number(Math.min(5000, progress.total.distance)*100/5000).toFixed(1).replace('.0', '') + '%';
                     }
                 },
-*/                'dino' : {
+                'dino' : {
                     title: 'Jurassic Trek',
                     description: 'Unlocked the Race Dino game by running a total of ' + config.getDinoUnlockDist() + 'km',
                     points: 0,
@@ -225,7 +210,7 @@ define({
                     	var unlockDist = config.getDinoUnlockDist() * 1000;
                         return Number(Math.min(unlockDist, progress.total.distance)*100/unlockDist).toFixed(1).replace('.0', '') + '%';
                     }
-                },
+                }, 
                 'eliminator' : {
                     title: 'Eliminator Mode',
                     description: 'Unlocked the Eliminator game by running a total of ' + config.getElimUnlockDist() + 'km',
@@ -243,9 +228,9 @@ define({
                     	var unlockDist = config.getElimUnlockDist() * 1000;
                         return Number(Math.min(unlockDist, progress.total.distance)*100/unlockDist).toFixed(1).replace('.0', '') + '%';
                     }
-                },
+                }, */
                 'Endurance' : {
-                    title: 'Race Yourself Fitter Mode',
+                    title: 'Race Yourself Fitter',
                     description: 'Unlocked the Race Yourself Fitter mode by playing a game of Eliminator',
                     points: 0,
                     uses: 1,
@@ -263,7 +248,7 @@ define({
                     }
                 },
                 'WeightLoss' : {
-                    title: 'Race Yourself Slimmer Mode',
+                    title: 'Race Yourself Slimmer',
                     description: 'Unlocked the Race Yourself Slimmer mode by running 5km',
                     points: 0,
                     uses: 1,
@@ -281,7 +266,7 @@ define({
                     }
                 },
                 'Strength' : {
-                    title: 'Race Yourself Faster Mode',
+                    title: 'Race Yourself Faster',
                     description: 'Unlocked the Race Yourself Faster mode by running 10km',
                     points: 0,
                     uses: 1,
