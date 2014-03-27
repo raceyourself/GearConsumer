@@ -142,6 +142,7 @@ define({
 			green = '#51b848',
             red = '#cb2027',
             amber = '#f7941d',
+            grey = '303030',
             hrWarningPhase = 0,
             hrWarningPeriod = 3*1000,
             lightRed = '#731216',
@@ -188,7 +189,8 @@ define({
 			loaded = false,
             loading = false,
             waiting = false,
-            pendingAssets = 0;
+            pendingAssets = 0,
+            showOpponentProgressBar = false;
 			
 
 			
@@ -1133,10 +1135,41 @@ define({
 //					context.fillRect(whiteInset, canvas.height - trackHeight + trackThickness/2 + whiteInset, canvas.width - 2 * whiteInset, trackHeight - trackThickness - 2 * whiteInset);
 					drawRoundedCornerBoxPath(whiteInset, canvas.height - trackHeight + trackThickness/2 + whiteInset, canvas.width - 2 * whiteInset, trackHeight - trackThickness - 2 * whiteInset, 8);
 					context.fill();
+					
+					
 					var greenInset = 6 + whiteInset;
 					context.fillStyle = green;
 					var fillDist = fillProportion * (canvas.width - 2*greenInset);
-					context.fillRect( greenInset, canvas.height - trackHeight + trackThickness/2 + greenInset, fillDist, trackHeight - trackThickness - 2*greenInset);
+					var barHeight = canvas.height - trackHeight + trackThickness/2 + greenInset;
+					
+					if(!showOpponentProgressBar)
+					{					
+						context.fillRect( greenInset, canvas.height - trackHeight + trackThickness/2 + greenInset, fillDist, trackHeight - trackThickness - 2*greenInset);
+					}
+					else
+					{
+						var barThickness = trackHeight - trackThickness - 2*greenInset;
+						var opponentBarThickness = barThickness * 0.3;
+						context.fillRect( greenInset, barHeight, fillDist, barThickness - opponentBarThickness);
+
+						//secondary bar for the ghost
+						if(ghostRunners.length > 0)
+						{
+							var bestGhostDist = ghostRunners[0];
+							var fillProportion_Ghost = bestGhostDist.lapDistance / TRACK_LENGTH;
+							var fillDistGhost = fillProportion_Ghost * (canvas.width - 2*greenInset);
+							context.fillStyle = '#fff';
+							var lineThickness = 0.5;
+							var h = barHeight + barThickness - lineThickness/2;
+							context.beginPath();
+							context.rect( greenInset + lineThickness, barHeight + barThickness -opponentBarThickness + lineThickness, fillDistGhost - 2*lineThickness, opponentBarThickness - 2*lineThickness);
+							context.strokeStyle = grey;
+							context.lineWidth = lineThickness;
+							context.stroke()
+						
+						}
+					}
+					
 					progressBarInset = greenInset + 5;
 				}
 			}
@@ -1279,7 +1312,8 @@ define({
 				//target
 				context.textAlign = 'right';
 ////				context.fillText(Number(targetdist).toFixed(1) + u, canvas.width - progressBarInset, progressBarHeight);
-				context.fillText(config.getLapLength()+'m', canvas.width - progressBarInset, progressBarHeight);
+				var heightOffset = showOpponentProgressBar? -5 : 0;
+				context.fillText(config.getLapLength()+'m', canvas.width - progressBarInset, progressBarHeight - heightOffset);
 
 			}
 			else if(targetTime < Infinity)
