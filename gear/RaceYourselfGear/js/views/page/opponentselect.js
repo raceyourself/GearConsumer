@@ -162,10 +162,18 @@ define({
             //if (game.isLocked('dino')) return;
             game.setCurrentGame('hrzgame');
             game.setCurrentOpponentType('dinosaur');
-            if(settings.getFirstTimeAge()) {
-        		e.fire('ageselect.show', 'choosegoal');
-        	} else {
-        		e.fire('choosegoal.show');
+            if(settings.getZombieTutorial()) {
+        		if(settings.getFirstTimeAge()) {
+        			console.log('showing age');
+            		e.fire('ageselect.show', 'choosegoal');
+            	} else {
+            		console.log('choosing goal');
+            		e.fire('choosegoal.show');
+            	}
+        	}
+        	else {
+        		console.log('showing zombie tutorial');
+        		e.fire('zombietutorial.show');
         	}
         }
          

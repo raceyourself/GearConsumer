@@ -10,7 +10,8 @@ define({
         'core/event',
         'models/application',
         'models/settings',
-        'views/page/choosegoal'
+        'views/page/choosegoal',
+        'views/page/aboutage'
     ],
     def: function viewsPageAgeSelect(req) {
         'use strict';
@@ -48,9 +49,15 @@ define({
        		document.getElementById('mid-seventies-btn').addEventListener('click', onAgeBtnClick);
        		document.getElementById('over-eighties-btn').addEventListener('click', onAgeBtnClick);        	
         	
+       		document.getElementById('i-btn').addEventListener('click', onIBtnClick);
+       		
             page.addEventListener('pageshow', onPageShow);
             page.addEventListener('pagehide', onPageHide);
             
+        }
+        
+        function onIBtnClick() {
+        	e.fire('aboutage.show');
         }
         
         function onAgeBtnClick(event) {

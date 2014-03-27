@@ -12,7 +12,8 @@ define({
         'models/game',
         'models/settings',
         'views/page/pregame',
-        'views/page/trainingtype'
+        'views/page/trainingtype',
+        'views/page/aboutheartrate'
     ],
     def: function viewsPageZombieTutorial(req) {
         'use strict';
@@ -53,8 +54,14 @@ define({
              page.addEventListener('pagehide', onPageHide);
              
              document.getElementById('start-race-btn').addEventListener('click', onZombieEndClick);
+             
+             document.getElementById('i-tutorial-btn').addEventListener('click', onIBtnClick);
         }
 
+        function onIBtnClick() {
+        	e.fire('aboutheartrate.show');
+        }
+        
         function onZombieEndClick() {
             if (isScrolling()) return;
         	settings.setZombieTutorial(true);
