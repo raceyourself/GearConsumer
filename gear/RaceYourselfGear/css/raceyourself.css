@@ -433,39 +433,39 @@ img {
 }
 
 #eliminator-end {
-	background: url('../images/Game_Eliminator/TODO.png');
-	padding-top: 15px;	
+	background: url('../images/Game_Eliminator/image_hexagons_small.png');
+	padding: 40px 0px;	
 }
 
 #eliminator-score {
 	clear: left;
 	float: left;
-	margin-left: 0px;
+	margin-left: 19px;
 	font-size: 38px;
-	line-height: 100px;
+	line-height: 83px;
 }
 #eliminator-score-value {
 	float: left;
-	margin-left: 10px;
+	margin-left: 20px;
 	font-size: 70px;
-	line-height: 100px;
-	width: 93px;
+	line-height: 83px;
+	width: 85px;
 	color: black;
 }
 
 #eliminator-best {
 	clear: left;
 	float: left;
-	margin-left: 60px;
+	margin-left: 102px;
 	font-size: 38px;
-	line-height: 100px;
+	line-height: 83px;
 }
 #eliminator-best-value {
 	float: left;
-	margin-left: 10px;
+	margin-left: 20px;
 	font-size: 70px;
-	line-height: 100px;
-	width: 93px;
+	line-height: 83px;
+	width: 85px;
 	color: black;
 }
 
