@@ -10,6 +10,7 @@ define({
         'core/event',
         'models/race',
         'models/game',
+        'models/sap',
         'models/settings',
         'views/page/pregame',
         'views/page/no-bluetooth'
@@ -20,6 +21,7 @@ define({
         var e = req.core.event,
          	app = req.models.application,
          	page = null,
+         	sap = req.models.sap,
          	game = req.models.game,
          	settings = req.models.settings,
             changer,
