@@ -11,8 +11,10 @@ define({
         'models/race',
         'models/game',
         'models/settings',
+        'models/sap',
         'models/sapRaceYourself',
         'views/page/pregame',
+        'views/page/no-bluetooth',
         'views/page/trainingtype',
         'views/page/opponentselect',
         'views/page/eliminatortutorial'
@@ -25,6 +27,7 @@ define({
          	page = null,
          	game = req.models.game,
          	race = req.models.race,
+         	sap = req.models.sap,
          	settings = req.models.settings,
          	provider = req.models.sapRaceYourself,
             changer,
@@ -117,11 +120,11 @@ define({
         	
         	game.setCurrentGame('racegame');
         	if(settings.getEliminatorTutorial()) {
-        		if(settings.getFirstTimeAge()) {
-            		e.fire('ageselect.show', 'choosegoal');
-            	} else {
-            		e.fire('choosegoal.show');
-            	}
+        		if(sap.isConnected() || !sap.isAvailable()) {
+                	e.fire('pregame.show');
+                } else {
+                	e.fire('no-bluetooth.show');
+                }
         	} else {
         		e.fire('eliminatortutorial.show');
         	}
