@@ -250,6 +250,10 @@ define({
 				}
 				unlockNotificationActive = false;
 			}
+			else if (sectionChanger) {
+				sectionChanger.nextSection(500);
+			}
+			
 			
 //			if(warmingUp)
 //			{
@@ -544,7 +548,7 @@ define({
         	bannerTimeout = setTimeout(clearbanner, countDownParams.stageDuration * 1000);
 			countDownParams.startTime = Date.now();
 ////			zombiePosWeight = 0;
-			lapStartDist = race.getOngoingRace().getDistance();
+			lapStartDist = race.getOngoingRace().getMetricDistance();
 
 ///////// Eliminator
 			for(var i=0; i<ghostRunners.length; i++)
@@ -609,7 +613,7 @@ define({
 			var timeInLap = (Date.now() - timeCurrentLapStarted) / 1000;
 			
 			var r = race.getOngoingRace();
-			var playerLapDistance = (r.getDistance() - lapStartDist) % TRACK_LENGTH;
+			var playerLapDistance = (r.getMetricDistance() - lapStartDist) % TRACK_LENGTH;
 			var playerIsAheadNow = true;
 			
 			//update runner distances
@@ -745,7 +749,7 @@ define({
             
             
 ////////////// Eliminator            
-            if (r.getDistance() >= lapStartDist + TRACK_LENGTH)
+            if (r.getMetricDistance() >= lapStartDist + TRACK_LENGTH)
             {
             	// add new ghost
             	var lapTime = (Date.now() - timeCurrentLapStarted)/1000;
@@ -754,7 +758,7 @@ define({
             	
             	//set next lap distance
 //            	nextLapDistance += config.getLapLength();
-				lapStartDist = race.getOngoingRace().getDistance();
+				lapStartDist = race.getOngoingRace().getMetricDistance();
             	
             	//show 'go'
             	
@@ -793,8 +797,8 @@ define({
             }
 ///////////// /Eliminator
             
-            if (lastDistanceAwarded < r.getDistance()) {
-                var distance = r.getDistance();
+            if (lastDistanceAwarded < r.getMetricDistance()) {
+                var distance = r.getMetricDistance();
                 r.addPoints((distance - lastDistanceAwarded)*ppm);
                 lastDistanceAwarded = distance;
             }
@@ -913,7 +917,7 @@ define({
 
 ////////// Eliminator
 			screenWidthDistance = 13;
-			var playerLapDistance = r.getDistance() - lapStartDist;
+			var playerLapDistance = r.getMetricDistance() - lapStartDist;
 			//drift from left to right as we get further through the lap
 			//go from 0.2 to 0.8 of the way across the screen.
 			var lapProportion = playerLapDistance / TRACK_LENGTH;
@@ -1051,7 +1055,7 @@ define({
 					fillProportion = 0;
 				}
 */
-				fillProportion = ((r.getDistance() - lapStartDist) % TRACK_LENGTH) / TRACK_LENGTH;
+				fillProportion = ((r.getMetricDistance() - lapStartDist) % TRACK_LENGTH) / TRACK_LENGTH;
 				
 				if(false)	//old capsule version
 				{
@@ -1262,7 +1266,7 @@ define({
 			{
 
 				//run
-				var d = r.getDistance();
+				var d = r.getMetricDistance();
 				var targetdist = TRACK_LENGTH;
 				var u = r.getShortDistanceUnits();
 				if (u == 'm') {
@@ -1311,7 +1315,7 @@ define({
 			
             scale = 10/screenWidthDistance;
             
-            var playerXPos = 0 + distanceToTrackPos(r.getDistance() - lapStartDist)
+            var playerXPos = 0 + distanceToTrackPos(r.getMetricDistance() - lapStartDist)
             
             var opponentType = game.getCurrentOpponentType()
 //            opponentType = 'dinosaur';

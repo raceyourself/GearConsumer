@@ -240,7 +240,10 @@ define({
 				unlockNotificationActive = false;
 				return;
 			}
-			
+			else if (sectionChanger) {
+				sectionChanger.nextSection(500);
+			}
+						
 //			if(warmingUp)
 //			{
 //				if(data.pageY > badBG.height)
@@ -250,9 +253,7 @@ define({
 //			    return;
 //			}
 			
-			if (sectionChanger) {
-				sectionChanger.nextSection(500);
-			}
+
 		}
         
         function isScrolling() {
