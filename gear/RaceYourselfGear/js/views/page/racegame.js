@@ -186,6 +186,8 @@ define({
 			
             loaded = false,
             loading = false,
+            waiting = false,
+            pendingAssets = 0;
 			
 
 			
@@ -1846,7 +1848,6 @@ define({
             canvas = document.getElementById('race-canvas');
             context = canvas.getContext('2d');
             
-            image.src = 'images/animation_runner_red.png';
         	//leave hrm in, still want it for side screen
             if (hrm.isAvailable()) {
                   hrm.start();
