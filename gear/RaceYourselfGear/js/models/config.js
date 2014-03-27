@@ -27,7 +27,7 @@ define({
                 warmupPeriod: 5*60,			//seconds
                 dinoUnlockDist: 20,			//km
                 catchupTime: 500,			//num ticks for zombies to catch up                
-                lapLength: 100  
+                lapLength: 100,  
                 elimUnlockDist: 50
             },
             config = {},
