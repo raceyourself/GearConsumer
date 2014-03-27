@@ -19,6 +19,7 @@ define({
             e = req.core.event,
             units = req.helpers.units,
             defaults = {
+        		version: 0,
                 hrSmoothing: 0,				// 0 = no smoothing, 1 = extreme smoothing
                 sprintDuration: 30, 		//seconds
                 recoverDuration: 30,		//seconds

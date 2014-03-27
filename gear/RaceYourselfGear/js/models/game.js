@@ -18,6 +18,7 @@ define({
             s = req.core.storage,
             games = {},
             defaults = {
+        		version: 1,
                 'yourself' : {
                     locked: true
                 },

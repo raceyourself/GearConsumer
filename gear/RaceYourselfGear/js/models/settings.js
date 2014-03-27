@@ -19,6 +19,7 @@ define({
             e = req.core.event,
             units = req.helpers.units,
             defaults = {
+        		version: 1,
                 unit: units.UNIT_METER,
                 distance: 5000,
                 time: 30,

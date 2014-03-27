@@ -146,6 +146,10 @@ img {
 	padding: 15px 0px;
 }
 
+.statsduo .stat {
+	height: 50%;
+}
+
 .stat-label {
 	margin-left: 50px;
 	width: 65px;
