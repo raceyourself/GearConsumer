@@ -192,7 +192,8 @@ define({
             loading = false,
             waiting = false,
             pendingAssets = 0,
-            showOpponentProgressBar = true;
+            showOpponentProgressBar = true,
+            eliminatedEndImage = null;
 			
 
 			
@@ -297,6 +298,8 @@ define({
 
         function onPageShow() {
         	console.log('racegame:pageshow');
+        	eliminatedEndImage.loop = false;
+        	eliminatedEndImage.reset();
         	gameOver = false;
             document.getElementById('eliminator-end').classList.toggle('hidden', true);
             document.getElementById('eliminator-highscore').classList.toggle('hidden', true);
@@ -305,6 +308,7 @@ define({
         		loadAssets();
         		return;
         	}
+        	
             visible = true;
             finished = false;
             sectionChanger = new SectionChanger(changer, {
@@ -718,10 +722,10 @@ define({
 				gameOver = true;
 				ppm = 0;
 				//show notification
-				setNotification(red, '#fff', 'Eliminated!', null, 3000);
-
+				//setNotification(red, '#fff', 'Eliminated!', null, 3000);
+				//eliminatedEndImage.draw(context, 0, 0, dt);
 				navigator.vibrate([100, 100, 100, 100, 100, 100, 100]);
-			
+				
 				setTimeout( function() {
 					if (numLaps <= settings.getEliminatorHighScore()) {
 						document.getElementById('eliminator-score-value').innerHTML = numLaps;
@@ -1861,6 +1865,10 @@ define({
             	
             }
             
+            if(gameOver) {
+            	console.log('about to draw eliminated');
+            	eliminatedEndImage.draw(context, 0, 0, dt);
+            }
             
             context.save();
             frames++;
@@ -1974,6 +1982,11 @@ define({
             runnerAnimations.running.next = runnerAnimations.sprinting;
             runnerAnimations.sprinting.previous = runnerAnimations.running;
             runnerAnimations.sprinting.next = null;
+            
+            loadImage('images/Game_Eliminator/animation_eliminated_text.png', function() {
+            	eliminatedEndImage = new Sprite(this, this.width/11, 1100);
+            	
+            })
             
             loadImage('images/animation_runner_green_still.png', function() {
                 runnerAnimations.idle.sprite = new Sprite(this, this.width, 1000);

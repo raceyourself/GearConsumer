@@ -50,8 +50,6 @@ define({
                 scrollbar: "bar"
             });
             
-            
-            //document.getElementById('dino-mode-btn').classList.toggle('locked-game', game.isLocked('dino'));
             lastRenderTime = Date.now();
             animate();
             

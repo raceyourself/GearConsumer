@@ -3,10 +3,7 @@
 #modify
 res/wgt/author-signature.xml
 res/wgt/css/raceyourself.css
-res/wgt/images/Game_Eliminator/image_tutorial_screen4.png
 res/wgt/index.html
-res/wgt/js/views/page/eliminatortutorial.js
-res/wgt/js/views/page/hrzgame.js
-res/wgt/js/views/page/racegame.js
-res/wgt/js/views/page/zombietutorial.js
+res/wgt/js/models/achievements.js
+res/wgt/js/views/page/racesummary.js
 res/wgt/signature1.xml

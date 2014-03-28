@@ -24,6 +24,7 @@ define({
             this.spritesheet = spritesheet;
             this.width = frameWidth;
             this.height = spritesheet.height;
+            this.loop = true;
             this.frames = spritesheet.width/this.width;
             if (this.frames !== ~~this.frames) console.error("Sprite " + spritesheet.src + " has a non-integer frame count!");
             this.setPeriod(animationPeriod);
@@ -40,20 +41,28 @@ define({
                 drawscaled: function drawscaled(context, x, y, dt, scale) {
                     this.time += dt;
                     if (this.time >= this.animationPeriod) {
-                        while (this.time > this.animationPeriod) this.time -= this.animationPeriod;
+                    	while (!!this.loop && this.time > this.animationPeriod) this.time -= this.animationPeriod;
                         if (!!this.endCallback) this.endCallback(this.time);
+                        this.endCallback = undefined;
                     }
                     var frame = ~~(this.time/this.frameDelay);
+                    if(!this.loop && this.time >= this.animationPeriod) {
+                    	frame = ~~((this.animationPeriod - 1)/this.frameDelay);
+                	} 
                     context.drawImage(this.spritesheet, frame*this.width, 0, this.width, this.spritesheet.height, x, y, this.width * scale, this.spritesheet.height * scale);
                 },
                 
                 draw: function draw(context, x, y, dt) {
                     this.time += dt;
                     if (this.time >= this.animationPeriod) {
-                        while (this.time > this.animationPeriod) this.time -= this.animationPeriod;
+                        while (!!this.loop && this.time > this.animationPeriod) this.time -= this.animationPeriod;
                         if (!!this.endCallback) this.endCallback(this.time);
+                        this.endCallback = undefined;
                     }
                     var frame = ~~(this.time/this.frameDelay);
+                    if(!this.loop && this.time >= this.animationPeriod) {
+                    	frame = ~~((this.animationPeriod - 1)/this.frameDelay);
+                	} 
                     
                     context.save();
                     context.translate(this.position.x, this.position.y);
