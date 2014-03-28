@@ -1,0 +1,46 @@
+
+<root>
+    <BasicInformation>
+        <EmailAddr>ben@raceyourself.com</EmailAddr>
+        <DeveloperType>Company</DeveloperType>
+        <GrantedPrivilege>Public</GrantedPrivilege>
+    </BasicInformation>
+    <AuthorInformation>
+        <Certificate>MIICkzCCAXsCAQAwTjEJMAcGA1UEBhMAMQkwBwYDVQQIEwAxCTAHBgNVBAcTADEJ&#xD;
+MAcGA1UEChMAMQkwBwYDVQQLEwAxFTATBgNVBAMTDFJhY2VZb3Vyc2VsZjCCASIw&#xD;
+DQYJKoZIhvcNAQEBBQADggEPADCCAQoCggEBANE8VGzJEOb9EYJchtKCQZO+b15o&#xD;
+moMp83s/sIkbxSNg4h7c+4r+El5Wi27MRd262nE1xQc2uhi8VLwuG87/EEK2IXv4&#xD;
+T91RPfCfLjJ1AgLbByMfmjFYKFnpJV2NawaVH7nBSf+ZJMCDJNdFLqqxaDr8XUQ1&#xD;
+nnUIsSHMWoGedxy6TMWh0yQrsF4S9srzNChp8kAFwTZginOrfwdm1QluZXQW5MjN&#xD;
+5E1YsN70hUpGw2JIQahuOMoSFOlKW8111BYn01DCNMNcBtDMrK/4hv+nBms7Dzem&#xD;
+HILvTVVxcqV9oNxXnd0vO7mSEdz4Uj7FYVON7d1G4nS+FqftT3bOS5tlz50CAwEA&#xD;
+AaAAMA0GCSqGSIb3DQEBBQUAA4IBAQAlFF+snDl1QDJ5nMBOeBp83vRgQ07Bb8V2&#xD;
+9Yff2Q79odAwlCrnn4iA5J32jMfW2dlp3Sq1gt3/U6U6IAQyfEhJQ2xfhCXRazHI&#xD;
+IyZpSkoRrcJLkdczeRuZ/WPU10HcUGvl88elHy+ydh4TqIb7pmarhCXXwxQ86f4G&#xD;
+TATFjL4E36VGnGFSRnaHuEMWPOUdZlU6kymyEjQsh1Q/WjSdZfiDjvS+5TIwU08p&#xD;
+PypUuhvwmo01FozRIiMToQQN9gSnIqA0ObsPANGi3yJJIyg44N2ONq0TOG1Qh/it&#xD;
+EDiBmt8lpzZgBsWg/LpiXPy43fMbe/ojvMhM97PftT1l8uDQIK2W&#xD;
+</Certificate>
+    </AuthorInformation>
+    <TestDistributorInformation>
+        <TestDevices>
+            <TestDevice>SM-R380</TestDevice>
+        </TestDevices>
+        <Certificate>MIICqTCCAZECAQAwZDEJMAcGA1UEBhMAMQkwBwYDVQQIEwAxCTAHBgNVBAcTADEO&#xD;
+MAwGA1UEChMFVGl6ZW4xDjAMBgNVBAsTBVRpemVuMSEwHwYDVQQDExhSYWNlWW91&#xD;
+cnNlbGYtZGlzdHJpYnV0b3IwggEiMA0GCSqGSIb3DQEBAQUAA4IBDwAwggEKAoIB&#xD;
+AQCxC2JCAdq+Le5+J+1g/Oe2br3vjCaILHssc2climIug6OBmlf9xzGYBsPIzebt&#xD;
+ylmGgzmbpAFIHOT1kTXQizjNZnn069qivqGzrtukPcgQGMFl4yJcnHs526UIoiM5&#xD;
+dB8IEl1K9URkJDYJ8tBcMzBYkYYiH+M4pITBOCe2G3HBhNnHVJXWk+LBUswoUKQb&#xD;
+ncYQRsKyVWwygEEJsm4VmsWyhihXltjhXDlFvKvMQ1o4xChay5walm0JuE3dGOzQ&#xD;
+HdUZEBgNgAvnYovdTzH29RKEH+jcjs3MdQBipfkskK88Rnk7Eh8x+T92JHcQThz3&#xD;
+uAgbbTaz3M3k7jK/ZZCLaA/5AgMBAAGgADANBgkqhkiG9w0BAQUFAAOCAQEAObXR&#xD;
+VmskrZmrCvCBG7LpGINOGm0DoYOT7vBm/gsHWNInf6Ib1tn89JYwR54E4dLdb5dt&#xD;
+EZJMeETdzycMMuyd6BNzSq68RP77fCRIeWe4v6TJa6/4c+XNBANzKxQYFReaQ8D3&#xD;
+w36WIxo5ksgd8AKPg/43Lh64GMkQNXT8tpxjz3721FEr07ZZtj+2aAgm+u0nf/+M&#xD;
+5Ns3QD6fxBnI0R8JtBWm7YOJAILiXlHfLEGOnW5iyKMJvdYKy/7Eey3u7XVDah7t&#xD;
+8RniaTf8rTFM1DFCswzOXLYLN046lMWcLvYcwLCSYSVsWaNCgoH8A7v47ow5vQFX&#xD;
+ebmuW2enl0gL2a2d9A==&#xD;
+</Certificate>
+    </TestDistributorInformation>
+</root>
