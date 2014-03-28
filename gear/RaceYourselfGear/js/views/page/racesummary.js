@@ -38,18 +38,33 @@ define({
         }
 
         function onPageShow() {
-            sectionChanger = new SectionChanger(changer, {
-                circular: false,
-                orientation: "horizontal",
-                scrollbar: "bar"
-            });
-
             r = race.getOngoingRace();
             if (!r) {
                 var history = race.getRaceHistory();
                 if (history.length > 0) r = history[0];
             }
             
+            if (!!r) {
+            	// Build sections
+            	var as = r.getAchievements();
+                for (var key in as) {
+                	if (!!as[key].image) {
+                		var unlocksEl = document.getElementById('summary-unlocks');
+                    	unlocksEl.classList.toggle('hidden', false);
+                    	unlocksEl.style.backgroundImage = "url('images/" + as[key].image + "')";
+                    	// TODO: Multiple unlocks
+                    	break;
+                	}
+                }
+            }
+            
+            sectionChanger = new SectionChanger(changer, {
+            	items: 'section:not(.hidden)',
+                circular: false,
+                orientation: "horizontal",
+                scrollbar: "bar"
+            });
+
             e.listen('tizen.back', onBack);
             render();
         }
@@ -96,6 +111,7 @@ define({
         
         function onPageHide() {
             sectionChanger.destroy();
+        	document.getElementById('summary-unlocks').classList.toggle('hidden', true);
             e.die('tizen.back', onBack);
         }        
         

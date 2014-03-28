@@ -234,6 +234,7 @@ define({
                     description: 'Unlocked the Race Yourself Fitter mode by playing a game of Eliminator',
                     points: 0,
                     uses: 1,
+                    image: 'unlocks/ry_fitter_ingameunlock.png',
                     init: function() {
                         e.listen('race.end', function(event) {
                         	var race = event.detail;

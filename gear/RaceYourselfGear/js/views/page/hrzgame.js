@@ -85,8 +85,10 @@ define({
             dinoIdle = null,
             boulder = null,
             dinoGameImage = null,
-            elimGameImage = null,
-            boulderGameImage = null,
+            //elimGameImage = null,
+            //boulderGameImage = null,
+            weightLossGameImage = null,
+            strengthGameImage = null,
             dinoUnlockImageFS = null,
             finishedImage = null,
             awardImage = null,
@@ -176,9 +178,6 @@ define({
             pendingAssets = 0,
             bgHeight = 246;
 
-			
-
-			
 
         function show() {
             gear.ui.changePage('#race-game');
@@ -268,15 +267,17 @@ define({
 			showUnlockNotification('dino', 5);
 		}
 		
-		function onUnlockBoulder()
-		{
-			showUnlockNotification('boulder', 5);
+//		function onUnlockBoulder()
+//		{
+//			showUnlockNotification('boulder', 5);
+//		}
+
+		function onUnlockWeightLoss() {
+			showUnlockNotification('WeightLoss', 5);
 		}
-
-
-		function onUnlockEliminator() 
-		{
-			showUnlockNotification('eliminator', 5);
+		
+		function onUnlockStrength() {
+			showUnlockNotification('Strength', 5);
 		}
 		
 		
@@ -317,8 +318,10 @@ define({
 			}
             
 			e.listen('game.unlock.dino', onUnlockDino);
-			e.listen('game.unlock.boulder', onUnlockBoulder);
-			e.listen('game.unlock.eliminator', onUnlockEliminator)
+			e.listen('game.unlock.WeightLoss', onUnlockWeightLoss);
+            e.listen('game.unlock.Strength', onUnlockStrength);
+			//e.listen('game.unlock.boulder', onUnlockBoulder);
+			//e.listen('game.unlock.eliminator', onUnlockEliminator)
 			e.listen('achievement.awarded', onAchievementAwarded);
 			page.addEventListener('click', onTapHandler);
             isDead = false;
@@ -431,8 +434,9 @@ define({
             clearInterval(zombieInterval);
             clearTimeout(bannerTimeout)
             e.die('game.unlock.dino', onUnlockDino);
-            e.die('game.unlock.boulder', onUnlockBoulder);
-            e.die('game.unlock.eliminator', onUnlockEliminator);
+            //e.die('game.unlock.boulder', onUnlockBoulder);
+            e.die('game.unlock.WeightLoss', onUnlockWeightLoss);
+            e.die('game.unlock.Strength', onUnlockStrength);
             e.die('achievement.awarded', onAchievementAwarded);
 			page.removeEventListener('click', onTapHandler);
         }        
@@ -1899,11 +1903,17 @@ define({
             		case 'dino':
             			dinoGameImage.draw(context, 0, 0, 0);
             			break;
-            		case 'eliminator':
-            			elimGameImage.draw(context, 0, 0, 0);
-            			break;
-					case 'boulder':
-						boulderGameImage.draw(context, 0, 0, 0);
+//            		case 'eliminator':
+//            			elimGameImage.draw(context, 0, 0, 0);
+//            			break;
+//					case 'boulder':
+//						boulderGameImage.draw(context, 0, 0, 0);
+//						break;
+					case 'WeightLoss':
+						weightLossGameImage.draw(context, 0, 0, 0);
+						break;
+					case 'Strength':
+						strengthGameImage.draw(context, 0, 0, 0);
 						break;
 					case 'finished':
 						finishedImage.draw(context, centreX - finishedImage.height/2, centreY - finishedImage.height/2, 0);
@@ -2169,14 +2179,24 @@ define({
 				dinoGameImage = new Sprite(this, this.width, 1000);
 			});			
 			
-			loadImage('images/Game_Eliminator/screen_menu_game_eliminator_unlocked.png', function() {
-				elimGameImage = new Sprite(this, this.width, 1000);
+//			loadImage('images/Game_Eliminator/screen_menu_game_eliminator_unlocked.png', function() {
+//				elimGameImage = new Sprite(this, this.width, 1000);
+//			});
+			
+			// Weight loss game image
+			loadImage('images/Game_Eliminator/screen_RY_Slimmer_unlocked.png', function() {
+				weightLossGameImage = new Sprite(this, this.width, 1000);
+			});
+			
+			// Strength game image
+			loadImage('images/Game_Eliminator/screen_RY_Faster_unlocked.png', function() {
+				strengthGameImage = new Sprite(this, this.width, 1000);
 			});
 			
 			//boulder game image
-			loadImage('images/image_boulder_achievement_screen.png', function() {
-				boulderGameImage = new Sprite(this, this.width, 1000);
-			});
+//			loadImage('images/image_boulder_achievement_screen.png', function() {
+//				boulderGameImage = new Sprite(this, this.width, 1000);
+//			});
 			
 			//finished image
 			loadImage('images/image_ending flag with effect.png', function() {
