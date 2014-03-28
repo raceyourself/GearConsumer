@@ -190,7 +190,7 @@ define({
             loading = false,
             waiting = false,
             pendingAssets = 0,
-            showOpponentProgressBar = false;
+            showOpponentProgressBar = true;
 			
 
 			
@@ -654,7 +654,7 @@ define({
 			}
 			
 			//check if we're actually moving
-			if(r.getSpeed() > 1)
+			if(r.getMetricSpeed() > 1)
 			{
 				timeSpeedLastNonZero = Date.now();
 			}
@@ -809,7 +809,10 @@ define({
             
             if (lastDistanceAwarded < r.getMetricDistance()) {
                 var distance = r.getMetricDistance();
-                r.addPoints((distance - lastDistanceAwarded)*ppm);
+                if(!gameOver)
+                {
+					r.addPoints((distance - lastDistanceAwarded)*ppm);
+                }
                 lastDistanceAwarded = distance;
             }
             
@@ -834,7 +837,7 @@ define({
 ////            if(!isDead)
 ////            {
                 //Update player anim
-                if(r.getSpeed() <= 1)
+                if(r.getMetricSpeed() <= 1)
                 {
                     runner.sprite.onEnd(function(dt) {
                         runner.sprite.onEnd(null);
@@ -1166,14 +1169,15 @@ define({
 							var bestGhostDist = ghostRunners[0];
 							var fillProportion_Ghost = bestGhostDist.lapDistance / TRACK_LENGTH;
 							var fillDistGhost = fillProportion_Ghost * (canvas.width - 2*greenInset);
-							context.fillStyle = '#fff';
-							var lineThickness = 0.5;
+							context.fillStyle = red;
+							var lineThickness = 0;
 							var h = barHeight + barThickness - lineThickness/2;
 							context.beginPath();
 							context.rect( greenInset + lineThickness, barHeight + barThickness -opponentBarThickness + lineThickness, fillDistGhost - 2*lineThickness, opponentBarThickness - 2*lineThickness);
 							context.strokeStyle = grey;
 							context.lineWidth = lineThickness;
-							context.stroke()
+//							context.stroke()
+							context.fill();
 						
 						}
 					}
@@ -1320,7 +1324,7 @@ define({
 				//target
 				context.textAlign = 'right';
 ////				context.fillText(Number(targetdist).toFixed(1) + u, canvas.width - progressBarInset, progressBarHeight);
-				var heightOffset = showOpponentProgressBar? -5 : 0;
+				var heightOffset = showOpponentProgressBar? 5 : 0;
 				context.fillText(config.getLapLength()+'m', canvas.width - progressBarInset, progressBarHeight - heightOffset);
 
 			}

@@ -1006,7 +1006,7 @@ define({
             if(!isDead)
             {
                 //Update player anim
-                if(r.getSpeed() <= 0.1)
+                if(r.getMetricSpeed() <= 1)
                 {
                     runner.sprite.onEnd(function(dt) {
                         runner.sprite.onEnd(null);
@@ -1529,8 +1529,8 @@ define({
 							if(!isDead || zombiePos < playerXPos - 10)
 							{	
 								// if we're dead don't draw them as they join the bundle
-								var pace = r.getSpeed();
-								if(pace > 0 || zombiesCatchingUp)
+								var pace = r.getMetricSpeed();
+								if(pace > 1 || zombiesCatchingUp)
 								{
 									zombie.drawscaled(context, zombiePos, canvas.height - zombie.height * scale - trackHeight + y_offset, dt, scale);
 								}
@@ -1551,8 +1551,8 @@ define({
 						var dinoPos = 0 + distanceToTrackPos(zDistance);
 						var dinoScale = scale * 1;
 						var dinoSprite;
-						var pace = r.getSpeed();
-						if(pace > 0 || zombiesCatchingUp)
+						var pace = r.getMetricSpeed();
+						if(pace > 1 || zombiesCatchingUp)
 						{
 							if(zombieOffset > -5)
 							{ dinoSprite = dinoBiting; }
