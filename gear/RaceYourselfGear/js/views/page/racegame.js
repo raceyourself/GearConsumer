@@ -320,8 +320,8 @@ define({
             if (r === null || !r.isRunning() || r.hasStopped()) {
                 r = race.newRace();
                 lastDistanceAwarded = 0;
-                r.data.hr_zones = true;
-                r.data.time_in_zone = 0;
+//                r.data.hr_zones = true;
+//                r.data.time_in_zone = 0;
                 e.listen('pedometer.step', step);
 ////                e.listen('hrm.change', onHeartRateChange);
 
