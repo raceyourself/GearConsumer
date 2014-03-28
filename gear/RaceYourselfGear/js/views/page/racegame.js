@@ -521,7 +521,7 @@ define({
 			e.fire('race.end', r);
 			r.stop();
 
-            e.fire('newmain.show');
+		    e.fire('racesummary.show');
         }
         
         function startCountdown() {
