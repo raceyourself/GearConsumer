@@ -51,7 +51,7 @@ define({
                 	if (!!as[key].image) {
                 		var unlocksEl = document.getElementById('summary-unlocks');
                     	unlocksEl.classList.toggle('hidden', false);
-                    	unlocksEl.style.backgroundImage = 'url(../images/' + as[key].image + ')';
+                    	unlocksEl.style.backgroundImage = "url('images/" + as[key].image + "')";
                     	// TODO: Multiple unlocks
                     	break;
                 	}
