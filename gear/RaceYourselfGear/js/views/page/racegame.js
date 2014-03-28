@@ -685,6 +685,29 @@ define({
 					}
 				}
 			}
+			
+////        if(!isDead)
+////        {
+            //Update player anim
+            if(r.getMetricSpeed() <= 1)
+            {
+                runner.sprite.onEnd(function(dt) {
+                    runner.sprite.onEnd(null);
+                    if (showWarningHigh) runner = runnerAnimations.idle_red;
+                    else runner = runnerAnimations.idle;
+                    runner.sprite.time = dt;
+                });
+            }
+            else
+            {
+                runner.sprite.onEnd(function(dt) {
+                    runner.sprite.onEnd(null);
+                    if (showWarningHigh) runner = runnerAnimations.running_red;
+                    else runner = runnerAnimations.running;
+                    runner.sprite.time = dt;
+                });
+            }
+////        }        
 		}
 
 
@@ -848,29 +871,6 @@ define({
                 });
             }
             */
-            
-////            if(!isDead)
-////            {
-                //Update player anim
-                if(r.getMetricSpeed() <= 1)
-                {
-                    runner.sprite.onEnd(function(dt) {
-                        runner.sprite.onEnd(null);
-                        if (showWarningHigh) runner = runnerAnimations.idle_red;
-                        else runner = runnerAnimations.idle;
-                        runner.sprite.time = dt;
-                    });
-                }
-                else
-                {
-                    runner.sprite.onEnd(function(dt) {
-                        runner.sprite.onEnd(null);
-                        if (showWarningHigh) runner = runnerAnimations.running_red;
-                        else runner = runnerAnimations.running;
-                        runner.sprite.time = dt;
-                    });
-                }
-////            }
             
             requestRender();
         }
