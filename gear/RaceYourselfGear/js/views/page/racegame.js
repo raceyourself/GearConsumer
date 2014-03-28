@@ -82,7 +82,9 @@ define({
             dino = null,
             boulder = null,
             dinoGameImage = null,
-            boulderGameImage = null,
+//            boulderGameImage = null,
+            weightLossGameImage = null,
+            strengthGameImage = null,
             dinoUnlockImageFS = null,
             finishedImage = null,
             numZombies = 0,
@@ -273,14 +275,22 @@ define({
             return false;
         }
         
-		function onUnlockDino()
+        function onUnlockDino()
 		{
 			showUnlockNotification('dino', 5);
 		}
 		
-		function onUnlockBoulder()
-		{
-			showUnlockNotification('boulder', 5);
+//		function onUnlockBoulder()
+//		{
+//			showUnlockNotification('boulder', 5);
+//		}
+
+		function onUnlockWeightLoss() {
+			showUnlockNotification('WeightLoss', 5);
+		}
+		
+		function onUnlockStrength() {
+			showUnlockNotification('Strength', 5);
 		}
 
 /// ---> /in common with zombie game
@@ -327,7 +337,9 @@ define({
 			}
             
 			e.listen('game.unlock.dino', onUnlockDino);
-			e.listen('game.unlock.boulder', onUnlockBoulder);
+			e.listen('game.unlock.WeightLoss', onUnlockWeightLoss);
+            e.listen('game.unlock.Strength', onUnlockStrength);
+            
 			e.listen('achievement.awarded', onAchievementAwarded);
 			page.addEventListener('click', onTapHandler);
 ////            isDead = false;
@@ -443,6 +455,7 @@ define({
         	console.log('racegame:pagehide');
             e.die('tizen.back', onBack);
             e.die('motion.wristup', onWristUp);
+            
             visible = false;
             document.getElementById('eliminator-end').classList.toggle('hidden', true);
             document.getElementById('eliminator-highscore').classList.toggle('hidden', true);
@@ -475,7 +488,10 @@ define({
 
             clearTimeout(bannerTimeout)
             e.die('game.unlock.dino', onUnlockDino);
-            e.die('game.unlock.boulder', onUnlockBoulder);
+//            e.die('game.unlock.boulder', onUnlockBoulder);
+            e.die('game.unlock.WeightLoss', onUnlockWeightLoss);
+            e.die('game.unlock.Strength', onUnlockStrength);
+            
             e.die('achievement.awarded', onAchievementAwarded);
 			page.removeEventListener('click', onTapHandler);
         }        
@@ -1812,8 +1828,14 @@ define({
             		case 'dino':
             			dinoGameImage.draw(context, 0, 0, 0);
             			break;
-					case 'boulder':
-						boulderGameImage.draw(context, 0, 0, 0);
+//					case 'boulder':
+//						boulderGameImage.draw(context, 0, 0, 0);
+//						break;
+					case 'WeightLoss':
+						weightLossGameImage.draw(context, 0, 0, 0);
+						break;
+					case 'Strength':
+						strengthGameImage.draw(context, 0, 0, 0);
 						break;
 					case 'finished':
 						finishedImage.draw(context, centreX - finishedImage.height/2, centreY - finishedImage.height/2, 0);
@@ -2009,8 +2031,18 @@ define({
 			});
 			
 			//boulder game image
-			loadImage('images/image_boulder_achievement_screen.png', function() {
-				boulderGameImage = new Sprite(this, this.width, 1000);
+//			loadImage('images/image_boulder_achievement_screen.png', function() {
+//				boulderGameImage = new Sprite(this, this.width, 1000);
+//			});
+			
+			// Weight loss game image
+			loadImage('images/Game_Eliminator/screen_RY_Slimmer_unlocked.png', function() {
+				weightLossGameImage = new Sprite(this, this.width, 1000);
+			});
+			
+			// Strength game image
+			loadImage('images/Game_Eliminator/screen_RY_Faster_unlocked.png', function() {
+				strengthGameImage = new Sprite(this, this.width, 1000);
 			});
 			
 			//finished image
