@@ -20,6 +20,14 @@
 	text-align: center;
 }
 
+.lapnumber {
+	bottom: 100px;
+	right: 0px;
+	font-size: 70px;
+	position: relative;
+	display: block;
+}
+
 .empty {
 	float: right;
 	top: 5px;

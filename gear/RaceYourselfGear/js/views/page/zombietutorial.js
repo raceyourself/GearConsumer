@@ -53,9 +53,17 @@ define({
         	 page.addEventListener('pageshow', onPageShow);
              page.addEventListener('pagehide', onPageHide);
              
+             page.addEventListener('click', onClick);
+             
              document.getElementById('start-race-btn').addEventListener('click', onZombieEndClick);
              
              document.getElementById('i-tutorial-btn').addEventListener('click', onIBtnClick);
+        }
+        
+        function onClick() {
+        	if(isScrolling()) return;
+        	if(sectionChanger.getActiveSectionIndex() < 4)
+        	sectionChanger.nextSection(500);
         }
 
         function onIBtnClick() {

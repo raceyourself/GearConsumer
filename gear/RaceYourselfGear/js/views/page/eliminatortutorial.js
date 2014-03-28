@@ -25,6 +25,9 @@ define({
          	game = req.models.game,
          	settings = req.models.settings,
             changer,
+            currentLap = 0,
+            lapInterval = null,
+            lapNumbers = [1, 2, 3, 4, 5, 10, 20, 50, 100, 200],
             sectionChanger;
 
         function show() {
@@ -38,6 +41,21 @@ define({
                 scrollbar: "bar"
             });
             
+            currentLap = 0;
+            
+            var lapTextEl = document.getElementById('lap-number');
+            
+            lapInterval = setInterval(function() {
+	           	lapTextEl.innerHTML = lapNumbers[currentLap];
+	           	
+	           	currentLap ++;
+	           	
+	            if(currentLap > lapNumbers.length -1) {
+	            	currentLap = 0;
+	            }	           	
+	           	
+            }, 750);
+            
             e.listen('tizen.back', onBack);
         }
         
@@ -47,6 +65,7 @@ define({
         
         function onPageHide() {
             sectionChanger.destroy();
+            clearInterval(lapInterval);
             e.die('tizen.back', onBack);
         }        
         
@@ -54,9 +73,19 @@ define({
         	 page.addEventListener('pageshow', onPageShow);
              page.addEventListener('pagehide', onPageHide);
              
+             page.addEventListener('click', onClick);
+             
+             
+             
              document.getElementById('start-elim-race-btn').addEventListener('click', onEliminatorEndClick);
         }
 
+        function onClick() {
+        	if(isScrolling()) return;
+        	if(sectionChanger.getActiveSectionIndex() < 4)
+        	sectionChanger.nextSection(500);
+        }
+        
         function onEliminatorEndClick() {
             if (isScrolling()) return;
         	settings.setEliminatorTutorial(true);
