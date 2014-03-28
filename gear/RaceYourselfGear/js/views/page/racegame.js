@@ -421,7 +421,7 @@ define({
 			race.getOngoingRace().start();
 ////            startZombies();
 			lastRender = Date.now();
-			
+			ppm = 5;
 			
 			timeCurrentLapStarted = Date.now();
 			
@@ -494,6 +494,7 @@ define({
             document.getElementById('eliminator-end').classList.toggle('hidden', true);
             document.getElementById('eliminator-highscore').classList.toggle('hidden', true);
             gameOver = false;
+            ppm = 5;
             playerIsAhead = true;
             timeAheadnessSwitched = Date.now();
         	restart();
@@ -676,6 +677,7 @@ define({
 			if(!gameOver)
 			{
 				gameOver = true;
+				ppm = 0;
 				//show notification
 				setNotification(red, '#fff', 'Eliminated!', null, 3000);
 
@@ -809,11 +811,8 @@ define({
             
             if (lastDistanceAwarded < r.getMetricDistance()) {
                 var distance = r.getMetricDistance();
-                if(!gameOver)
-                {
-					r.addPoints((distance - lastDistanceAwarded)*ppm);
-                }
-                lastDistanceAwarded = distance;
+				r.addPoints((distance - lastDistanceAwarded)*ppm);
+				lastDistanceAwarded = distance;
             }
             
             
