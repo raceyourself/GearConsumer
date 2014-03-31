@@ -125,7 +125,9 @@
     		<div>
     			<section>  				
     				<a href="#" id="elim-mode-btn">
-    					<img src="images/Game_Eliminator/screen_menu_game_eliminator_race_now.png" class="unlocked-img" />
+    					<canvas id="elim-canvas" width="320" height="320">
+    					
+    					</canvas>
     				</a>
     			</section>
     			
@@ -584,15 +586,15 @@
     
     <div class="ui-page" id="lockedgame">
         <header class="ui-header" data-position="fixed">
-            <h2 id="lockedgame-title" class="ui-title"></h2>
+            <h2 id="lockedgame-title" class="ui-title">Game Locked</h2>
         </header>
-        <section class="ui-content" style="padding-bottom: 70px">
-	        <div id="lockedgame-content" class="text-center">
+        <section class="ui-content">
+	        <div id="locked-desc" class="center aboutage-format">
 	        </div>
-        </section>    	
-        <div class="footer footer-gray">
-        	<p class="text-center"><a href="#games" id="purchasegame">Purchase</a></p>
-        </div>
+        </section> 
+        <footer class="ui-footer center aboutage-format" data-position="fixed">
+        	Tap to go back
+        </footer>
     </div>
     
     <div class="ui-page" id="no-bluetooth">

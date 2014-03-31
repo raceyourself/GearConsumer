@@ -30,6 +30,7 @@ define({
         'models/sprite',
         'models/sapRaceYourself',
         'views/page/pregame',
+        'views/page/lockedgame',
         'views/page/no-bluetooth',
         'views/page/trainingtype',
         'views/page/opponentselect',
@@ -48,9 +49,9 @@ define({
          	settings = req.models.settings,
          	provider = req.models.sapRaceYourself,
             changer,
+            lastRenderTime,
             fitterContext,
             fitterCanvas,
-            lastRenderTime,
             fitterLockedSprite,
             fitterUnlockedSprite,
             slimmerContext,
@@ -61,6 +62,9 @@ define({
             fasterCanvas,
             fasterLockedSprite,
             fasterUnlockedSprite,
+            elimContext,
+            elimCanvas,
+            elimGameSprite,
             raf,
             sectionChanger;
 
@@ -81,14 +85,14 @@ define({
             lastRenderTime = Date.now();
             animate();
             
-            if(settings.getFirstTimeSelect()) {
+//            if(settings.getFirstTimeSelect()) {
             	setTimeout(function() {
             		sectionChanger.setActiveSection(0, 1000);
             	}, 1);
-            	settings.setFirstTimeSelect(false);
-            } else {
-            	sectionChanger.setActiveSection(0, 0);
-            }
+//            	settings.setFirstTimeSelect(false);
+//            } else {
+//            	sectionChanger.setActiveSection(0, 0);
+//            }
         }
         
         function animate(time) {
@@ -121,6 +125,8 @@ define({
         		//fasterContext.clearRect(0, 0, fasterCanvas.width, fasterCanvas.height);
         		fasterUnlockedSprite.draw(fasterContext, fasterCanvas.width / 2 - fasterUnlockedSprite.width / 2, fasterCanvas.height / 2 - fasterUnlockedSprite.height / 2, dt);
         	}
+        	
+        	elimGameSprite.draw(elimContext, elimCanvas.width / 2 - elimGameSprite.width / 2, elimCanvas.height / 2 - elimGameSprite.height / 2, dt);
 
         }
         
@@ -164,11 +170,18 @@ define({
          	fasterCanvas = document.getElementById('faster-canvas');
          	fasterContext = fasterCanvas.getContext('2d');
          	
+         	elimCanvas = document.getElementById('elim-canvas');
+         	elimContext = elimCanvas.getContext('2d');
+         	
+         	loadImage('images/animation_RY_Eliminator_game_tile2.png', function() {
+         		elimGameSprite = new Sprite(this, this.width/6, 400);
+         	});
+         	
          	loadImage('images/New Games/ry_slimmer_locked.png', function() {
 				slimmerLockedSprite = new Sprite(this, this.width, 1000);
 			});
          	
-         	loadImage('images/animation_RY_Slimmer_game_tile.png', function() {
+         	loadImage('images/animation_RY_Slimmer_game_tile2.png', function() {
 				slimmerUnlockedSprite = new Sprite(this, this.width/6, 600);
 			});
          	
@@ -176,7 +189,7 @@ define({
 				fitterLockedSprite = new Sprite(this, this.width, 1000);
 			});
          	
-         	loadImage('images/animation_RY_Fitter_game_tile.png', function() {
+         	loadImage('images/animation_RY_Fitter_game_tile2.png', function() {
 				fitterUnlockedSprite = new Sprite(this, this.width/6, 600);
 			});
          	
@@ -184,7 +197,7 @@ define({
          		fasterLockedSprite = new Sprite(this, this.width, 1000);
          	});
          	
-         	loadImage('images/animation_RY_Faster_game_tile.png', function() {
+         	loadImage('images/animation_RY_Faster_game_tile2.png', function() {
          		fasterUnlockedSprite = new Sprite(this, this.width / 6, 600);
          	});
          	 
@@ -199,17 +212,26 @@ define({
         	if(isScrolling()) return;
         	switch(this.id) {
         	case 'fitness-mode-btn':
-        		if (game.isLocked('Endurance')) return;
+        		if (game.isLocked('Endurance')) {
+        			e.fire('lockedgame.show', 'Endurance');
+        			return;
+        		} 
         		race.setGoal('Endurance');
         		break;
         		
         	case 'weight-mode-btn':
-        		if (game.isLocked('WeightLoss')) return;
+        		if (game.isLocked('WeightLoss')) {
+        			e.fire('lockedgame.show', 'WeightLoss');
+        			return;
+        		} 
         		race.setGoal('WeightLoss');
         		break;
         		
         	case 'strength-mode-btn':
-        		if (game.isLocked('Strength')) return;
+        		if (game.isLocked('Strength')) {
+        			e.fire('lockedgame.show', 'Strength');
+        			return;
+        		}
         		race.setGoal('Strength');
         		break;
         		

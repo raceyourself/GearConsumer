@@ -23,26 +23,30 @@ define({
     name: 'views/page/lockedgame',
     requires: [
         'core/event',
-        'models/game'
+        'models/game',
+        'models/achievements'
     ],
     def: function viewsPageLockedGame(req) {
         'use strict';
 
         var e = req.core.event,
             page = null,
+            achievements = req.models.achievements,
             game = req.models.game;
 
-        function show() {
+        function show(event) {
             gear.ui.changePage('#lockedgame');
+            
+            var gameName = event.detail;
+            
+            var achievement = achievements.getAchievements()[gameName];
+          
+            document.getElementById('locked-desc').innerHTML = achievement.description;
         }
 
         function onPageShow() {
             e.listen('tizen.back', onBack);
-            var headerEl = document.getElementById('lockedgame-title'),
-                contentEl = document.getElementById('lockedgame-content');
             
-            headerEl.innerHTML = game.getTitle();
-            contentEl.innerHTML = '<img src="' + game.getImage() + '"/><br/>' + game.getDescription();
         }
         
         function onPageHide() {
@@ -53,17 +57,11 @@ define({
             history.back();
         }
         
-        function onPurchaseGameClick() {
-            game.unlock();
-            console.warn('Game unlocked')
-        }
-        
         function bindEvents() {
-            var purchaseEl = document.getElementById('purchasegame');
-            
             page.addEventListener('pageshow', onPageShow);
             page.addEventListener('pagehide', onPageHide);
-            purchaseEl.addEventListener('click', onPurchaseGameClick);
+            
+            page.addEventListener('click', onBack);
         }
 
         function init() {

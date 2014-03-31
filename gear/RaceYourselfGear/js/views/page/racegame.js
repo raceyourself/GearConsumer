@@ -191,6 +191,7 @@ define({
             timeCurrentLapStarted = 0,
             numLaps = 0,
 			ghostRunners = [],
+			redGhost,
 			tickInterval = null,
 			ghostImage = null,
 			lastTickTime = null,
@@ -1485,7 +1486,12 @@ define({
 			for(var i=0; i<ghostRunners.length; i++)
         	{
         		var ghost = ghostRunners[i];
-        		ghost.drawscaled(context, distanceToTrackPos(ghost.lapDistance), canvas.height - playerOffset, dt, scale);
+        		if(i==0) {
+        			redGhost.drawscaled(context, distanceToTrackPos(ghost.lapDistance), canvas.height - playerOffset, dt, scale);
+        		} else {
+        			ghost.drawscaled(context, distanceToTrackPos(ghost.lapDistance), canvas.height - playerOffset, dt, scale);
+        		}
+        		
         		additionalAlpha *= 0.7;
 				context.globalAlpha = minGhostAlpha + additionalAlpha;
 
@@ -2025,6 +2031,7 @@ define({
             loadImage('images/animation_runner_red.png', function() {
                 runnerAnimations.running_red.sprite = new Sprite(this, this.width / 6, 500);
                 runnerAnimations.sprinting_red.sprite = new Sprite(this, this.width / 6, 500);
+                redGhost = new Sprite(this, this.width/6, 500);
             });
             
             loadImage('images/animation_runner_white.png', function() {

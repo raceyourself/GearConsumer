@@ -107,6 +107,8 @@ define({
         function onPageHide() {
             e.die('tizen.back', onBack);
             
+            cancelAnimationFrame(raf);
+            
             sectionChanger.destroy();
         }   
         
