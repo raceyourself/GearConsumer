@@ -27,6 +27,7 @@ define({
         'models/game',
         'models/settings',
         'models/sap',
+        'models/sprite',
         'models/sapRaceYourself',
         'views/page/pregame',
         'views/page/no-bluetooth',
@@ -42,18 +43,31 @@ define({
          	page = null,
          	game = req.models.game,
          	race = req.models.race,
+         	Sprite = req.models.sprite.Sprite,
          	sap = req.models.sap,
          	settings = req.models.settings,
          	provider = req.models.sapRaceYourself,
             changer,
+            fitterContext,
+            fitterCanvas,
+            lastRenderTime,
+            fitterLockedSprite,
+            fitterUnlockedSprite,
+            slimmerContext,
+            slimmerCanvas,
+            slimmerLockedSprite,
+            slimmerUnlockedSprite,
+            fasterContext,
+            fasterCanvas,
+            fasterLockedSprite,
+            fasterUnlockedSprite,
+            raf,
             sectionChanger;
 
         function show() {
             gear.ui.changePage('#runselect');
         }
         
-        
-
         function onPageShow() {
             sectionChanger = new SectionChanger(changer, {
                 circular: false,
@@ -64,9 +78,8 @@ define({
             e.listen('tizen.back', onBack);
             sectionChanger.setActiveSection(3, 0);
 
-            document.getElementById('fitness-mode-btn').classList.toggle('locked-game', game.isLocked('Endurance'));
-            document.getElementById('weight-mode-btn').classList.toggle('locked-game', game.isLocked('WeightLoss'));
-            document.getElementById('strength-mode-btn').classList.toggle('locked-game', game.isLocked('Strength'));
+            lastRenderTime = Date.now();
+            animate();
             
             if(settings.getFirstTimeSelect()) {
             	setTimeout(function() {
@@ -76,6 +89,47 @@ define({
             } else {
             	sectionChanger.setActiveSection(0, 0);
             }
+        }
+        
+        function animate(time) {
+            raf = requestAnimationFrame(animate);
+            render();
+        }
+        
+        function render() {
+        	fitterContext.clearRect(0, 0, fitterCanvas.width, fitterCanvas.height);
+        	var dt = Date.now() - lastRenderTime;
+        	lastRenderTime = Date.now();
+        	
+        	if(game.isLocked('Endurance')) {
+        		fitterLockedSprite.draw(fitterContext, fitterCanvas.width / 2 - fitterLockedSprite.width /2, fitterCanvas.height /2 - fitterLockedSprite.height /2, dt);
+        	} else {
+        		fitterUnlockedSprite.draw(fitterContext, fitterCanvas.width / 2 - fitterUnlockedSprite.width /2, fitterCanvas.height /2 - fitterUnlockedSprite.height /2, dt);
+        	}
+        	
+        	if(game.isLocked('WeightLoss')) {
+        		slimmerLockedSprite.draw(slimmerContext, slimmerCanvas.width / 2 - slimmerLockedSprite.width /2, slimmerCanvas.height /2 - slimmerLockedSprite.height /2, dt);
+        	} else {
+        		slimmerUnlockedSprite.draw(slimmerContext, slimmerCanvas.width / 2 - slimmerUnlockedSprite.width /2, slimmerCanvas.height /2 - slimmerUnlockedSprite.height /2, dt);
+        	}
+
+        	if(game.isLocked('Strength')) {
+        		fasterLockedSprite.draw(fasterContext, fasterCanvas.width / 2 - fasterLockedSprite.width / 2, fasterCanvas.height / 2 - fasterLockedSprite.height / 2, dt);
+        	} else {
+        		fasterUnlockedSprite.draw(fasterContext, fasterCanvas.width / 2 - fasterUnlockedSprite.width / 2, fasterCanvas.height / 2 - fasterUnlockedSprite.height / 2, dt);
+        	}
+
+        }
+        
+        function loadImage(url, onload) {
+        	var image = new Image();
+        	image.onerror = function() {
+        		throw 'could not load' + this.src;      	
+        	}
+        	image.onload = function() {
+        		onload.call(this);
+        	};
+        	image.src = url;
         }
         
         function onPageHide() {
@@ -97,6 +151,39 @@ define({
         	 page.addEventListener('pageshow', onPageShow);
              page.addEventListener('pagehide', onPageHide);
              
+            fitterCanvas = document.getElementById('fitter-canvas');
+         	fitterContext = fitterCanvas.getContext('2d');
+             
+         	slimmerCanvas = document.getElementById('slimmer-canvas');
+         	slimmerContext = slimmerCanvas.getContext('2d');
+         	
+         	fasterCanvas = document.getElementById('faster-canvas');
+         	fasterContext = fasterCanvas.getContext('2d');
+         	
+         	loadImage('images/New Games/ry_slimmer_locked.png', function() {
+				slimmerLockedSprite = new Sprite(this, this.width, 1000);
+			});
+         	
+         	loadImage('images/animation_RY_Slimmer_game_tile.png', function() {
+				slimmerUnlockedSprite = new Sprite(this, this.width/6, 600);
+			});
+         	
+         	loadImage('images/New Games/ry_fitter_locked.png', function() {
+				fitterLockedSprite = new Sprite(this, this.width, 1000);
+			});
+         	
+         	loadImage('images/animation_RY_Fitter_game_tile.png', function() {
+				fitterUnlockedSprite = new Sprite(this, this.width/6, 600);
+			});
+         	
+         	loadImage('images/New Games/ry_faster_locked.png', function() {
+         		fasterLockedSprite = new Sprite(this, this.width, 1000);
+         	});
+         	
+         	loadImage('images/animation_RY_Faster_game_tile.png', function() {
+         		fasterUnlockedSprite = new Sprite(this, this.width / 6, 600);
+         	});
+         	 
              moreGamesEl.addEventListener('click', onMoreGames);
              elimBtnEl.addEventListener('click', onElimBtnClick);
              fitnessBtnEl.addEventListener('click', onHRRaceClick);

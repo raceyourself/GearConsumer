@@ -310,6 +310,9 @@ define({
                 orientation: "horizontal",
                 scrollbar: "bar"                	
             });
+            
+            sectionChanger.setActiveSection(0, 0);
+            
             e.listen('tizen.back', onBack);
             e.listen('motion.wristup', onWristUp);
             document.getElementById('quit-confirmation').classList.toggle('hidden', true);
