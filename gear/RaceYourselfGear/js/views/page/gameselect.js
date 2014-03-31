@@ -86,7 +86,7 @@ define({
         function bindEvents() {
         	var zombieBtnEl = document.getElementById('zombie-mode-btn'),
         		dinoBtnEl = document.getElementById('dino-mode-btn'),
-        		moreGamesEl = document.getElementById('moregames'),
+        		moreGamesEl = document.getElementById('more-games-btn2'),
         		elimBtnEl = document.getElementById('eliminator-mode-btn');
         	
         	 page.addEventListener('pageshow', onPageShow);
@@ -141,7 +141,7 @@ define({
          
         function onMoreGames(event) {
             if (isScrolling()) return;
-            provider.sendWebLinkReq('http://www.raceyourself.com/');
+            provider.sendWebLinkReq('http://www.raceyourself.com/gear/#moregames');
         }
         
         function init() {

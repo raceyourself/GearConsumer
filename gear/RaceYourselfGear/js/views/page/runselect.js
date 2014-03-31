@@ -142,7 +142,7 @@ define({
         }
         
         function bindEvents() {
-        	var moreGamesEl = document.getElementById('moregames'),
+        	var moreGamesEl = document.getElementById('more-games-btn'),
         		elimBtnEl = document.getElementById('elim-mode-btn'),
         		fitnessBtnEl = document.getElementById('fitness-mode-btn'),
         		weightBtnEl = document.getElementById('weight-mode-btn'),
@@ -242,7 +242,7 @@ define({
          
         function onMoreGames(event) {
             if (isScrolling()) return;
-            provider.sendWebLinkReq('http://www.raceyourself.com/');
+            provider.sendWebLinkReq('http://www.raceyourself.com/gear/#moregames');
         }
         
         function init() {
