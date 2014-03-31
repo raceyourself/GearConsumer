@@ -2,8 +2,5 @@
 #add
 #modify
 res/wgt/author-signature.xml
-res/wgt/css/raceyourself.css
-res/wgt/index.html
-res/wgt/js/models/achievements.js
-res/wgt/js/views/page/racesummary.js
+res/wgt/js/views/page/runselect.js
 res/wgt/signature1.xml
