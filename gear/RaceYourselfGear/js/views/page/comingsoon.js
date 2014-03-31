@@ -20,36 +20,27 @@
  */
 
 define({
-    name: 'views/page/lockedgame',
+    name: 'views/page/comingsoon',
     requires: [
         'core/event',
-        'models/game',
-        'models/achievements',
-        'views/page/comingsoon'
+        'models/sapRaceYourself'
     ],
-    def: function viewsPageLockedGame(req) {
+    def: function viewsPageComingSoon(req) {
         'use strict';
 
         var e = req.core.event,
-            page = null,
-            achievements = req.models.achievements,
-            game = req.models.game;
+            provider = req.models.sapRaceYourself,
+            page = null;
 
-        function show(event) {
-            gear.ui.changePage('#lockedgame');
-            
-            var gameName = event.detail;
-            
-            var achievement = achievements.getAchievements()[gameName];
-          
-            document.getElementById('locked-desc').innerHTML = achievement.description;
+        function show() {
+            gear.ui.changePage('#comingsoon');            
         }
-
+        
         function onPageShow() {
             e.listen('tizen.back', onBack);
             
         }
-        
+
         function onPageHide() {
             e.die('tizen.back', onBack);
         }
@@ -57,29 +48,23 @@ define({
         function onBack() {
             history.back();
         }
-        
+
         function bindEvents() {
             page.addEventListener('pageshow', onPageShow);
             page.addEventListener('pagehide', onPageHide);
             
-            document.getElementById('quit-purchase-btn').addEventListener('click', onBack);
-            document.getElementById('buy-btn').addEventListener('click', onBuyClick);
-        }
-        
-        function onBuyClick() {
-        	e.fire('comingsoon.show');
-        	
+            page.addEventListener('click', onBack);
         }
 
         function init() {
-            page = document.getElementById('lockedgame');
+            page = document.getElementById('comingsoon');
             bindEvents();
         }
-
+        
         e.listeners({
-            'lockedgame.show': show
+            'comingsoon.show': show
         });
-
+        
         return {
             init: init
         };

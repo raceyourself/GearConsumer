@@ -47,7 +47,7 @@ define({
                 // Progress
                 'run' : {
                     title: 'First run',
-                    description: 'Completed a run',
+                    description: 'Complete a run',
                     points: 100,
                     uses: 1,
                     init: function() {
@@ -79,7 +79,7 @@ define({
                 }, */
                 'run_in_zone' : {
                     title: 'Trainer',
-                    description: 'Completed a run without leaving target heart rate zone',
+                    description: 'Complete a run without leaving the target heart rate zone',
                     points: 150,
                     uses: Infinity,
                     init: function() {
@@ -95,7 +95,7 @@ define({
                 },
                 'survived' : {
                     title: 'Survivor',
-                    description: 'Survived a run without getting caught by a pursuer',
+                    description: 'Survive a run without getting caught by a pursuer',
                     points: 50,
                     uses: Infinity,
                     init: function() {
@@ -112,7 +112,7 @@ define({
                 // Fitness
                 '1km_run' : {
                     title: '1k',
-                    description: 'Completed a 1km run',
+                    description: 'Complete a 1km run',
                     points: 100,
                     uses: 1,
                     init: function() {
@@ -128,7 +128,7 @@ define({
                 },
                 '3km_run' : {
                     title: '3k',
-                    description: 'Completed a 3km run',
+                    description: 'Complete a 3km run',
                     points: 150,
                     uses: 1,
                     init: function() {
@@ -144,7 +144,7 @@ define({
                 },
                 '5km_run' : {
                     title: '5k',
-                    description: 'Completed a 5km run',
+                    description: 'Complete a 5km run',
                     points: 250,
                     uses: 1,
                     init: function() {
@@ -160,7 +160,7 @@ define({
                 },
                 'half_marathon' : {
                     title: 'Half marathon',
-                    description: 'Completed a half marathon',
+                    description: 'Complete a half marathon',
                     points: 500,
                     uses: 1,
                     init: function() {
@@ -176,7 +176,7 @@ define({
                 },
                 'marathon' : {
                     title: 'Marathon',
-                    description: 'Completed a full marathon',
+                    description: 'Complete a full marathon',
                     points: 1000,
                     uses: 1,
                     init: function() {
@@ -246,7 +246,7 @@ define({
                 }, */
                 'Endurance' : {
                     title: 'Race Yourself Fitter',
-                    description: 'Unlocked the Race Yourself Fitter mode by playing a game of Eliminator',
+                    description: 'Unlock <b>Race Yourself Fitter</b> by playing one game of Eliminator',
                     points: 0,
                     uses: 1,
                     image: 'unlocks/ry_fitter_ingameunlock.png',
@@ -265,7 +265,7 @@ define({
                 },
                 'WeightLoss' : {
                     title: 'Race Yourself Slimmer',
-                    description: 'Unlocked the Race Yourself Slimmer mode by running 5km',
+                    description: 'Unlock <b>Race Yourself Slimmer</b> by running 5km',
                     points: 0,
                     uses: 1,
                     init: function() {
@@ -283,7 +283,7 @@ define({
                 },
                 'Strength' : {
                     title: 'Race Yourself Faster',
-                    description: 'Unlocked the Race Yourself Faster mode by running 10km',
+                    description: 'Unlock <b>Race Yourself Faster</b> by running 10km',
                     points: 0,
                     uses: 1,
                     init: function() {
@@ -302,7 +302,7 @@ define({
                 // Dedication
                 'thrice_weekly' : {
                     title: 'Addict',
-                    description: 'Ran three times within a week',
+                    description: 'Run three times within a week',
                     points: 1000,
                     uses: Infinity,
                     init: function() {
