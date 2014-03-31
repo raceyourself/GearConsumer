@@ -248,7 +248,9 @@ define({
 		function showUnlockNotification(game, time)
 		{
 			//vibrate
-			navigator.vibrate([10, 10, 10, 10, 10, 10, 10]);
+			if(settings.getVibrateActive()) {
+				navigator.vibrate([10, 10, 10, 10, 10, 10, 10]);
+			}
 			unlockNotification = game;
 			//TODO - have this only disappear 5s after user raises wrist
 			//unlockNotificationTimer = setTimeout(clearUnlockNotification, time*1000);
@@ -461,7 +463,9 @@ define({
         function onAchievementAwarded(data)
         {
         	setNotification( green, '#fff', 'Award Unlocked!', null, 3*1000);
-			navigator.vibrate([100, 50, 100, 50]);
+        	if(settings.getVibrateActive()) {
+        		navigator.vibrate([100, 50, 100, 50]);
+        	}
 			if(finished)
 			{
 				numAwardsAtFinish++;
@@ -739,7 +743,9 @@ define({
 				//show notification
 				//setNotification(red, '#fff', 'Eliminated!', null, 3000);
 				//eliminatedEndImage.draw(context, 0, 0, dt);
-				navigator.vibrate([100, 100, 100, 100, 100, 100, 100]);
+				if(settings.getVibrateActive()) {
+					navigator.vibrate([100, 100, 100, 100, 100, 100, 100]);
+				}
 				
 				setTimeout( function() {
 					if (numLaps <= settings.getEliminatorHighScore()) {
@@ -852,7 +858,9 @@ define({
 					//show notification
 					setNotification(green, '#fff', 'Lap Complete', null, 3000);
 					chime.play();
-					navigator.vibrate([10, 10, 10, 10]);
+					if(settings.getVibrateActive()) {
+						navigator.vibrate([10, 10, 10, 10]);
+					}
 					lastLapTime = lapTime.toFixed(1);
 					showLapCompleteBox = true;
 					setTimeout(hideLapCompleteBox, 5000);

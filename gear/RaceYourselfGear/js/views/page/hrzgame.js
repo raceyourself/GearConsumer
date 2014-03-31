@@ -231,7 +231,9 @@ define({
 			//switch to game screen
 			sectionChanger.setActiveSection(1, 500);
 			//vibrate
-			navigator.vibrate([10, 10, 10, 10, 10, 10, 10]);
+			if(settings.getVibrateActive()) {
+				navigator.vibrate([10, 10, 10, 10, 10, 10, 10]);
+			}
 			unlockNotification = game;
 			//TODO - have this only disappear 5s after user raises wrist
 			//unlockNotificationTimer = setTimeout(clearUnlockNotification, time*1000);
@@ -393,7 +395,10 @@ define({
         function onAchievementAwarded(data)
         {
         	setNotification( green, '#fff', 'Award Unlocked!', null, 3*1000);
-			navigator.vibrate([100, 50, 100, 50]);
+        	if(settings.getVibrateActive()) {
+        		navigator.vibrate([100, 50, 100, 50]);
+        	}
+			
 			if(finished)
 			{
 				numAwardsAtFinish++;
@@ -576,7 +581,9 @@ define({
 							setCurrentHRZone("Aerobic");
 							intervalTimeout = setTimeout(nextHRZone, config.getRecoverDuration()*1000 * timeMultiplier);
 							//vibrate
-							navigator.vibrate([10, 100, 10, 100, 10]);
+							if(settings.getVibrateActive()) {
+								navigator.vibrate([10, 100, 10, 100, 10]);
+							}
 							//notify
 							setNotification(green, '#fff', 'Recover for ' + config.getRecoverDuration() + 's', null, 5*1000);
 							break;
@@ -585,7 +592,9 @@ define({
 							setCurrentHRZone("Anaerobic");
 							intervalTimeout = setTimeout(nextHRZone, config.getSprintDuration()*1000 * timeMultiplier);
 							//vibrate
-							navigator.vibrate([100, 10, 100, 10, 100]);
+							if(settings.getVibrateActive()) {
+								navigator.vibrate([100, 10, 100, 10, 100]);
+							}
 							//notify
 							setNotification(red, '#fff', 'Sprint for ' + config.getSprintDuration() + 's', null, 5*1000);
 							break;
@@ -677,8 +686,9 @@ define({
         	e.fire('hrzone.change', zoneInfo);
         	
 			//vibrate
-			navigator.vibrate([10, 10, 10, 10, 10, 10, 10]);
-
+        	if(settings.getVibrateActive()) {
+        		navigator.vibrate([10, 10, 10, 10, 10, 10, 10]);
+        	}
         }
         }
 
@@ -775,8 +785,9 @@ define({
 					if(settings.getAudioActive()) {
 						//regularSound.play();
 					}
-					
-					navigator.vibrate([1000, 500, 250, 100]);
+					if(settings.getVibrateActive()) {
+						navigator.vibrate([1000, 500, 250, 100]);
+					}
 				}
 				if(!adaptingToRecentZoneShift)
 				{
@@ -806,7 +817,9 @@ define({
 					clearNotification();
 					setNotification(flashingRed, '#fff', 'Heart Rate too high!', null, 0);
 					showWarningHigh = true;
-					navigator.vibrate([1000, 500, 250, 100]);
+					if(settings.getVibrateActive()) { 
+						navigator.vibrate([1000, 500, 250, 100]);
+					}
 				}
 				if(!adaptingToRecentZoneShift)
 				{
@@ -969,7 +982,9 @@ define({
 					if(settings.getAudioActive()) {
 						killSound.play();
 					}
-                navigator.vibrate([1000, 500, 250, 100]);
+					if(settings.getVibrateActive()) {
+						navigator.vibrate([1000, 500, 250, 100]);
+					}
 //                r.stop();
 //                e.fire('race.end', r);
 //                lastRender = null;
@@ -985,7 +1000,9 @@ define({
             if (r.getDistance() >= TRACK_LENGTH || r.getDuration() >= targetTime) {
 //                zombieMoan.play();
                 r.addPoints(50);
-                navigator.vibrate(1000);
+                if(settings.getVibrateActive()) {
+                	navigator.vibrate(1000);
+                }
                 showUnlockNotification('finished', 5);
                 finished = true;
                 // Hide sectionchanger scrollbar. Optionally rewrite finish screen to be a html overlay with z-index > 1
