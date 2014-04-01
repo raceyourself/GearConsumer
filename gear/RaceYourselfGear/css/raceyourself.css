@@ -114,12 +114,17 @@
 
 .menu-item {
 	width: 140px;;
-	height: 150px;
-	line-height: 150px;
+	height: 130px;
+	margin-top: 17px;
+	line-height: 130px;
 	display: block;
 	float: left;
 	text-align: center;
 	font-size: 24px;
+}
+
+.menu-item:active {
+	background-color: #3db44a;		
 }
 
 .menu-item img {

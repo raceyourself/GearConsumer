@@ -330,7 +330,7 @@ define({
             visible = true;
             finished = false;
             sectionChanger = new SectionChanger(changer, {
-                circular: false,
+                circular: true,
                 orientation: "horizontal",
                 scrollbar: "bar"                	
             });
