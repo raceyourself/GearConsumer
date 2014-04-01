@@ -249,6 +249,7 @@ define({
 		{
 			//vibrate
 			if(settings.getVibrateActive()) {
+				console.log('vibrate: unlock');
 				navigator.vibrate([10, 10, 10, 10, 10, 10, 10]);
 			}
 			unlockNotification = game;
@@ -465,6 +466,7 @@ define({
         {
         	setNotification( green, '#fff', 'Award Unlocked!', null, 3*1000);
         	if(settings.getVibrateActive()) {
+				console.log('vibrate: award unlocked');
         		navigator.vibrate([100, 50, 100, 50]);
         	}
 			if(finished)
@@ -745,6 +747,7 @@ define({
 				//setNotification(red, '#fff', 'Eliminated!', null, 3000);
 				//eliminatedEndImage.draw(context, 0, 0, dt);
 				if(settings.getVibrateActive()) {
+					console.log('vibrate: eliminated');
 					navigator.vibrate([100, 100, 100, 100, 100, 100, 100]);
 				}
 				
@@ -861,7 +864,8 @@ define({
 					setNotification(green, '#fff', 'Lap Complete', null, 3000);
 					chime.play();
 					if(settings.getVibrateActive()) {
-						navigator.vibrate([10, 10, 10, 10]);
+						console.log('vibrate: lap complete');
+						navigator.vibrate([500]);
 					}
 					lastLapTime = lapTime.toFixed(1);
 					showLapCompleteBox = true;

@@ -232,6 +232,7 @@ define({
 			sectionChanger.setActiveSection(1, 500);
 			//vibrate
 			if(settings.getVibrateActive()) {
+				console.log('vibrate: unlock notification');
 				navigator.vibrate([10, 10, 10, 10, 10, 10, 10]);
 			}
 			unlockNotification = game;
@@ -396,6 +397,7 @@ define({
         {
         	setNotification( green, '#fff', 'Award Unlocked!', null, 3*1000);
         	if(settings.getVibrateActive()) {
+				console.log('vibrate: award unlocked');
         		navigator.vibrate([100, 50, 100, 50]);
         	}
 			
@@ -582,6 +584,7 @@ define({
 							intervalTimeout = setTimeout(nextHRZone, config.getRecoverDuration()*1000 * timeMultiplier);
 							//vibrate
 							if(settings.getVibrateActive()) {
+								console.log('vibrate: switched hr zone to anaerobic');
 								navigator.vibrate([10, 100, 10, 100, 10]);
 							}
 							//notify
@@ -593,6 +596,7 @@ define({
 							intervalTimeout = setTimeout(nextHRZone, config.getSprintDuration()*1000 * timeMultiplier);
 							//vibrate
 							if(settings.getVibrateActive()) {
+								console.log('vibrate: switched hr zone to aerobic');
 								navigator.vibrate([100, 10, 100, 10, 100]);
 							}
 							//notify
@@ -687,6 +691,7 @@ define({
         	
 			//vibrate
         	if(settings.getVibrateActive()) {
+				console.log('vibrate: set new hr zone');
         		navigator.vibrate([10, 10, 10, 10, 10, 10, 10]);
         	}
         }
@@ -767,7 +772,7 @@ define({
 			//Update Heart Rate related mechanics
 			if(hr < minHeartRate)
 			{	
-				showWarningLow = false;
+				showWarningHigh = false;
 				ppm = 5; // Standard pts/meter
 				if(warningTimeoutHigh != false)
 				{
@@ -783,9 +788,10 @@ define({
 					setNotification(flashingRed, '#fff', 'Heart Rate too low!', null, 0);
 					showWarningLow = true;
 					if(settings.getAudioActive()) {
-						//regularSound.play();
+						regularSound.play();
 					}
 					if(settings.getVibrateActive()) {
+						console.log('vibrate: hr low warning');
 						navigator.vibrate([1000, 500, 250, 100]);
 					}
 				}
@@ -799,7 +805,7 @@ define({
 			}
 			else if(hr > maxHeartRate)
 			{
-				showWarningHigh = false;
+				showWarningLow = false;
 				zombiesCatchingUp = false;
 				ppm = -1; // Negative pts/meter
 				if(warningTimeoutLow != false)
@@ -818,6 +824,7 @@ define({
 					setNotification(flashingRed, '#fff', 'Heart Rate too high!', null, 0);
 					showWarningHigh = true;
 					if(settings.getVibrateActive()) { 
+						console.log('vibrate: hr high warning');
 						navigator.vibrate([1000, 500, 250, 100]);
 					}
 				}
@@ -983,6 +990,7 @@ define({
 						killSound.play();
 					}
 					if(settings.getVibrateActive()) {
+						console.log('vibrate: killed');
 						navigator.vibrate([1000, 500, 250, 100]);
 					}
 //                r.stop();
@@ -1001,6 +1009,7 @@ define({
 //                zombieMoan.play();
                 r.addPoints(50);
                 if(settings.getVibrateActive()) {
+					console.log('vibrate: run complete');
                 	navigator.vibrate(1000);
                 }
                 showUnlockNotification('finished', 5);
