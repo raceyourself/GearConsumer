@@ -210,7 +210,9 @@ define({
             pendingAssets = 0,
             showOpponentProgressBar = true,
             eliminatedEndImage = null,
-            started = false;
+            started = false,
+			timeOfLastOvertakeWarning = 0,
+			minTimeBetweenOvertakeWarnings = 5000;
 			
 //// in common with zombie game <---
         function show() {
@@ -667,7 +669,6 @@ define({
 			
 			var r = race.getOngoingRace();
 			var playerLapDistance = (r.getMetricDistance() - lapStartDist) % TRACK_LENGTH;
-			var playerIsAheadNow = true;
 			
 			//update runner distances
 			for(var i=0; i<ghostRunners.length; i++)
@@ -688,13 +689,31 @@ define({
 				}
 			}
 			
-			//flip this bool, but with some stickingess
+			//flip this bool, but with some stickiness
 			var timeSinceLastSwitch = Date.now() - timeAheadnessSwitched;
 			if(timeSinceLastSwitch > 500)
 			{
+				//vibrate if overtaken
+				if(playerIsAhead && !playerIsAheadNow)
+				{
+					//only if minimum time has passed
+					var timeSinceLastOvertakeWarning = Date.now() - timeOfLastOvertakeWarning;
+					if(timeSinceLastOvertakeWarning > minTimeBetweenOvertakeWarnings)
+					{
+						if(settings.getVibrateActive()) {
+							console.log('vibrate: overtake warning');
+							navigator.vibrate([100]);	
+						}
+						timeOfLastOvertakeWarning = Date.now();
+					}
+				}
+				
+				
 				playerIsAhead = playerIsAheadNow;
 				timeAheadnessSwitched = Date.now();
 			}
+			
+
 			
 			//check if we're actually moving
 			if(r.getMetricSpeed() > 1)
