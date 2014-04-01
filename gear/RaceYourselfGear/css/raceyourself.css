@@ -124,7 +124,7 @@
 }
 
 .menu-item:active {
-	background-color: #3db44a;		
+	background-image:url('../images/highlight-test.png');	
 }
 
 .menu-item img {
