@@ -159,7 +159,7 @@ define({
 			green = '#51b848',
             red = '#cb2027',
             amber = '#f7941d',
-            grey = '303030',
+            grey = 'c0c0c0',
             hrWarningPhase = 0,
             hrWarningPeriod = 3*1000,
             lightRed = '#731216',
@@ -209,9 +209,8 @@ define({
             waiting = false,
             pendingAssets = 0,
             showOpponentProgressBar = true,
-            eliminatedEndImage = null;
-			
-
+            eliminatedEndImage = null,
+            started = false;
 			
 //// in common with zombie game <---
         function show() {
@@ -329,6 +328,7 @@ define({
         	
             visible = true;
             finished = false;
+            started = false;
             sectionChanger = new SectionChanger(changer, {
                 circular: false,
                 orientation: "horizontal",
@@ -456,7 +456,7 @@ define({
 ////            startZombies();
 			lastRender = Date.now();
 			ppm = 5;
-			
+			started = true;
 			timeCurrentLapStarted = Date.now();
 			
         }
@@ -600,7 +600,7 @@ define({
 			countDownParams.startTime = Date.now();
 ////			zombiePosWeight = 0;
 			lapStartDist = race.getOngoingRace().getMetricDistance();
-
+			started = true;
 ///////// Eliminator
 			for(var i=0; i<ghostRunners.length; i++)
 			{
@@ -673,7 +673,7 @@ define({
 				var ghost = ghostRunners[i];
 
 				ghost.lapDistance = TRACK_LENGTH * (timeInLap / ghost.lapTime);
-				if(ghost.lapDistance > lapLength)
+				if(ghost.lapDistance > lapLength && started)
 				{
 					ghost.lapDistance = lapLength;
 					gameOverEliminated();
@@ -760,6 +760,7 @@ define({
 					}
 					}, 2000);
 				finished = true;
+				started = false;
 //				var r = race.getOngoingRace();
 //				e.fire('race.end', r);
 //				r.stop();
@@ -981,6 +982,43 @@ define({
 			var inset = minInset + (1-2*minInset) * (lapProportion)
 			screenLeftDistance = playerLapDistance - inset * screenWidthDistance;
 
+			var screenMidDistanceLap = playerLapDistance;
+
+			//reframe based on opponent position
+			if(ghostRunners.length > 0)
+			{
+				var fastestGhostLapDist = ghostRunners[0].lapDistance;
+				var playerAheadAmount = playerLapDistance - fastestGhostLapDist;
+				
+				//clamp ahead amount
+				if(playerAheadAmount > 30)
+				{
+					playerAheadAmount = 30;
+				}
+				else if(playerAheadAmount < -30)
+				{
+					playerAheadAmount = -30;
+				}
+				
+				//centre on midpoint between player and fastest ghost
+//				screenMidDistanceLap = (playerLapDistance + fastestGhostLapDist)/2;				
+				screenMidDistanceLap = playerLapDistance - playerAheadAmount	/2
+
+								
+				//span of screen encompasses both players
+				screenWidthDistance = Math.abs(playerAheadAmount) +2;
+				//clamp
+				screenWidthDistance = Math.min(screenWidthDistance, 25);
+				screenWidthDistance = Math.max(screenWidthDistance,13);
+
+				screenLeftDistance = screenMidDistanceLap - screenWidthDistance/2;
+				
+				//nudge left
+				screenLeftDistance -= 3;
+			}
+			
+
+
 ////////// /Eliminator
 			
 			
@@ -1196,7 +1234,8 @@ define({
 					var fillDist = fillProportion * (canvas.width - 2*greenInset);
 					var barHeight = canvas.height - trackHeight + trackThickness/2 + greenInset;
 					
-					if(!showOpponentProgressBar)
+//					if(!showOpponentProgressBar)
+					if(ghostRunners.length == 0)
 					{					
 						context.fillRect( greenInset, canvas.height - trackHeight + trackThickness/2 + greenInset, fillDist, trackHeight - trackThickness - 2*greenInset);
 					}
@@ -1211,8 +1250,10 @@ define({
 						{
 							var bestGhostDist = ghostRunners[0];
 							var fillProportion_Ghost = bestGhostDist.lapDistance / TRACK_LENGTH;
+							fillProportion_Ghost = Math.min(fillProportion_Ghost, 1);
 							var fillDistGhost = fillProportion_Ghost * (canvas.width - 2*greenInset);
-							context.fillStyle = red;
+							var playerLapDist = ((r.getMetricDistance() - lapStartDist) % TRACK_LENGTH);
+							context.fillStyle = bestGhostDist.lapDistance > playerLapDist? red : grey;
 							var lineThickness = 0;
 							var h = barHeight + barThickness - lineThickness/2;
 							context.beginPath();
@@ -1367,7 +1408,7 @@ define({
 				//target
 				context.textAlign = 'right';
 ////				context.fillText(Number(targetdist).toFixed(1) + u, canvas.width - progressBarInset, progressBarHeight);
-				var heightOffset = showOpponentProgressBar? 5 : 0;
+				var heightOffset = ghostRunners.length > 0 ? 5 : 0;
 				context.fillText(config.getLapLength()+'m', canvas.width - progressBarInset, progressBarHeight - heightOffset);
 
 			}
@@ -1486,11 +1527,11 @@ define({
 			for(var i=0; i<ghostRunners.length; i++)
         	{
         		var ghost = ghostRunners[i];
-        		if(i==0) {
-        			redGhost.drawscaled(context, distanceToTrackPos(ghost.lapDistance), canvas.height - playerOffset, dt, scale);
-        		} else {
+//        		if(i==0) {
+//        			redGhost.drawscaled(context, distanceToTrackPos(ghost.lapDistance), canvas.height - playerOffset, dt, scale);
+//        		} else {
         			ghost.drawscaled(context, distanceToTrackPos(ghost.lapDistance), canvas.height - playerOffset, dt, scale);
-        		}
+//        		}
         		
         		additionalAlpha *= 0.7;
 				context.globalAlpha = minGhostAlpha + additionalAlpha;
