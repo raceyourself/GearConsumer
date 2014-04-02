@@ -127,7 +127,7 @@ define({
             frames = 0,
             fps = 0,
             lastDistanceAwarded = 0,
-            ppm = 5, // pts/meter
+            ppm = 0, // pts/meter
             hr = 100,
             rToRTime= 1,
             maxHeartRate = 150,
@@ -192,6 +192,7 @@ define({
             waiting = false,
             pendingAssets = 0,
             bgHeight = 246;
+            started = false;
 
 
         function show() {
@@ -319,6 +320,9 @@ define({
             e.listen('tizen.back', onBack);
             e.listen('motion.wristup', onWristUp);
             document.getElementById('quit-confirmation').classList.toggle('hidden', true);
+            
+            started = false;
+            ppm = 0;
             
             var r = race.getOngoingRace();
             if (r === null || !r.isRunning() || r.hasStopped()) {
@@ -505,6 +509,7 @@ define({
 		}
         function go() {
 
+			started = true;
             requestRender();
             countingdown = false;
             clearTimeout(bannerTimeout);
@@ -518,10 +523,10 @@ define({
 //			setNotification(green, '#fff', 'Warm up for ' + warmupDurationMinutes + 'min', 'Tap to skip', 10*1000);
 //			warmingUp = true;
 
-			sectionChanger
         }
         
         function restart() {
+        	started = true;
         	countingdown = false;
         	startZombies();
         	clearTimeout(bannerTimeout);
@@ -773,7 +778,10 @@ define({
 			if(hr < minHeartRate)
 			{	
 				showWarningHigh = false;
-				ppm = 5; // Standard pts/meter
+				if(!isDead && started)
+				{
+					ppm = 0; // Standard pts/meter
+				}
 				if(warningTimeoutHigh != false)
 				{
 					clearTimeout(warningTimeoutHigh);
@@ -807,7 +815,10 @@ define({
 			{
 				showWarningLow = false;
 				zombiesCatchingUp = false;
-				ppm = -1; // Negative pts/meter
+				if(!isDead && started)
+				{
+					ppm = -1; // Negative pts/meter
+				}
 				if(warningTimeoutLow != false)
 				{
 					clearTimeout(warningTimeoutLow);
@@ -838,7 +849,10 @@ define({
 			}
 			else
 			{
-				ppm = 5; // Standard pts/meter
+				if(!isDead && started)
+				{
+					ppm = 5; // Standard pts/meter
+				}
 				//clear warning
 				if(warningTimeoutHigh != false)
 				{
@@ -998,6 +1012,9 @@ define({
 //                lastRender = null;
 //                stopZombies();
 				isDead = true;
+				started = false;
+				ppm = 0;
+				
                 requestRender();
                 clearTimeout(bannerTimeout);
                 bannerTimeout = setTimeout(nextWave, 10000);
@@ -1584,6 +1601,10 @@ define({
 								}
 								else
 								{
+									//update zombie animation timer
+									zombie.time += dt;
+									//apply non-idle time to idle anim
+									zombieIdle.time = zombie.time;
 									zombieIdle.drawscaled(context, zombiePos, canvas.height - zombie.height * scale - trackHeight + y_offset, dt, scale);
 								}
 							} else {
