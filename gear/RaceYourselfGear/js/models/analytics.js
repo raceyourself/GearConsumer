@@ -34,6 +34,8 @@ define({
             queue = [],
             launchTime = Date.now(),
             pageShowTime = Date.now(), // initial view
+            pageName = 'main',
+            transition = false,
             VERSION = 1;
         
         
@@ -52,17 +54,23 @@ define({
         
         function onAnyPageShow(event) {
             pageShowTime = Date.now();
+            pageName = event.target.id;
+            if (!!transition) {
+            	transition['new_flow_state'] = pageName;
+            	log(transition);
+            	console.log(transition);
+            	transition = false;
+            }
         }
 
         function onAnyPageHide(event) {
-            var data = {
-                    'Flow state': event.target.id,
-                    'Time since launch': Date.now()-launchTime,
-                    'State live': Date.now() - pageShowTime,
-                    'Event type': 'Flow state changed'
+            transition = {
+                    'old_flow_state': event.target.id,
+                    'time_since_launch': Date.now() - launchTime,
+                    'state_live': Date.now() - pageShowTime,
+                    'event_type': 'flow_state_change'
                     
             };
-            log(data);
         }
         
         function onAward(event) {
