@@ -37,6 +37,7 @@ define({
         'models/settings',
         'models/config',
 		'models/game',
+		'views/page/sweatpoint_rising',
     ],
     def: function viewsPageHeartRateZombiesGame(req) {
         'use strict';
@@ -49,6 +50,7 @@ define({
             settings = req.models.settings,
             config = req.models.config,
             Sprite = req.models.sprite.Sprite,
+            SweatPoint = req.views.page.sweatpoint_rising.SweatPoint,
             page = null,
             canvas,
             context,
@@ -191,7 +193,9 @@ define({
             loading = false,
             waiting = false,
             pendingAssets = 0,
-            bgHeight = 246;
+            bgHeight = 246,
+            sweatPointGraphics = [],
+            sweatPointAwardsSinceLastGraphic = 0,
             started = false;
 
 
@@ -774,6 +778,12 @@ define({
 				e.fire('heartrate.lost');
 			}
 	
+			//update sweat point graphics
+			for(var i=0; i<sweatPointGraphics.length; i++)
+			{
+				sweatPointGraphics[i].tick();
+			}
+	
 			//Update Heart Rate related mechanics
 			if(hr < minHeartRate)
 			{	
@@ -1012,6 +1022,7 @@ define({
 //                lastRender = null;
 //                stopZombies();
 				isDead = true;
+				spawnPointsGraphic(-100);
 				started = false;
 				ppm = 0;
 				
@@ -1046,10 +1057,27 @@ define({
             
             if (lastDistanceAwarded < r.getMetricDistance()) {
                 var distance = r.getMetricDistance();
-                r.addPoints((distance - lastDistanceAwarded)*ppm);
+                var points = ((distance - lastDistanceAwarded)*ppm);
+				r.addPoints(points);
+				if(!(points == 0))
+				{
+					spawnPointsGraphic(points);
+				}
                 lastDistanceAwarded = distance;
             }
             
+            //clear up old sweat point graphics
+            var done = false;
+			while(!done)
+			{    
+				if(sweatPointGraphics.length > 0 && sweatPointGraphics[0].getFinished())
+				{
+					//remove first element;
+					sweatPointGraphics.shift();
+				}
+				else
+				{ done = true; }
+			}        
             
             /*
             if (runner.next !== null && r.getSpeed() >= runner.next.speedThreshold) {
@@ -1094,6 +1122,18 @@ define({
             requestRender();
         }
 
+		function spawnPointsGraphic(rawPoints)
+		{
+			//points seems to come in with a small fractional part sometimes, so round it.
+			var points = Math.round(rawPoints);
+			if(points == 0) return;
+			var colour = points > 0 ? green : red;
+			var r = race.getOngoingRace();
+			var startPos = { x:distanceToTrackPos(r.getDistance()) + 20, y:canvas.height/2 +20};
+			var destPos = { x:canvas.width/2, y:20 };
+			var pointsPenaltyGraphic = new SweatPoint(points, colour, startPos, destPos);
+			sweatPointGraphics.push(pointsPenaltyGraphic);
+		}
 		function continueToResults()
 		{
 			clearbanner();
@@ -1236,6 +1276,14 @@ define({
 				context.fillText('SP', xpos + sweat.width + 8, ypos + sweat.height/2);
 				context.fillStyle = ppm > 0 ? '#fff' : flashingRedParams.colour;
 				context.fillText(~~settings.getPoints(), xpos + sweat.width + 8 + 36, ypos + sweat.height/2);
+
+								
+				//draw sweat point graphics
+				for(var i=0; i<sweatPointGraphics.length; i++)
+				{
+					var sweatImg = sweatPointGraphics[i].amount > 0 ? sweat : sweat_red;
+					sweatPointGraphics[i].render(context, sweatImg);
+				}
 			}
 ///////////////////////////
 
@@ -1903,6 +1951,13 @@ define({
 				}
             }
             runner.sprite.drawscaled(context, playerXPos, canvas.height -playerOffset , dt, playerScale);
+            
+            				
+			//draw sweat point graphics
+//			for(var i=0; i<sweatPointGraphics.length; i++)
+//			{
+//				sweatPointGraphics[i].render(context);
+//			}
             
             //countdown        
             if(countingdown && banner!=false)

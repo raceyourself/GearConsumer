@@ -37,6 +37,7 @@ define({
         'models/settings',
         'models/config',
 		'models/game',
+		'views/page/sweatpoint_rising',
     ],
     def: function viewsRaceGame(req) {
         'use strict';
@@ -49,6 +50,7 @@ define({
             settings = req.models.settings,
             config = req.models.config,
             Sprite = req.models.sprite.Sprite,
+            SweatPoint = req.views.page.sweatpoint_rising.SweatPoint,
             page = null,
             canvas,
             context,
@@ -123,7 +125,7 @@ define({
             frames = 0,
             fps = 0,
             lastDistanceAwarded = 0,
-            ppm = 5, // pts/meter
+            ppm = 0, // pts/meter
             hr = 100,
             rToRTime= 1,
             maxHeartRate = 150,
@@ -184,7 +186,9 @@ define({
             numAwardsAtFinish = 0,
             unlockNotificationActive = false,
             hasBeenInGoalHRZone = false,
-            
+			sweatPointGraphics = [],
+            sweatPointAwardsSinceLastGraphic = 0,
+
             
             //eliminator vars
             nextLapDistance = config.getLapLength(),
@@ -328,6 +332,8 @@ define({
         		loadAssets();
         		return;
         	}
+        	
+        	ppm = 0;
         	
             visible = true;
             finished = false;
@@ -670,6 +676,8 @@ define({
 			var r = race.getOngoingRace();
 			var playerLapDistance = (r.getMetricDistance() - lapStartDist) % TRACK_LENGTH;
 			
+			var playerIsAheadNow = true;
+			
 			//update runner distances
 			for(var i=0; i<ghostRunners.length; i++)
 			{
@@ -688,6 +696,13 @@ define({
 					playerIsAheadNow = false;
 				}
 			}
+			
+			//update sweat point graphics
+			for(var i=0; i<sweatPointGraphics.length; i++)
+			{
+				sweatPointGraphics[i].tick();
+			}
+
 			
 			//flip this bool, but with some stickiness
 			var timeSinceLastSwitch = Date.now() - timeAheadnessSwitched;
@@ -711,6 +726,7 @@ define({
 				
 				playerIsAhead = playerIsAheadNow;
 				timeAheadnessSwitched = Date.now();
+				ppm = playerIsAhead ? 5 : 0;
 			}
 			
 
@@ -902,10 +918,28 @@ define({
             
             if (lastDistanceAwarded < r.getMetricDistance()) {
                 var distance = r.getMetricDistance();
-				r.addPoints((distance - lastDistanceAwarded)*ppm);
+                var points = (distance - lastDistanceAwarded)*ppm;
+				r.addPoints(points);
 				lastDistanceAwarded = distance;
+				if(!(points==0))
+				{
+					spawnPointsGraphic(points);
+				}
             }
             
+			//clear up old sweat point graphics
+            var done = false;
+			while(!done)
+			{    
+				if(sweatPointGraphics.length > 0 && sweatPointGraphics[0].getFinished())
+				{
+					//remove first element;
+					sweatPointGraphics.shift();
+				}
+				else
+				{ done = true; }
+			}        
+
             
             /*
             if (runner.next !== null && r.getSpeed() >= runner.next.speedThreshold) {
@@ -926,6 +960,20 @@ define({
             
             requestRender();
         }
+
+		function spawnPointsGraphic(rawPoints)
+		{
+			//points seems to come in with a small fractional part sometimes, so round it.
+			var points = Math.round(rawPoints);
+			if(points == 0) return;
+			var colour = points > 0 ? green : red;
+			var r = race.getOngoingRace();
+			var playerLapDist = r.getDistance() - lapStartDist;
+			var startPos = { x:distanceToTrackPos(playerLapDist) + 25, y:canvas.height/2 + 35};
+			var destPos = { x:startPos.x, y:20 };
+			var pointsPenaltyGraphic = new SweatPoint(points, colour, startPos, destPos);
+			sweatPointGraphics.push(pointsPenaltyGraphic);
+		}
 
 		function hideLapCompleteBox() 
 		{
@@ -1129,6 +1177,15 @@ define({
 				context.fillText('SP', xpos + sweat.width + 8, ypos + sweat.height/2);
 				context.fillStyle = ppm > 0 ? '#fff' : flashingRedParams.colour;
 				context.fillText(~~settings.getPoints(), xpos + sweat.width + 8 + 36, ypos + sweat.height/2);
+				
+												
+				//draw sweat point graphics
+				for(var i=0; i<sweatPointGraphics.length; i++)
+				{
+					var sweatImg = sweatPointGraphics[i].amount > 0 ? sweat : sweat_red;
+					sweatPointGraphics[i].render(context, sweatImg);
+				}
+
 			}
 ///////////////////////////
 
