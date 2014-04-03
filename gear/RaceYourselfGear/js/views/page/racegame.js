@@ -490,7 +490,10 @@ define({
 			{
 				numAwardsAtFinish++;
 			}
-			chime.play();
+
+			if(settings.getAudioActive() && chime != null) {
+				chime.play();
+			}
         }
         
       
@@ -829,8 +832,9 @@ define({
 //				var r = race.getOngoingRace();
 //				e.fire('race.end', r);
 //				r.stop();
-			
-				chime.play();
+				if(settings.getAudioActive() && chime != null) {
+					chime.play();
+				}
 			}
         }
         
@@ -926,7 +930,11 @@ define({
             	   	numLaps++;
 					//show notification
 					setNotification(green, '#fff', 'Lap Complete', null, 3000);
-					chime.play();
+
+					if(settings.getAudioActive() && chime != null) {
+						chime.play();
+					}
+
 					if(settings.getVibrateActive()) {
 						console.log('vibrate: lap complete');
 						navigator.vibrate([500]);

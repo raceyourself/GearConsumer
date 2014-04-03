@@ -418,7 +418,9 @@ define({
 			{
 				numAwardsAtFinish++;
 			}
-			chime.play();
+			if(settings.getAudioActive()) {
+				chime.play();
+			}
         }
         
         function setOpponent(type)
