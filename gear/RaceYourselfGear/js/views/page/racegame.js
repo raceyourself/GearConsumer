@@ -33,6 +33,7 @@ define({
         'models/race',
         'models/hrm',
         'models/mocks/hrm',
+        'models/mocks/pedometer',
         'models/sprite',
         'models/settings',
         'models/config',
@@ -51,6 +52,7 @@ define({
             config = req.models.config,
             Sprite = req.models.sprite.Sprite,
             SweatPoint = req.views.page.sweatpoint_rising.SweatPoint,
+            mockPedometer = req.models.mocks.pedometer,
             page = null,
             canvas,
             context,
@@ -335,6 +337,13 @@ define({
         	
         	ppm = 0;
         	
+			//start the canned hrm sequence if in demo mode
+			if (config.getIsDemoMode()) {
+				hrmMock.startCanned();
+				//set an initial run speed of 1.5 m per stride
+				mockPedometer.setRunSpeed(1.6);
+            }  
+            
             visible = true;
             finished = false;
             started = false;
@@ -909,6 +918,8 @@ define({
 				}
 */
             	
+
+            	
             	if(playerIsAhead)
             	{
             	   	restart();
@@ -924,6 +935,22 @@ define({
 					showLapCompleteBox = true;
 					setTimeout(hideLapCompleteBox, 5000);
 					addGhost(lastLapTime);
+
+					//Rig pedometer speed if this is demo mode
+					if(config.getIsDemoMode())
+					{
+						switch(numLaps)
+						{
+							case 1:
+								mockPedometer.setRunSpeed(2.0);
+								break;
+							case 2:
+								mockPedometer.setRunSpeed(1.8);
+								break;
+							default:
+								//nothing to do
+						}
+					}
 
             	}
             	else
@@ -2140,15 +2167,19 @@ define({
             canvas = document.getElementById('race-canvas');
             context = canvas.getContext('2d');
             
-        	//leave hrm in, still want it for side screen
-            if (hrm.isAvailable()) {
-                  hrm.start();
-                  // Availability will change if start fails
-              } 
-              if (!hrm.isAvailable()) {
-              	hrmMock.start();
-              }                       
-              
+            if(!config.getIsDemoMode())
+            {
+				//leave hrm in for race game, still want it for side screen
+				if (hrm.isAvailable()) {
+					  hrm.start();
+					  // Availability will change if start fails
+				  } 
+				  if (!hrm.isAvailable()) {
+					hrmMock.start();
+	//              	hrmMock.startCanned();
+						//start this in onpageshow
+				  }                       
+             } 
               bindEvents();
         }
         
