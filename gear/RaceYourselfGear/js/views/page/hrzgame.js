@@ -196,7 +196,14 @@ define({
             bgHeight = 246,
             sweatPointGraphics = [],
             sweatPointAwardsSinceLastGraphic = 0,
-            started = false;
+            started = false,
+            stars = { 	icons: [ null, null, null ],
+            			sounds: [ null, null, null ],
+            			delay: 0.6,
+            			currentlyAwardingIndex: 0,
+            			numEarned: 0,
+            			lastRenderTime: 0 };
+            
 
 
         function show() {
@@ -1066,7 +1073,13 @@ define({
 					console.log('vibrate: run complete');
                 	navigator.vibrate(1000);
                 }
+                
                 showUnlockNotification('finished', 5);
+                stars.currentlyAwardingIndex = -1;
+				stars.lastRenderTime = Date.now();
+                setTimeout(showNextStar, 500);
+                
+                
                 finished = true;
                 // Hide sectionchanger scrollbar. Optionally rewrite finish screen to be a html overlay with z-index > 1
                 if (sectionChanger && sectionChanger.scrollbar && sectionChanger.scrollbar.element) {
@@ -2078,6 +2091,29 @@ define({
 						context.fillText('Training Complete', centreX, 40);
 						var margin = 5;
 						context.textBaseline = 'bottom';
+						
+						// Stars
+						stars.numEarned = getNumStarsAchieved();
+						var starHeight = canvas.height * 0.333;
+						var starSpacing = starGot.width * 1.2;
+						
+						//update star icon
+						var starDt = Date.now() - stars.lastRenderTime;
+						stars.lastRenderTime = Date.now();
+//						starGetting.time += starDt;
+						
+						if(stars.currentlyAwardingIndex >= 0 && stars.currentlyAwardingIndex < stars.icons.length)
+						{
+							//progress animation on the one currently being awarded
+							stars.icons[stars.currentlyAwardingIndex].time += starDt;
+						}
+						
+						for(var i=0; i<3; i++)
+						{
+							stars.icons[i].draw(context, canvas.width/2 + (i-1)*starSpacing - stars.icons[i].width/2, starHeight, dt);
+						}
+						
+						// Awards
 						if(numAwardsAtFinish == 1)
 						{
 							context.fillText('1 Award Unlocked', centreX, canvas.height - margin - margin*3 - awardImage.height);
@@ -2105,6 +2141,27 @@ define({
             context.save();
             frames++;
         }
+        
+		function showNextStar()
+		{
+			if(stars.currentlyAwardingIndex+1 < stars.numEarned)
+			{
+				//move to showing the next star
+				stars.currentlyAwardingIndex++;
+				stars.icons[stars.currentlyAwardingIndex].reset();
+				stars.lastRenderTime = Date.now();
+				stars.icons[stars.currentlyAwardingIndex].onEnd( function(time) {
+					setTimeout(showNextStar, stars.delay*1000);
+					if(settings.getVibrateActive()) {					
+						navigator.vibrate([50]);
+						var sound = stars.sounds[stars.currentlyAwardingIndex];
+						if(sound != null) { sound.play(); }
+					}
+				});
+			}
+
+
+		}
         
         function drawPaceBG(ypos, radius, posR) 
         {
@@ -2281,6 +2338,9 @@ define({
             chime = new Audio('audio/Chime.wav');
             chime.onerror = function() { throw "Could not load " + this.src; }
             
+            stars.sounds[0] = new Audio('audio/Chime.wav');
+            stars.sounds[1] = new Audio('audio/Chime.wav');
+            stars.sounds[2] = new Audio('audio/Chime.wav');
             
             //heart     
             loadImage('images/image_heart_green.png', function() {
@@ -2376,6 +2436,14 @@ define({
 				finishedImage = new Sprite(this, this.width, 1000);
 			});
 			
+			loadImage('images/starGettingFull.png', function() {
+				for(var i=0; i<3; i++)
+				{
+					stars.icons[i] = new Sprite(this, this.width/4, 200);
+					stars.icons[i].loop = false;
+				}
+			});
+						
 			loadImage('images/awarded.png', function() {
 				awardImage = new Sprite(this, this.width, 1000);
 			});
@@ -2429,6 +2497,29 @@ define({
         function onPreload() {
         	loadAssets();
         }
+
+		function getNumStarsAchieved() {
+		
+			var potentialPoints = TRACK_LENGTH * config.getPpmGood();
+            var r = race.getOngoingRace();
+            var netPoints = r.getPoints();
+            
+            var proportion = potentialPoints/netPoints;
+            
+            if(proportion > config.getThresholdThreeStar())
+            {
+            	return 3;
+            }
+            else if(proportion > config.getThresholdTwoStar())
+            {
+            	return 2;
+            }
+            else if(proportion > config.getThresholdThreeStar())
+            {
+            	return 1;
+            }
+            else { return 0; }
+		}
 
         e.listeners({
             'hrzgame.show': show,
