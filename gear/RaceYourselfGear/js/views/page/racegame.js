@@ -29,7 +29,6 @@ define({
         'views/page/gamestats2',
         'views/page/gamestats3',
         'views/page/gamestats4',
-//        'views/page/gameselect',
         'models/race',
         'models/hrm',
         'models/mocks/hrm',
@@ -101,7 +100,7 @@ define({
             dino = null,
             boulder = null,
             dinoGameImage = null,
-//            boulderGameImage = null,
+            highscoreImage = null,
             weightLossGameImage = null,
             strengthGameImage = null,
             dinoUnlockImageFS = null,
@@ -213,12 +212,17 @@ define({
 			loaded = false,
             loading = false,
             waiting = false,
+            isHighscore = false,
             pendingAssets = 0,
             showOpponentProgressBar = true,
             eliminatedEndImage = null,
             started = false,
 			timeOfLastOvertakeWarning = 0,
-			minTimeBetweenOvertakeWarnings = 5000;
+			minTimeBetweenOvertakeWarnings = 5000,
+			highscoreCanvas,
+			highscoreContext,
+        	drawHighscoreText = false;
+        
 			
 //// in common with zombie game <---
         function show() {
@@ -329,6 +333,8 @@ define({
         	gameOver = false;
             document.getElementById('eliminator-end').classList.toggle('hidden', true);
             document.getElementById('eliminator-highscore').classList.toggle('hidden', true);
+            isHighscore = false;
+            drawHighscoreText = false;
         	if (!loaded) {
         		waiting = true;
         		loadAssets();
@@ -820,7 +826,11 @@ define({
 						document.getElementById('eliminator-end').classList.toggle('hidden');
 					} else {
 						settings.setEliminatorHighScore(numLaps);
-						document.getElementById('eliminator-new-hs-value').innerHTML = numLaps;
+						isHighscore = true;
+						setTimeout(function() {
+							drawHighscoreText = true;
+						}, 1200);
+						//document.getElementById('eliminator-new-hs-value').innerHTML = numLaps;
 						document.getElementById('eliminator-highscore').classList.toggle('hidden');
 					}
 					}, 2000);
@@ -942,7 +952,7 @@ define({
 						switch(numLaps)
 						{
 							case 1:
-								mockPedometer.setRunSpeed(2.0);
+								mockPedometer.setRunSpeed(20.0);
 								break;
 							case 2:
 								mockPedometer.setRunSpeed(1.8);
@@ -2075,6 +2085,17 @@ define({
             	eliminatedEndImage.draw(context, 0, 0, dt);
             }
             
+            if(isHighscore) {
+            	highscoreImage.draw(highscoreContext, 0, 0, dt);
+            	highscoreContext.font = 'bold 50px Samsung Sans';
+            	highscoreContext.textAlign = 'center';
+            	highscoreContext.textBaseline = 'middle';
+            	highscoreContext.fillStyle = '#000';
+            	if(drawHighscoreText) {
+            	 	highscoreContext.fillText(numLaps, highscoreCanvas.width/2, highscoreCanvas.height/2 - 30);
+                }
+           }
+            
             context.save();
             frames++;
         }
@@ -2167,6 +2188,9 @@ define({
             canvas = document.getElementById('race-canvas');
             context = canvas.getContext('2d');
             
+            highscoreCanvas = document.getElementById('highscore-canvas');
+            highscoreContext = highscoreCanvas.getContext('2d');
+            
             if(!config.getIsDemoMode())
             {
 				//leave hrm in for race game, still want it for side screen
@@ -2246,6 +2270,10 @@ define({
 			loadImage('images/image_sweat_point_red.png', function() {
 				sweat_red = new Sprite(this, this.width, 1000);
 				animatedSprites.push(sweat_red);
+			});
+			
+			loadImage('images/animation_new_high_score_all_together.png', function() {
+				highscoreImage = new Sprite(this, this.width / 11, 1800, {loop: true, loopstart: 8});
 			});
 			
 			//dino game image
