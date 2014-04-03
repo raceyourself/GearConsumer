@@ -6,6 +6,10 @@
     <meta name="description" content="Pedometer"/>
     <title>RaceYourself</title>
     <style>
+    	body {
+    		margin: 0 0;
+    		padding: 0 0;
+    	}
     	#gear-container {
     		background: url("images/development/gear_image.png") no-repeat;    
     		min-width: 384px;
@@ -16,6 +20,15 @@
     		top: 60px;
     		left: 26px;
     	}
+    	#gear-container #overlay {
+    		background: rgba(0,0,0,0) url("images/development/gear_image_screen_oppacity_effect.png") no-repeat;    	
+    		position: absolute;
+    		top: 0px;
+    		left: 0px;
+    		z-index: 10;
+    		min-width: 384px;
+    		min-height: 440px;		
+    	}
     </style>
 </head>
 <body>
@@ -23,6 +36,8 @@
 <iframe src="index.html" width="320" height="320" scrolling="no" frameborder="0">
     <p>Your browser does not support iframes.</p>
 </iframe>
+<div id="overlay">
+</div>
 </div>
 <script type="text/javascript">
     var iframe = document.childNodes[1].childNodes[2].childNodes[1].contentWindow;
