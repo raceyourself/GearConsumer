@@ -85,7 +85,7 @@ define({
         }
         
         function onBack() {
-            history.back();
+            e.fire('newmain.show');
         }
 
         function bindEvents() {
@@ -98,7 +98,7 @@ define({
         function onListItemClick(event) {
         	console.log(this.id);
         	
-        	e.fire('racesummary.show', s.get(racedata.getStorageKey() + this.id));
+        	e.fire('racesummary.show', racedata.getData(this.id));
         }
 
         function init() {

@@ -39,26 +39,6 @@ define({
             settings = req.models.settings,
             units = req.helpers.units,
             unit = units.UNIT_METER,
-            date = '',
-            timeofrace = '',
-                
-            distance = 5000,
-            distanceunits = 'metres',
-            duration = 0,
-            calories = 0,
-                
-            pointsgained = 0,
-            pointslost = 0,
-            totalpoints = 0,
-            
-            overallpoints = 0,
-               
-            steps = 0,
-            hrtime = 0,
-                
-            achievements = [],
-                
-            type = "",
                 
             racedata = [],
             
@@ -73,23 +53,32 @@ define({
          * Initializes module.
          */
         function setData(r) {
-            distance = r.getDistance();
-            duration = r.getDuration();
-            calories = r.getCalories();
+            var distance = r.getDistance();
+            var duration = r.getDuration();
+            var calories = r.getCalories();
             
-            pointsgained = r.getPointsEarned();
-            pointslost = r.getPointsLost();
-            totalpoints = r.getPoints();
+            var pointsgained = r.getPointsEarned();
+            var pointslost = r.getPointsLost();
+            var totalpoints = r.getPoints();
             
-            overallpoints = settings.getPoints();
+            var overallpoints = settings.getPoints();
             
-            steps = r.getSteps();
+            var steps = r.getSteps();
             
             var ideal = 'N/A';
             if (isFinite(r.data.time_in_zone)) ideal = ~~(r.data.time_in_zone*100/r.getDuration()) + '%';
-            hrtime = ideal;
+            var hrtime = ideal;
             
-            achievements = r.getAchievements();
+            var achiev = r.getAchievements();
+            
+            var achievements = [];
+            
+            for(var i in achiev) {
+            	achievements.push(achiev[i].key);
+            }
+            
+           // achievements = Object.keys(achiv);
+            var type;
             
             if(game.getCurrentGame() == 'racegame') {
             	type = 'Eliminator';
@@ -146,11 +135,13 @@ define({
             	mins = '0' + mins;
             }
             
-            distanceunits = r.getDistanceUnits();
+            console.log(achievements);
             
-            date = months_list[month] + '/' + day + '/' + year;
+            var distanceunits = r.getDistanceUnits();
             
-            timeofrace = hour + ':' +  mins + suffix;
+            var date = months_list[month] + '/' + day + '/' + year;
+            
+            var timeofrace = hour + ':' +  mins + suffix;
             
             racedata = {distance: distance, distanceunits: distanceunits, duration: duration, calories: calories, pointsgained: pointsgained, overallpoints: overallpoints, pointslost: pointslost, totalpoints: totalpoints, steps: steps, hrtime: hrtime, achievements: achievements, type: type, date: date, timeofrace: timeofrace};
             
@@ -165,9 +156,19 @@ define({
             return false;
         }
         
+        function getLatestData() {
+        	return racedata;
+        }
+        
+        function getData(key) {
+        	return s.get(STORAGE_KEY + key);
+        }
+        
         return {
             setData: setData,
-            getStorageKey: getStorageKey
+            getStorageKey: getStorageKey,
+            getLatestData: getLatestData,
+            getData: getData
         };
     }
 

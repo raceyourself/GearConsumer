@@ -27,7 +27,8 @@ define({
         'core/storage',
         'helpers/date',
         'models/race',        
-        'models/game',        
+        'models/game',  
+        'models/sprite',
         'models/settings',
         'models/config',
     ],
@@ -38,6 +39,7 @@ define({
             s = req.core.storage,
             d = req.helpers.date,
             game = req.models.game,
+            Sprite = req.models.sprite.Sprite,
             race = req.models.race,
             settings = req.models.settings,
             config = req.models.config,
@@ -225,31 +227,13 @@ define({
                     	var unlockDist = config.getDinoUnlockDist() * 1000;
                         return Number(Math.min(unlockDist, progress.total.distance)*100/unlockDist).toFixed(1).replace('.0', '') + '%';
                     }
-                }, 
-                'eliminator' : {
-                    title: 'Eliminator Mode',
-                    description: 'Unlocked the Eliminator game by running a total of ' + config.getElimUnlockDist() + 'km',
-                    points: 0,
-                    uses: 1,
-                    init: function() {
-                        e.listen('race.progress', function(event) {
-                            if (progress.total.distance >= config.getElimUnlockDist() * 1000) {
-                                achieve('eliminator');
-                                game.unlock('eliminator');
-                            }
-                        });
-                    },
-                    progress: function() {
-                    	var unlockDist = config.getElimUnlockDist() * 1000;
-                        return Number(Math.min(unlockDist, progress.total.distance)*100/unlockDist).toFixed(1).replace('.0', '') + '%';
-                    }
                 }, */
                 'Endurance' : {
                     title: 'Race Yourself Fitter',
                     description: 'Unlock <b>Race Yourself Fitter</b> by playing one game of Eliminator',
                     points: 0,
                     uses: 1,
-                    image: 'unlocks/ry_fitter_ingameunlock.png',
+                    sprite: new Sprite('images/animation_RY_Fitter_unlocked_all-together.png', 320, 2000, {loop: true, loopstart: 9}),
                     init: function() {
                         e.listen('race.end', function(event) {
                         	var race = event.detail;

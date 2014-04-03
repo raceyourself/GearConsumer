@@ -35,30 +35,45 @@ define({
         /**
          * Constructor
          */
-        function Sprite(spritesheet, frameWidth, animationPeriod) {
-            this.spritesheet = spritesheet;
+        function Sprite(spritesheet, frameWidth, animationPeriod, options) {
             this.width = frameWidth;
-            this.height = spritesheet.height;
+            this.animationPeriod = animationPeriod;
+            if(typeof(spritesheet) === 'string') {
+            	console.log('loading image from url');
+            	this.loadImage(spritesheet);
+            } else {
+            	this.onLoad(spritesheet);
+            }
+            
+            
             this.loop = true;
-            this.frames = spritesheet.width/this.width;
-            if (this.frames !== ~~this.frames) console.error("Sprite " + spritesheet.src + " has a non-integer frame count!");
-            this.setPeriod(animationPeriod);
+            this.loopstart = 0;
+            
+           // this.setPeriod(animationPeriod);
             this.reset();
             this.position = { x : 0, y: 0 };
             this.targetPosition = { x : 0, y : 0};
             this.lastUpdateTime = Date.now();
             this.moveTimer = 0;
+            if(options) {
+            	for (var attrname in options) { this[attrname] = options[attrname]; console.error(options); console.log(spritesheet); }
+            }
             this.speed = { x: 0, y : 0 };
             this.moveInterval = null;
+            
 //            console.log("Sprite " + spritesheet.src + " has " + this.frames + " " + this.width + "x" + this.height + " frames");
         }
         Sprite.prototype = {
                 drawscaled: function drawscaled(context, x, y, dt, scale) {
-                    this.time += dt;
+                	if(!this.spritesheet) return;
+                	this.time += dt;
                     if (this.time >= this.animationPeriod) {
                     	while (!!this.loop && this.time > this.animationPeriod) this.time -= this.animationPeriod;
                         if (!!this.endCallback) this.endCallback(this.time);
                         this.endCallback = undefined;
+                        if(this.loop) {
+                        	this.time = this.loopstart * this.frameDelay;
+                        }
                     }
                     var frame = ~~(this.time/this.frameDelay);
                     if(!this.loop && this.time >= this.animationPeriod) {
@@ -67,12 +82,47 @@ define({
                     context.drawImage(this.spritesheet, frame*this.width, 0, this.width, this.spritesheet.height, x, y, this.width * scale, this.spritesheet.height * scale);
                 },
                 
+                onLoad: function onLoad(spritesheet) {
+                	this.spritesheet = spritesheet;
+                	//console.log(this);
+                	//console.log(spritesheet);
+                	this.height = spritesheet.height;
+                	
+                	this.frames = spritesheet.width/this.width;
+                	console.log(this.width);
+                	this.setPeriod(this.animationPeriod);
+                    if (this.frames !== ~~this.frames) console.error("Sprite " + spritesheet.src + " has a non-integer frame count!");
+                },
+                
+                loadImage: function loadImage(url) {
+                	var image = new Image();
+                	
+                	var that = this;
+                	image.onerror = function() {
+                		throw 'could not load' + this.src;      	
+                	}
+                	image.onload = function() {
+                		//that.width = this.width / this.numframes;
+                		var sprite = this;
+                		that.onLoad(sprite);
+                	};
+                	image.src = url;
+                },
+                
                 draw: function draw(context, x, y, dt) {
+                	if(!this.spritesheet) return;
+                	//console.log(this.spritesheet.src);
+                	//console.log(this.frameDelay);
+                	//console.log(dt);
                     this.time += dt;
                     if (this.time >= this.animationPeriod) {
                         while (!!this.loop && this.time > this.animationPeriod) this.time -= this.animationPeriod;
                         if (!!this.endCallback) this.endCallback(this.time);
                         this.endCallback = undefined;
+                        if(this.loop) {
+                        	console.log(this.loopstart);
+                        	this.time += this.loopstart * this.frameDelay;
+                        }
                     }
                     var frame = ~~(this.time/this.frameDelay);
                     if(!this.loop && this.time >= this.animationPeriod) {
@@ -108,7 +158,9 @@ define({
                     this.endCallback = callback;
                 },
                 clone: function clone() {
+                	if(!this.spritesheet) throw 'can not clone unloaded object';      
                     var sprite = new Sprite(this.spritesheet, 0 + this.width, 0 + this.animationPeriod);
+                    
                     return sprite;
                 },
 
