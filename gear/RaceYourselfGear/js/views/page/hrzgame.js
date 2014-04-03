@@ -2061,10 +2061,10 @@ define({
 //						boulderGameImage.draw(context, 0, 0, 0);
 //						break;
 					case 'WeightLoss':
-						weightLossGameImage.draw(context, 0, 0, 0);
+						weightLossGameImage.draw(context, 0, 0, dt);
 						break;
 					case 'Strength':
-						strengthGameImage.draw(context, 0, 0, 0);
+						strengthGameImage.draw(context, 0, 0, dt);
 						break;
 					case 'finished':
 						finishedImage.draw(context, centreX - finishedImage.height/2, centreY - finishedImage.height/2, 0);
@@ -2355,13 +2355,13 @@ define({
 //			});
 			
 			// Weight loss game image
-			loadImage('images/Game_Eliminator/screen_RY_Slimmer_unlocked.png', function() {
-				weightLossGameImage = new Sprite(this, this.width, 1000);
+			loadImage('images/animation_RY_Slimmer_unlocked_all_together.png', function() {
+				weightLossGameImage = new Sprite(this, this.width / 12, 2000, {loop:true, loopstart: 9});
 			});
 			
 			// Strength game image
-			loadImage('images/Game_Eliminator/screen_RY_Faster_unlocked.png', function() {
-				strengthGameImage = new Sprite(this, this.width, 1000);
+			loadImage('images/animation_RY_Faster_unlocked_all_together.png', function() {
+				strengthGameImage = new Sprite(this, this.width / 12, 2000, {loop:true, loopstart: 9});
 			});
 			
 			//boulder game image
