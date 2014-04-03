@@ -168,11 +168,11 @@ define({
             });
             
             loadImage('images/animation_eagle_character_selection_locked.png', function() {
-            	eagleLockedSprite = new Sprite(this, this.width/18, 2500);
+            	eagleLockedSprite = new Sprite(this, this.width/7, 800);
             });
             
             loadImage('images/animation_eagle_character_selection_unlocked.png', function() {
-            	eagleUnlockedSprite = new Sprite(this, this.width/18, 2500);
+            	eagleUnlockedSprite = new Sprite(this, this.width/7, 800);
             });
             
             zombieBtnEl.addEventListener('click', onZombieBtnClick);
