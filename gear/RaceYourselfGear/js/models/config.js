@@ -48,6 +48,7 @@ define({
                 weightUnlockDist: 5,
                 strengthUnlockDist: 10,
                 demoMode: 1,
+                meteorUnlockPoints: 50000,
                 ppmGood: 5,
                 ppmBad: -1,
                 pointsPenaltyDeath: -100,
@@ -112,6 +113,11 @@ define({
 		function getCatchupTime() {
 			if(!isFinite(config.catchupTime)) return defaults.catchupTime;
 			return config.catchupTime;
+		}
+		
+		function getMeteorUnlockPoints() {
+			if(!isFinite(config.meteorUnlockPoints)) return defaults.meteorUnlockPoints;
+			return config.meteorUnlockPoints;
 		}
 		
 		function getLapLength() {
@@ -180,7 +186,8 @@ define({
             getIsDemoMode : getIsDemoMode,
             getPpmGood : getPpmGood,
             getPpmBad : getPpmBad,
-            getPointsPenaltyDeath : getPointsPenaltyDeath
+            getPointsPenaltyDeath : getPointsPenaltyDeath,
+            getMeteorUnlockPoints: getMeteorUnlockPoints
         };
     }
 

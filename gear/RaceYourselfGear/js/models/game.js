@@ -46,6 +46,9 @@ define({
                 'dino' : {
                     locked: true
                 },
+                'meteor': {
+                	locked: true
+                },
                 'eliminator' : {
                 	locked: true
                 },
