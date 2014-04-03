@@ -46,7 +46,8 @@ define({
                 lapLength: 100,  
                 elimUnlockDist: 50,
                 weightUnlockDist: 5,
-                strengthUnlockDist: 10
+                strengthUnlockDist: 10,
+                demoMode: 1,
             },
             config = {},
             STORAGE_KEY = 'config';
@@ -112,7 +113,12 @@ define({
 		
 		function getLapLength() {
 			if(!isFinite(config.lapLength)) return defaults.lapLength;
-			return defaults.lapLength;
+			return config.lapLength;
+		}
+        
+        function getIsDemoMode() {
+        	if(!isFinite(config.demoMode)) return defaults.demoMode>0;
+        	return config.demoMode>0;
 		}
         
         function saveConfig(configuration) {
@@ -126,6 +132,7 @@ define({
         	var configuration = event.detail;
         	saveConfig(configuration);
         }
+        
         
         /**
          * Initializes module.
@@ -151,7 +158,8 @@ define({
             getElimUnlockDist: getElimUnlockDist,
             getWeightUnlockDist: getWeightUnlockDist,
             getStrengthUnlockDist: getStrengthUnlockDist,
-            getLapLength : getLapLength           
+            getLapLength : getLapLength, 
+            getIsDemoMode : getIsDemoMode        
         };
     }
 

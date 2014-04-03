@@ -318,6 +318,11 @@ define({
                 orientation: "horizontal",
                 scrollbar: "bar"                	
             });
+
+			//start the canned hrm sequence if in demo mode
+			if (config.getIsDemoMode()) {
+				hrmMock.startCanned();
+            }                       
             
             sectionChanger.setActiveSection(0, 0);
             
@@ -706,7 +711,8 @@ define({
 			//set that we are currently adapting
 			adaptingToRecentZoneShift = true;
 			//15 seconds to adapt
-			adaptingTimeout	= setTimeout(adaptComplete, config.getAdaptPeriod() * 1000 * timeMultiplier);
+			var adaptPeriod = config.getIsDemoMode? 5 : config.getAdaptPeriod();
+			adaptingTimeout	= setTimeout(adaptComplete, adaptPeriod * 1000 * timeMultiplier);
 			
 			var zoneInfo = new Object();
         	zoneInfo.name = zone;
@@ -833,7 +839,8 @@ define({
 				{
 					if(warningTimeoutLow == false)
 					{
-						warningTimeoutLow = setTimeout(warningOver_low, config.getWarningPeriod()*1000 * timeMultiplier);
+						var warningPeriod = config.getIsDemoMode? 3 : config.getWarningPeriod();
+						warningTimeoutLow = setTimeout(warningOver_low, warningPeriod*1000 * timeMultiplier);
 					}
 				}
 			}
@@ -869,7 +876,8 @@ define({
 				{
 					if(warningTimeoutHigh == false)
 					{
-						warningTimeoutHigh = setTimeout(warningOver_high, config.getWarningPeriod()*1000 * timeMultiplier);
+						var warningPeriod = config.getIsDemoMode? 3 : config.getWarningPeriod();
+						warningTimeoutHigh = setTimeout(warningOver_high, warningPeriod*1000 * timeMultiplier);
 					}
 				}
 			}
@@ -2188,12 +2196,15 @@ define({
             canvas = document.getElementById('race-canvas');
             context = canvas.getContext('2d');
             
-            if (hrm.isAvailable()) {
-                hrm.start();
-                // Availability will change if start fails
-            } 
-            if (!hrm.isAvailable()) {
-            	hrmMock.start();
+            if(!config.getIsDemoMode())
+            {
+				if (hrm.isAvailable()) {
+					hrm.start();
+					// Availability will change if start fails
+				} 
+				if (!hrm.isAvailable()) {
+	            	hrmMock.start();
+				}
             }                       
             
             bindEvents();

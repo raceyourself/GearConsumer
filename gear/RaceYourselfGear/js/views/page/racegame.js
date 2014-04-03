@@ -335,6 +335,11 @@ define({
         	
         	ppm = 0;
         	
+			//start the canned hrm sequence if in demo mode
+			if (config.getIsDemoMode()) {
+				hrmMock.startCanned();
+            }  
+            
             visible = true;
             finished = false;
             started = false;
@@ -2140,15 +2145,19 @@ define({
             canvas = document.getElementById('race-canvas');
             context = canvas.getContext('2d');
             
-        	//leave hrm in, still want it for side screen
-            if (hrm.isAvailable()) {
-                  hrm.start();
-                  // Availability will change if start fails
-              } 
-              if (!hrm.isAvailable()) {
-              	hrmMock.start();
-              }                       
-              
+            if(!config.getIsDemoMode())
+            {
+				//leave hrm in for race game, still want it for side screen
+				if (hrm.isAvailable()) {
+					  hrm.start();
+					  // Availability will change if start fails
+				  } 
+				  if (!hrm.isAvailable()) {
+					hrmMock.start();
+	//              	hrmMock.startCanned();
+						//start this in onpageshow
+				  }                       
+             } 
               bindEvents();
         }
         
