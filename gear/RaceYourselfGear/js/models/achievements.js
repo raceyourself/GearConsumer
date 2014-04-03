@@ -48,7 +48,7 @@ define({
                 'run' : {
                     title: 'First run',
                     description: 'Complete a run',
-                    points: 100,
+                    points: 0,
                     uses: 1,
                     init: function() {
                         e.listen('race.end', function(event) {
@@ -80,7 +80,7 @@ define({
                 'run_in_zone' : {
                     title: 'Trainer',
                     description: 'Complete a run without leaving the target heart rate zone',
-                    points: 150,
+                    points: 0,
                     uses: Infinity,
                     init: function() {
                         e.listen('race.end', function(event) {
@@ -96,7 +96,7 @@ define({
                 'survived' : {
                     title: 'Survivor',
                     description: 'Survive a run without getting caught by a pursuer',
-                    points: 50,
+                    points: 0,
                     uses: Infinity,
                     init: function() {
                         e.listen('race.end', function(event) {
@@ -113,7 +113,7 @@ define({
                 '1km_run' : {
                     title: '1k',
                     description: 'Complete a 1km run',
-                    points: 100,
+                    points: 0,
                     uses: 1,
                     init: function() {
                         e.listen('race.end', function(event) {
@@ -129,7 +129,7 @@ define({
                 '3km_run' : {
                     title: '3k',
                     description: 'Complete a 3km run',
-                    points: 150,
+                    points: 0,
                     uses: 1,
                     init: function() {
                         e.listen('race.end', function(event) {
@@ -145,7 +145,7 @@ define({
                 '5km_run' : {
                     title: '5k',
                     description: 'Complete a 5km run',
-                    points: 250,
+                    points: 0,
                     uses: 1,
                     init: function() {
                         e.listen('race.end', function(event) {
@@ -161,7 +161,7 @@ define({
                 'half_marathon' : {
                     title: 'Half marathon',
                     description: 'Complete a half marathon',
-                    points: 500,
+                    points: 0,
                     uses: 1,
                     init: function() {
                         e.listen('race.end', function(event) {
@@ -177,7 +177,7 @@ define({
                 'marathon' : {
                     title: 'Marathon',
                     description: 'Complete a full marathon',
-                    points: 1000,
+                    points: 0,
                     uses: 1,
                     init: function() {
                         e.listen('race.end', function(event) {
@@ -303,7 +303,7 @@ define({
                 'thrice_weekly' : {
                     title: 'Addict',
                     description: 'Run three times within a week',
-                    points: 1000,
+                    points: 0,
                     uses: Infinity,
                     init: function() {
                         e.listen('race.end', function(event) {

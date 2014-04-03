@@ -185,10 +185,18 @@
     				</a>
     			</section>
     			<section>
-    				<img class="enemy-select" src="images/screen_characters_meteor.png"/>
-    			</section>
+					<a href="#" id="meteor-mode-btn">
+						<canvas id="meteor-canvas" width="320" height="320" >
+						
+						</canvas>
+					</a>
+				</section>
     			<section>
-    				<img class="enemy-select" src="images/screen_characters_eagle.png"/>
+    				<a href="#" id="eagle-mode-btn" >
+    					<canvas id="eagle-canvas" width="320" height="320">
+    				
+    					</canvas>
+    				</a>
     			</section>
     		</div>
     	</div>
@@ -436,6 +444,17 @@
     					80+
     				</a>
     			</li>
+    		</ul>
+    	</div>
+    </div>
+    
+    <div class="ui-page" id="historypage">
+    	<header class="ui-header" data-position="fixed">
+    		<h2 class="ui-title">History</h2>
+    	</header>
+    	<div class="ui-content">
+    		<ul class="ui-listview" id="historylist">
+    			
     		</ul>
     	</div>
     </div>
@@ -783,15 +802,17 @@
     </div>
     
     <div class="ui-page" id="racesummary">
-    	<header class="ui-header" data-position="fixed">
-    		<h2 class="ui-title">Race Summary</h2>
-    	</header>
-    	<div id="race-summary-sectionchanger" class="ui-content">
+    	
+    	<div id="race-summary-sectionchanger" class="ui-content" style="z-index:0;">
     		<div>
-    			<section id="summary-unlocks" class="hidden">
+    			<section id="summary-unlocks" class="hidden" style="z-index:1;">
     			</section>
-    			<section id="summary">
+    			<section>
+	    			<header class="ui-header" data-position="fixed">
+			    		<h2 class="ui-title">Race Summary</h2>
+			    	</header>
     				<div>
+    				
 		        		<div class="stat-label"><img src="images/icon-time.png" /></div>
 			        	<div id="duration-final" class="stat-value">0 00</div>
 			        	<div class="stat-sub" id="s-duration-units">hrs&nbsp;&nbsp;&nbsp;min</div>
@@ -807,7 +828,10 @@
 			        	<div class="stat-sub" id="s-kcal-units">kcal</div>
 			        </div>
     			</section>
-    			<section>  
+    			<section> 
+    				<header class="ui-header" data-position="fixed">
+			    		<h2 class="ui-title">Race Summary</h2>
+			    	</header> 
     				<div>
 		        		<div class="stat-label"><img src="images/icon-sweat-earned.png" /></div>
 			        	<div id="current-sweat-final" class="stat-value">0</div>
@@ -825,6 +849,9 @@
 			        </div>
     			</section>
     			<section class="statsduo">
+    			<header class="ui-header" data-position="fixed">
+			    	<h2 class="ui-title">Race Summary</h2>
+			    </header> 
     				<div class="stat">
 		        		<div class="stat-label"><img src="images/icon-steps.png" /></div>
 			        	<div id="steps-final" class="stat-value">0</div>
@@ -837,8 +864,11 @@
 			        </div>
     			</section>
 				<section id="summary-achievements">
+					<header class="ui-header" data-position="fixed">
+			    		<h2 class="ui-title">Race Summary</h2>
+			    	</header> 
 			    	<div class="ui-content">
-	            		<div class="ry-title">Awards</div>
+	            		<div class="ry-title" style="padding: 3px 0px;">Awards</div>
 			    		<ul class="ui-listview" id="summary-achievements-list">
 			    		</ul>
 			    	</div>

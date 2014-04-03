@@ -288,6 +288,10 @@ extend(SectionChanger, Scroller, {
 			this._endScroll();
 		}
 	},
+	
+	getNumberOfSections: function() {
+		return this.sections.length;
+	},
 
 	getActiveSectionIndex: function() {
 		return this.activeIndex;

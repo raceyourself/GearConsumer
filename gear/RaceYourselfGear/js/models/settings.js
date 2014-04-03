@@ -41,6 +41,7 @@ define({
                 points: 0,
                 eliminatorHighscore: 0,
                 age: 0,
+                historyCount: 0,
                 zombieTutorial: false,
                 eliminatorTutorial: false,
                 firstTimeAge: true,
@@ -127,6 +128,11 @@ define({
         function getFirstTimeSelect() {
         	if(!isFinite(settings.firstTimeSelect)) return defaults.firstTimeSelect;
         	return settings.firstTimeSelect;
+        }
+        
+        function getCurrentHistoryCount() {
+        	if(!isFinite(settings.historyCount)) return defaults.historyCount;
+        	return settings.historyCount;
         }
         
         function saveSettings() {
@@ -218,6 +224,12 @@ define({
             return saveSettings();
         }
         
+        function increaseCurrentHistoryCount() {
+        	if(!isFinite(settings.historyCount)) return;
+        	settings.historyCount = settings.historyCount + 1;
+        	return saveSettings();
+        }
+        
         /**
          * Initializes module.
          */
@@ -260,7 +272,9 @@ define({
             getFirstTimeSelect: getFirstTimeSelect,
             setFirstTimeSelect: setFirstTimeSelect,
             getEliminatorHighScore: getEliminatorHighScore,
-            setEliminatorHighScore: setEliminatorHighScore
+            setEliminatorHighScore: setEliminatorHighScore,
+            getCurrentHistoryCount: getCurrentHistoryCount,
+            increaseCurrentHistoryCount: increaseCurrentHistoryCount
         };
     }
 

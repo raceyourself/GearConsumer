@@ -27,6 +27,7 @@ define({
         'core/storage',
         'models/game',
         'models/settings',
+        'models/racedata',
         'models/mocks/pedometer',
         'models/pedometer',
         'models/sapRaceYourself',
@@ -40,15 +41,20 @@ define({
             pedometer = req.models.pedometer,
             mock = req.models.mocks.pedometer,
             game = req.models.game,
+            racedata = req.models.racedata,
             provider = req.models.sapRaceYourself,
             settings = req.models.settings,
             units = req.helpers.units,
             _goal = "",
             ongoingRace = null,
-            history = [];
+            history = [],
+            STORAGE_KEY = 'history';
+        
+       
         
         function newRace() {
             if (!!ongoingRace) history.unshift(ongoingRace);
+            //saveHistory();
             ongoingRace = new Race();
             e.fire('race.new');
             return ongoingRace;
@@ -123,6 +129,8 @@ define({
                 }
                 this.duration = this.getDuration();
                 this.running = false;
+                racedata.setData(this);
+                //saveHistory();
                 this.stopped = true;
             },
             
@@ -169,6 +177,10 @@ define({
             getDuration: function getDuration() {
                 if (this.running === false) return this.duration;
                 return Date.now() - this.startDate;
+            },
+            
+            getStartDate: function getStartDate() {
+            	return this.startDate;
             },
             
             getSpeed: function getSpeed() {            
