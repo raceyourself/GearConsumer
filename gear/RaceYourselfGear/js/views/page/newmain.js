@@ -25,11 +25,13 @@ define({
         'core/event',
         'models/application',
         'models/race',
+        'models/settings',
         'views/page/runselect',
         'views/page/achievements',
         'views/page/settingspage',
         'views/page/racesummary',
-        'views/page/nohistory'
+        'views/page/nohistory',
+        'views/page/historypage'
     ],
     def: function viewsPageNewMain(req) {
         'use strict';
@@ -37,6 +39,7 @@ define({
         var e = req.core.event,
             app = req.models.application,
             race = req.models.race,
+            settings = req.models.settings,
             page = null;
 
         function show() {
@@ -83,10 +86,10 @@ define({
         }
         
         function onHistoryBtnClick() {
-            if (!race.getOngoingRace() && race.getRaceHistory().length == 0) {
+            if (settings.getCurrentHistoryCount() < 1) {
             	e.fire('nohistory.show');
         	} else {
-            	e.fire('racesummary.show');
+            	e.fire('historypage.show');
             }
         	
         }

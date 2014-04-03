@@ -77,7 +77,7 @@ define({
         
         function onClick() {
         	if(isScrolling()) return;
-        	if(sectionChanger.getActiveSectionIndex() < 3)
+        	if(sectionChanger.getActiveSectionIndex() < sectionChanger.getNumberOfSections() - 1)
         	sectionChanger.nextSection(500);
         }
 

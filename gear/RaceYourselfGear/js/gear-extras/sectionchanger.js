@@ -63,6 +63,7 @@ extend(SectionChanger, Scroller, {
 		this.sections = null;
 		this.sectionPositions = [];
 		this.activeIndex = 0;
+		this.previousIndex = 0;
 		this.lastDirection = 0;
 		this.direction = 0;
 
@@ -271,6 +272,7 @@ extend(SectionChanger, Scroller, {
 			newX = 0;
 		}
 
+		this.previousIndex = this.activeIndex;
 		this.activeIndex = index;
 
 		for ( i=0; i < sectionLength; i++) {
@@ -287,6 +289,10 @@ extend(SectionChanger, Scroller, {
 		} else {
 			this._endScroll();
 		}
+	},
+	
+	getNumberOfSections: function() {
+		return this.sections.length;
 	},
 
 	getActiveSectionIndex: function() {
@@ -372,7 +378,8 @@ extend(SectionChanger, Scroller, {
 	_endScroll: function() {
 		this._repositionSections();
 		this._fireEvent( eventType.CHANGE, {
-			active: this.activeIndex
+			active: this.activeIndex,
+			previous: this.previousIndex
 		});
 		this._super();
 	},

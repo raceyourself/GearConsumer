@@ -27,6 +27,7 @@ define({
         'core/storage',
         'models/game',
         'models/settings',
+        'models/racedata',
         'models/mocks/pedometer',
         'models/pedometer',
         'models/sapRaceYourself',
@@ -40,15 +41,20 @@ define({
             pedometer = req.models.pedometer,
             mock = req.models.mocks.pedometer,
             game = req.models.game,
+            racedata = req.models.racedata,
             provider = req.models.sapRaceYourself,
             settings = req.models.settings,
             units = req.helpers.units,
             _goal = "",
             ongoingRace = null,
-            history = [];
+            history = [],
+            STORAGE_KEY = 'history';
+        
+       
         
         function newRace() {
             if (!!ongoingRace) history.unshift(ongoingRace);
+            //saveHistory();
             ongoingRace = new Race();
             e.fire('race.new');
             return ongoingRace;
@@ -84,8 +90,10 @@ define({
             this.running = false;
             this.stopped = false;
             this.pointsEarned = 0;
-            this.pointsLost = 0;
+            this.pointsLost = 0;            
             this.achievements = [];
+            this.gps_updates = 0;
+            this.pedometer_updates = 0;
             this.data = {}; // Game-specific race data
             this.triggerProgress();
         }
@@ -123,6 +131,8 @@ define({
                 }
                 this.duration = this.getDuration();
                 this.running = false;
+                racedata.setData(this);
+                //saveHistory();
                 this.stopped = true;
             },
             
@@ -169,6 +179,10 @@ define({
             getDuration: function getDuration() {
                 if (this.running === false) return this.duration;
                 return Date.now() - this.startDate;
+            },
+            
+            getStartDate: function getStartDate() {
+            	return this.startDate;
             },
             
             getSpeed: function getSpeed() {            
@@ -276,6 +290,10 @@ define({
             	this.raceType = type;
             },
             
+            getGpsPercentage: function getGpsPercentag() {
+            	if (this.gps_updates == 0 && this.pedometer_updates == 0) return 100;
+            	return (this.gps_update*100/(this.gps_updates+this.pedometer_updates));
+            },
             
             triggerProgress: function triggerProgress() {
                 var lastSnapshot = this.progressSnapshot || {
@@ -329,7 +347,8 @@ define({
                 ongoingRace.track.push({distance: ongoingRace.getMetricDistance(), time: ongoingRace.getDuration()});
                     e.fire('pedometer.step');
                     e.fire('gpsUpdateOff');
-                }
+                    ongoingRace.pedometer_updates++;
+               }
             }
             ongoingRace.lastPedometerDistance = pedometerInfo.distance; // update for next loop
         }
@@ -366,6 +385,7 @@ define({
                 ongoingRace.track.push({distance: ongoingRace.getMetricDistance(), time: ongoingRace.getDuration()});
                 e.fire('pedometer.step');
                 e.fire('gpsUpdateOn');  
+                ongoingRace.gps_updates++;                
             }
             
             ongoingRace.lastGpsTimestamp = currentTimestamp;
