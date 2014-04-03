@@ -5,11 +5,25 @@
     <meta charset="utf-8"/>
     <meta name="description" content="Pedometer"/>
     <title>RaceYourself</title>
+    <style>
+    	#gear-container {
+    		background: url("images/development/gear_image.png") no-repeat;    
+    		min-width: 384px;
+    		min-height: 440px;		
+    	}
+    	#gear-container iframe {
+    		position: relative;
+    		top: 60px;
+    		left: 26px;
+    	}
+    </style>
 </head>
 <body>
+<div id="gear-container">
 <iframe src="index.html" width="320" height="320" scrolling="no" frameborder="0">
     <p>Your browser does not support iframes.</p>
 </iframe>
+</div>
 <script type="text/javascript">
     var iframe = document.childNodes[1].childNodes[2].childNodes[1].contentWindow;
 </script>
