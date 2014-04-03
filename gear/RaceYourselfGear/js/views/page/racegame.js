@@ -565,6 +565,10 @@ define({
             bannerTimeout = setTimeout(ready, countDownParams.stageDuration * 1000);
 			countDownParams.outerRadius = countDownParams.outerRadiusMax;
 			countDownParams.startTime = Date.now();
+			if(settings.getVibrateActive()) {
+				console.log('vibrate: countdown');
+				navigator.vibrate([500]);
+			}
         }
         
         function ready() {
@@ -574,6 +578,10 @@ define({
             bannerTimeout = setTimeout(set, countDownParams.stageDuration * 1000);
             countDownParams.outerRadius = countDownParams.outerRadiusMax;
 			countDownParams.startTime = Date.now();
+			if(settings.getVibrateActive()) {
+				console.log('vibrate: countdown');
+				navigator.vibrate([250]);
+			}
         }
         function set() {
             banner = 'GO';
@@ -582,7 +590,12 @@ define({
             bannerTimeout = setTimeout(go, countDownParams.stageDuration * 1000);
             countDownParams.outerRadius = countDownParams.outerRadiusMax;
 			countDownParams.startTime = Date.now();
+			if(settings.getVibrateActive()) {
+				console.log('vibrate: countdown');
+				navigator.vibrate([250]);
+			}
 		}
+		
         function go() {
 
 			startRun();
@@ -599,6 +612,11 @@ define({
 //            var warmupDurationMinutes = Math.floor(config.getWarmupPeriod() / 60);
 //			setNotification(green, '#fff', 'Warm up for ' + warmupDurationMinutes + 'min', 'Tap to skip', 10*1000);
 //			warmingUp = true;
+
+			if(settings.getVibrateActive()) {
+				console.log('vibrate: countdown');
+				navigator.vibrate([750]);
+			}
 
         }
         

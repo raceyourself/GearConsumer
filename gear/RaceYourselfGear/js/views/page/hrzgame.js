@@ -493,6 +493,10 @@ define({
             bannerTimeout = setTimeout(ready, countDownParams.stageDuration * 1000);
 			countDownParams.outerRadius = countDownParams.outerRadiusMax;
 			countDownParams.startTime = Date.now();
+			if(settings.getVibrateActive()) {
+				console.log('vibrate: countdown');
+				navigator.vibrate([500]);
+			}
         }
         
         function ready() {
@@ -502,7 +506,12 @@ define({
             bannerTimeout = setTimeout(set, countDownParams.stageDuration * 1000);
             countDownParams.outerRadius = countDownParams.outerRadiusMax;
 			countDownParams.startTime = Date.now();
-        }
+			if(settings.getVibrateActive()) {
+				console.log('vibrate: countdown');
+				navigator.vibrate([250]);
+			}        
+		}
+			
         function set() {
             banner = 'GO';
             requestRender();
@@ -510,6 +519,10 @@ define({
             bannerTimeout = setTimeout(go, countDownParams.stageDuration * 1000);
             countDownParams.outerRadius = countDownParams.outerRadiusMax;
 			countDownParams.startTime = Date.now();
+			if(settings.getVibrateActive()) {
+				console.log('vibrate: countdown');
+				navigator.vibrate([250]);
+			}
 		}
         function go() {
 
@@ -526,7 +539,10 @@ define({
 //            var warmupDurationMinutes = Math.floor(config.getWarmupPeriod() / 60);
 //			setNotification(green, '#fff', 'Warm up for ' + warmupDurationMinutes + 'min', 'Tap to skip', 10*1000);
 //			warmingUp = true;
-
+			if(settings.getVibrateActive()) {
+				console.log('vibrate: countdown');
+				navigator.vibrate([750]);
+			}
         }
         
         function restart() {
@@ -592,10 +608,10 @@ define({
 							setCurrentHRZone("Aerobic");
 							intervalTimeout = setTimeout(nextHRZone, config.getRecoverDuration()*1000 * timeMultiplier);
 							//vibrate
-							if(settings.getVibrateActive()) {
-								console.log('vibrate: switched hr zone to anaerobic');
-								navigator.vibrate([10, 100, 10, 100, 10]);
-							}
+//							if(settings.getVibrateActive()) {
+//								console.log('vibrate: switched hr zone to anaerobic');
+//								navigator.vibrate([10, 100, 10, 100, 10]);
+//							}
 							//notify
 							setNotification(green, '#fff', 'Recover for ' + config.getRecoverDuration() + 's', null, 5*1000);
 							break;
@@ -604,10 +620,10 @@ define({
 							setCurrentHRZone("Anaerobic");
 							intervalTimeout = setTimeout(nextHRZone, config.getSprintDuration()*1000 * timeMultiplier);
 							//vibrate
-							if(settings.getVibrateActive()) {
-								console.log('vibrate: switched hr zone to aerobic');
-								navigator.vibrate([100, 10, 100, 10, 100]);
-							}
+//							if(settings.getVibrateActive()) {
+//								console.log('vibrate: switched hr zone to aerobic');
+//								navigator.vibrate([100, 10, 100, 10, 100]);
+//							}
 							//notify
 							setNotification(red, '#fff', 'Sprint for ' + config.getSprintDuration() + 's', null, 5*1000);
 							break;
