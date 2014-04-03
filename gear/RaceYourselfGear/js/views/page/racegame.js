@@ -2016,7 +2016,6 @@ define({
             }
             
             if(gameOver) {
-            	console.log('about to draw eliminated');
             	eliminatedEndImage.draw(context, 0, 0, dt);
             }
             

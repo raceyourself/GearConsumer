@@ -90,8 +90,10 @@ define({
             this.running = false;
             this.stopped = false;
             this.pointsEarned = 0;
-            this.pointsLost = 0;
+            this.pointsLost = 0;            
             this.achievements = [];
+            this.gps_updates = 0;
+            this.pedometer_updates = 0;
             this.data = {}; // Game-specific race data
             this.triggerProgress();
         }
@@ -288,6 +290,10 @@ define({
             	this.raceType = type;
             },
             
+            getGpsPercentage: function getGpsPercentag() {
+            	if (this.gps_updates == 0 && this.pedometer_updates == 0) return 100;
+            	return (this.gps_update*100/(this.gps_updates+this.pedometer_updates));
+            },
             
             triggerProgress: function triggerProgress() {
                 var lastSnapshot = this.progressSnapshot || {
@@ -341,7 +347,8 @@ define({
                 ongoingRace.track.push({distance: ongoingRace.getMetricDistance(), time: ongoingRace.getDuration()});
                     e.fire('pedometer.step');
                     e.fire('gpsUpdateOff');
-                }
+                    ongoingRace.pedometer_updates++;
+               }
             }
             ongoingRace.lastPedometerDistance = pedometerInfo.distance; // update for next loop
         }
@@ -378,6 +385,7 @@ define({
                 ongoingRace.track.push({distance: ongoingRace.getMetricDistance(), time: ongoingRace.getDuration()});
                 e.fire('pedometer.step');
                 e.fire('gpsUpdateOn');  
+                ongoingRace.gps_updates++;                
             }
             
             ongoingRace.lastGpsTimestamp = currentTimestamp;
