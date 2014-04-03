@@ -850,7 +850,7 @@ define({
 				zombiesCatchingUp = false;
 				if(!isDead && started)
 				{
-					ppm = -1; // Negative pts/meter
+					ppm = config.getPpmBad(); // Negative pts/meter
 				}
 				if(warningTimeoutLow != false)
 				{
@@ -885,7 +885,7 @@ define({
 			{
 				if(!isDead && started)
 				{
-					ppm = 5; // Standard pts/meter
+					ppm = config.getPpmGood(); // Standard pts/meter
 				}
 				//clear warning
 				if(warningTimeoutHigh != false)
@@ -1031,7 +1031,7 @@ define({
                 r.data.caught_by = game.getCurrentOpponentType();
                 r.data.times_caught = r.data.times_caught || 0;
                 r.data.times_caught++;
-                r.addPoints(-100);
+                r.addPoints(config.getPointsPenaltyDeath());
                 
 
 					if(settings.getAudioActive()) {

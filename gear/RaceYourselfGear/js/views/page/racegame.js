@@ -473,7 +473,7 @@ define({
 			race.getOngoingRace().start();
 ////            startZombies();
 			lastRender = Date.now();
-			ppm = 5;
+			ppm = config.getPpmGood();
 			started = true;
 			timeCurrentLapStarted = Date.now();
 			
@@ -553,7 +553,7 @@ define({
             document.getElementById('eliminator-end').classList.toggle('hidden', true);
             document.getElementById('eliminator-highscore').classList.toggle('hidden', true);
             gameOver = false;
-            ppm = 5;
+            ppm = config.getPpmGood();
             playerIsAhead = true;
             timeAheadnessSwitched = Date.now();
         	restart();
@@ -753,7 +753,7 @@ define({
 				
 				playerIsAhead = playerIsAheadNow;
 				timeAheadnessSwitched = Date.now();
-				ppm = playerIsAhead ? 5 : 0;
+				ppm = playerIsAhead ? config.getPpmGood() : 0;
 			}
 			
 

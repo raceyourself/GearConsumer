@@ -48,6 +48,9 @@ define({
                 weightUnlockDist: 5,
                 strengthUnlockDist: 10,
                 demoMode: 0,
+                ppmGood: 5,
+                ppmBad: -1,
+                pointsPenaltyDeath: -100,
             },
             config = {},
             STORAGE_KEY = 'config';
@@ -120,6 +123,21 @@ define({
         	if(!isFinite(config.demoMode)) return defaults.demoMode>0;
         	return config.demoMode>0;
 		}
+		
+		function getPpmGood() {
+			if(!isFinite(config.ppmGood)) return defaults.ppmGood;
+			return config.ppmGood;
+		}
+
+		function getPpmBad() {
+			if(!isFinite(config.ppmBad)) return defaults.ppmBad;
+			return config.ppmBad;
+		}
+
+		function getPointsPenaltyDeath() {
+			if(!isFinite(config.pointsPenaltyDeath)) return defaults.pointsPenaltyDeath;
+			return config.pointsPenaltyDeath;
+		}
         
         function saveConfig(configuration) {
             if (s.add(STORAGE_KEY, configuration)) {
@@ -159,7 +177,10 @@ define({
             getWeightUnlockDist: getWeightUnlockDist,
             getStrengthUnlockDist: getStrengthUnlockDist,
             getLapLength : getLapLength, 
-            getIsDemoMode : getIsDemoMode        
+            getIsDemoMode : getIsDemoMode,
+            getPpmGood : getPpmGood,
+            getPpmBad : getPpmBad,
+            getPointsPenaltyDeath : getPointsPenaltyDeath
         };
     }
 
