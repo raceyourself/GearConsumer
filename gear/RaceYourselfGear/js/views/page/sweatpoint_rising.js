@@ -41,8 +41,8 @@ define({
 
             this.position = startPos;
             this.destPosition = destPos;
-			this.moveTotalTime = 2;
-			this.alphaTime = 1;
+			this.moveTotalTime = 1;
+			this.alphaTime = 2;
 			this.vel = { x: (destPos.x - startPos.x)/this.moveTotalTime, y: (destPos.y - startPos.y)/this.moveTotalTime };
 
 			this.moveTimer = 0;
@@ -52,6 +52,8 @@ define({
 
 			this.signString = amount > 0 ? ('+') : ('-');
 			this.amountString = Math.abs(this.amount);
+			this.string = amount > 0 ? '+' : '';
+			this.string = this.string + this.amount;
             
         }
 
@@ -83,7 +85,7 @@ define({
 			},
 
 			render: function render(context, sprite) {
-				context.font = 'bold 18px Samsung Sans';
+				context.font = 'bold 24px Samsung Sans';
 				context.fillStyle = this.colour;
 				context.textBaseline = 'middle';
 
@@ -93,16 +95,19 @@ define({
 				var timeForAlpha = Math.min(this.alphaTime, this.moveTimer);
 				context.globalAlpha = Math.cos((timeForAlpha/this.alphaTime) * Math.PI/2);
 				
-				context.textAlign = 'right';
-				context.fillText(this.signString, this.position.x - sprite.width*scale - 3, this.position.y -1);
+//				context.textAlign = 'right';
+//				context.fillText(this.signString, this.position.x - sprite.width*scale - 3, this.position.y -1);
 				
-				context.textAlign = 'left';
-				context.fillText(this.amountString, this.position.x, this.position.y -1);
+//				context.textAlign = 'left';
+//				context.fillText(this.amountString, this.position.x, this.position.y -1);
 				
-				if(sprite != null)
-				{
-					sprite.drawscaled(context, this.position.x - sprite.width*scale - 2, this.position.y - scale * sprite.height/2, 0, scale);
-				}
+//				if(sprite != null)
+//				{
+//					sprite.drawscaled(context, this.position.x - sprite.width*scale - 2, this.position.y - scale * sprite.height/2, 0, scale);
+//				}
+
+				context.textAlign = 'center';
+				context.fillText(this.string, this.position.x, this.position.y -1);
 				
 				context.globalAlpha = 1;
 				

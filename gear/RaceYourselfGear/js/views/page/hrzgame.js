@@ -1145,8 +1145,10 @@ define({
 			if(points == 0) return;
 			var colour = points > 0 ? green : red;
 			var r = race.getOngoingRace();
-			var startPos = { x:distanceToTrackPos(r.getDistance()) + 20, y:canvas.height/2 +20};
-			var destPos = { x:canvas.width/2, y:20 };
+//			var startPos = { x:distanceToTrackPos(r.getDistance()) + 20, y:canvas.height/2 +20};
+//			var destPos = { x:canvas.width/2, y:20 };
+			var startPos = { x:distanceToTrackPos(r.getDistance()) + 40, y:canvas.height - 55 - runner.sprite.height * scale};
+			var destPos = { x:sweat.width/2, y:sweat.height };
 			var pointsPenaltyGraphic = new SweatPoint(points, colour, startPos, destPos);
 			sweatPointGraphics.push(pointsPenaltyGraphic);
 		}
@@ -1269,13 +1271,26 @@ define({
             context.clearRect(0, 0, canvas.width, canvas.height);            
             var trackWidth = canvas.width - 0 - runner.sprite.width;
 
-			
+			var radius = 115/2;
+			var hrXPos = canvas.width - radius - 10;
+			var hrYPos = 37 + radius;
+			var PaceXPosR = 2*radius;
+
 			//draw good bg
 /*			context.drawImage(goodBG, 0, 0, canvas.width, canvas.height - trackHeight);
 			context.globalAlpha = badFraction;
 			context.drawImage(badBG, 0, 0, canvas.width, canvas.height - trackHeight);
 			context.globalAlpha = 1;
 */
+
+			//base coat for pace readout and hr readout, so we can see the sweat points behind
+			if(!countingdown)
+			{
+				context.globalAlpha = 1;
+				drawPaceBG(hrYPos, radius, PaceXPosR);
+				drawHRBG(hrXPos, hrYPos);
+			}			
+
 			//Header
 			//sweat points
 			if(true)
@@ -1759,9 +1774,6 @@ define({
 				}
 				else { heartIcon = heartGreen; }
 			
-				var radius = 115/2;
-				var hrXPos = canvas.width - radius - 10;
-				var hrYPos = 37 + radius;
 
 				//fill
 				var MaxCircleHR = 200;
@@ -1864,14 +1876,10 @@ define({
 					context.fillText('bpm', hrXPos, hrYPos + 38);
 				}
 				//Pace
-				var PaceXPosR = 2*radius;
-				context.beginPath();
-				context.arc(PaceXPosR, hrYPos, radius, Math.PI * 1.5, Math.PI * 2.5, false);
-				context.lineTo(PaceXPosR - 2*radius, hrYPos + radius);
-				context.arc(PaceXPosR-2*radius, hrYPos, radius, Math.PI/2, Math.PI*1.5, false);
-				context.closePath();
-				context.fillStyle = '#fff';
-				context.fill();
+				context.globalAlpha = 0.7;
+				drawPaceBG(hrYPos, radius, PaceXPosR);
+				context.globalAlpha = 1;
+				
 				//text
                 var pace = r.getPace();
                 var paceString = mss(pace*60);
@@ -1881,7 +1889,6 @@ define({
 	                paceString = Number(pace).toFixed(1);
 	                paceUnits = r.getSpeedUnits();
 	            }
-
 				var paceXPos = PaceXPosR - radius/2;
 				context.font = '56px Samsung Sans';
 				context.textAlign = 'center';
@@ -2087,6 +2094,23 @@ define({
             
             context.save();
             frames++;
+        }
+        
+        function drawPaceBG(ypos, radius, posR) 
+        {
+			context.beginPath();
+			context.arc(posR, ypos, radius, Math.PI * 1.5, Math.PI * 2.5, false);
+			context.lineTo(posR - 2*radius, ypos + radius);
+			context.arc(posR-2*radius, ypos, radius, Math.PI/2, Math.PI*1.5, false);
+			context.closePath();
+			context.fillStyle = '#fff';
+			context.fill();
+
+        }
+        
+        function drawHRBG()
+        {
+        
         }
         
         //creates a new path which forms the shape of a box with rounded corners. Caller is responsible for then filling or stroking

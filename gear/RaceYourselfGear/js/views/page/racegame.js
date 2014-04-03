@@ -987,8 +987,8 @@ define({
 			var colour = points > 0 ? green : red;
 			var r = race.getOngoingRace();
 			var playerLapDist = r.getDistance() - lapStartDist;
-			var startPos = { x:distanceToTrackPos(playerLapDist) + 25, y:canvas.height/2 + 35};
-			var destPos = { x:startPos.x, y:20 };
+			var startPos = { x:distanceToTrackPos(playerLapDist) + 40, y:canvas.height - 55 - runner.sprite.height * scale};
+			var destPos = { x:sweat.width/2, y:sweat.height };
 			var pointsPenaltyGraphic = new SweatPoint(points, colour, startPos, destPos);
 			sweatPointGraphics.push(pointsPenaltyGraphic);
 		}
@@ -1179,6 +1179,13 @@ define({
 			context.drawImage(badBG, 0, 0, canvas.width, canvas.height - trackHeight);
 			context.globalAlpha = 1;
 */
+
+			//fill the 'Basecoat' for the lap counter
+			context.beginPath();
+			context.arc( counterXPos, counterHeight, counterRadius, 0, 2*Math.PI, false);
+			context.fillStyle = playerIsAhead? green : red;
+			context.fill();
+
 			//Header
 			//sweat points
 			if(true)
@@ -1319,7 +1326,7 @@ define({
 				if(true)	//new box version
 				{
 					context.fillStyle = '#000';
-					context.fillRect( 0, canvas.height - trackHeight + trackThickness/2, canvas.width, canvas.height);
+//					context.fillRect( 0, canvas.height - trackHeight + trackThickness/2, canvas.width, canvas.height);
 
 					context.fillStyle = '#fff';
 //					context.fillRect(whiteInset, canvas.height - trackHeight + trackThickness/2 + whiteInset, canvas.width - 2 * whiteInset, trackHeight - trackThickness - 2 * whiteInset);
@@ -1417,7 +1424,7 @@ define({
 			
 			//black line above track
 			context.fillStyle = '#000';
-			context.fillRect(0, trackHeight - 7, canvas.width, 10);
+//			context.fillRect(0, trackHeight - 7, canvas.width, 10);
 			
             context.beginPath();
             context.moveTo(0, canvas.height - trackHeight);
@@ -1649,7 +1656,9 @@ define({
 				context.beginPath();
 				context.arc( counterXPos, counterHeight, counterRadius, 0, 2*Math.PI, false);
 				context.fillStyle = playerIsAhead? green : red;
-			
+//				context.globalCompositeOperation = lighter;
+				//partly transparent so that the sweat point numbers show through
+				context.globalAlpha = 0.9;
 				context.fill();
 				//text
 				context.font = '85px Samsung Sans';
@@ -1661,6 +1670,8 @@ define({
 				context.font = '24px Samsung Sans';
 	//        	context.fillText('laps', counterXPos, counterHeight + 40);
 				context.fillText('lap', counterXPos, counterHeight -45);
+//				context.globalCompositeOperation = source-over;
+				context.globalAlpha = 1;
         	}
         	else
         	{
