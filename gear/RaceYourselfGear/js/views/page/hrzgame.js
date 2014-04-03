@@ -98,6 +98,7 @@ define({
             zombies = [],
             zombieIdle = null,
             dino = null,
+            meteor = null,
             dinoBiting = null,
             dinoIdle = null,
             boulder = null,
@@ -388,7 +389,7 @@ define({
             
             //get opponent type from game
 			setOpponent(game.getCurrentOpponentType());
-//			setOpponent('dinosaur');
+			setOpponent('meteor');
 
             zombieCatchupSpeed = -zombieStartOffset/config.getCatchupTime();
             
@@ -439,6 +440,10 @@ define({
         		case 'boulder':
         			regularSound = zombieMoan;
         			killSound = zombieGrowl;
+					break;
+				case 'meteor':
+					regularSound = null;
+					killSound = null;
 					break;
 				default:
 					console.error('unrecognised opponent type: ' + game.getCurrentOpponentType());
@@ -829,7 +834,7 @@ define({
 					clearNotification();
 					setNotification(flashingRed, '#fff', 'Heart Rate too low!', null, 0);
 					showWarningLow = true;
-					if(settings.getAudioActive()) {
+					if(settings.getAudioActive() && regularSound != null) {
 						regularSound.play();
 					}
 					if(settings.getVibrateActive()) {
@@ -1036,7 +1041,7 @@ define({
                 r.addPoints(config.getPointsPenaltyDeath());
                 
 
-					if(settings.getAudioActive()) {
+					if(settings.getAudioActive() && killSound != null) {
 						killSound.play();
 					}
 					if(settings.getVibrateActive()) {
@@ -1665,7 +1670,7 @@ define({
             var playerXPos = 0 + distanceToTrackPos(playerDistance)
             
             var opponentType = game.getCurrentOpponentType()
-//            opponentType = 'dinosaur';
+            opponentType = 'meteor';
             switch(opponentType)
             {
 	            case 'zombie':
@@ -1734,6 +1739,14 @@ define({
 						context.rotate(boulder.rotation);
 						boulder.drawscaled(context, 0,0, dt, scale);
 						context.restore();
+					}
+					break;
+				case 'meteor':
+					if(zDistance != false && currentHRZone!='Recovery' && !isDead && hasBeenInGoalHRZone) {
+						var meteorPos = distanceToTrackPos(zDistance);
+						var meteorScale = scale *1;
+//						meteor.drawscaled(context, meteorPos - meteor.width*0.5*meteorScale, canvas.height - (meteor.Height) * meteorScale, dt, meteorScale);
+						meteor.drawscaled(context, meteorPos - meteor.width * 0.3, canvas.height - trackHeight - (meteor.height + 3)*meteorScale, dt, meteorScale);
 					}
 					break;
 				default:
@@ -2338,6 +2351,11 @@ define({
 			});
 			loadImage('images/animation_dino_small_stationary.png', function() {
 				dinoIdle = new Sprite(this, this.width/5, 500);
+			});
+			
+			//meteor image
+			loadImage('images/animation_meteor_big_in_game.png', function() {
+				meteor = new Sprite(this, this.width/5, 500);
 			});
 			
 			//boulder image
