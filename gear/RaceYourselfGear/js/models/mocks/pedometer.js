@@ -9,6 +9,7 @@ define({
         var pedometerInfo = null,
             changeListeners = [],
             config = req,
+            runSpeed = 1,
 
         /**
          * 1. Type Definitions
