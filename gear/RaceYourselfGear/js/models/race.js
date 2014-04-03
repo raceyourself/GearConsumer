@@ -64,9 +64,9 @@ define({
             return ongoingRace;
         }        
         
-        function getRaceHistory() {
-            return history;
-        }
+//        function getRaceHistory() {
+//            return s;
+//        }
         
         /**
          * Constructor
@@ -131,6 +131,7 @@ define({
                 }
                 this.duration = this.getDuration();
                 this.running = false;
+                
                 racedata.setData(this);
                 //saveHistory();
                 this.stopped = true;
@@ -415,7 +416,6 @@ define({
         return {
             newRace: newRace,
             getOngoingRace: getOngoingRace,
-            getRaceHistory: getRaceHistory,
             setGoal: setGoal,
             getGoal: getGoal
         };

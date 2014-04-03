@@ -26,7 +26,9 @@ define({
         'models/race',
         'models/game',
         'models/race',
+        'models/racedata',
         'models/settings',
+        'models/achievements',
         'helpers/units',
         'views/page/pregame',
         'views/page/trainingtype',
@@ -42,59 +44,56 @@ define({
          	list = null,
          	game = req.models.game,
          	race = req.models.race,
+         	racedata = req.models.racedata,
+         	achievements = req.models.achievements,
          	settings = req.models.settings,
          	units = req.helpers.units,
             changer,
             sectionChanger,
             r = null,
+            
+            raf,
+            lastRenderTime = 0,
+            summaryCanvas,
+            summaryContext,
+            achievementSprites = [],
             isHistory = false;
 
         function show(event) {
             gear.ui.changePage('#racesummary');
             
             var r;
-            console.log(event.detail);
+
             if(event.detail !== undefined) {
-            	console.log('we are in the event !=null loop')
             	r = event.detail;
-            	
-            	if (!!r) {
-                	// Build sections
-                	var as = r.achievements;
-                    for (var key in as) {
-                    	if (!!as[key].image) {
-                    		var unlocksEl = document.getElementById('summary-unlocks');
-                        	unlocksEl.classList.toggle('hidden', false);
-                        	unlocksEl.style.backgroundImage = "url('images/" + as[key].image + "')";
-                        	// TODO: Multiple unlocks
-                        	break;
-                    	}
-                    }
-                }
             	isHistory = true;
-            	renderPrevious(r);
             } else {
-            	r = race.getOngoingRace();
-                if (!r) {
-                    var history = race.getRaceHistory();
-                    if (history.length > 0) r = history[0];
-                }
-                
-                if (!!r) {
-                	// Build sections
-                	var as = r.getAchievements();
-                    for (var key in as) {
-                    	if (!!as[key].image) {
-                    		var unlocksEl = document.getElementById('summary-unlocks');
-                        	unlocksEl.classList.toggle('hidden', false);
-                        	unlocksEl.style.backgroundImage = "url('images/" + as[key].image + "')";
-                        	// TODO: Multiple unlocks
-                        	break;
-                    	}
-                    }
-                }
+            	r = racedata.getLatestData();
                 isHistory = false;
-            	render(r);
+            }  
+              
+            if (!!r) {
+               	// Build sections
+               	var as = r.achievements;
+               	buildAchievements(as);
+            } 
+                
+            renderPrevious(r);
+            
+        }
+        
+        function buildAchievements(as) {
+        	achievementSprites = []
+        	for (var key in as) {
+            	if (!!achievements.getAchievements()[as[key]].sprite) {
+            		var unlocksEl = document.getElementById('summary-unlocks');
+                	unlocksEl.classList.toggle('hidden', false);
+                	//unlocksEl.style.backgroundImage = "url('images/" + as[key].image + "')";
+                	var achievImage = achievements.getAchievements()[as[key]].sprite;
+                	console.log(achievImage);
+                	achievementSprites.push(achievImage);
+                	break;
+            	}
             }
         }
 
@@ -108,7 +107,6 @@ define({
             });
 
             e.listen('tizen.back', onBack);
-            //render();
         }
         
         function renderPrevious(r) {
@@ -126,35 +124,61 @@ define({
             var ideal = 'N/A';
             if (isFinite(r.hrtime)) ideal = ~~(r.hrtime_in_zone*100/r.duration) + '%';
             document.getElementById('ideal-hr-final').innerHTML = ideal;
-            
+           
             generateAwards(r.achievements);
+            
+            lastRenderTime = Date.now();
+            animate();
         }
         
-        function render(r) {
-            if (!r) {
-                onBack();
-                return;
+//        function render(r) {
+//            if (!r) {
+//                onBack();
+//                return;
+//            }
+//            document.getElementById('duration-final').innerHTML = hmm(r.getDuration()/1000);
+//            distance(r.getDistance(), r.getDistanceUnits());
+//            document.getElementById('kcal-final').innerHTML = ~~(r.getCalories());
+//            document.getElementById('current-sweat-final').innerHTML = ~~(r.getPointsEarned());
+//            document.getElementById('sweat-lost-final').innerHTML = ~~(r.getPointsLost());
+//            document.getElementById('total-sweat-final').innerHTML = ~~(r.getPoints());
+//            document.getElementById('steps-final').innerHTML = r.getSteps();
+//            var ideal = 'N/A';
+//            if (isFinite(r.data.time_in_zone)) ideal = ~~(r.data.time_in_zone*100/r.getDuration()) + '%';
+//            document.getElementById('ideal-hr-final').innerHTML = ideal;
+//            
+//            
+//            
+//            generateAwards(r.getAchievements());
+//            
+//            lastRenderTime = Date.now();
+//            animate();
+//        }
+        
+        function animate(time) {
+        	raf = requestAnimationFrame(animate);
+        	render();
+        }
+        
+        function render() {
+        	var dt = Date.now() - lastRenderTime;
+        	lastRenderTime = Date.now();
+        	//console.log(dt);
+        	for(var i=0; i<achievementSprites.length; i++) {
+            	achievementSprites[i].draw(summaryContext, summaryCanvas.width / 2 - achievementSprites[i].width / 2, summaryCanvas.height / 2 - achievementSprites[i].height / 2, dt);
             }
-            document.getElementById('duration-final').innerHTML = hmm(r.getDuration()/1000);
-            distance(r.getDistance(), r.getDistanceUnits());
-            document.getElementById('kcal-final').innerHTML = ~~(r.getCalories());
-            document.getElementById('current-sweat-final').innerHTML = ~~(r.getPointsEarned());
-            document.getElementById('sweat-lost-final').innerHTML = ~~(r.getPointsLost());
-            document.getElementById('total-sweat-final').innerHTML = ~~(r.getPoints());
-            document.getElementById('steps-final').innerHTML = r.getSteps();
-            var ideal = 'N/A';
-            if (isFinite(r.data.time_in_zone)) ideal = ~~(r.data.time_in_zone*100/r.getDuration()) + '%';
-            document.getElementById('ideal-hr-final').innerHTML = ideal;
             
-            generateAwards(r.getAchievements());
         }
         
         function generateAwards(as) {
 //            var as = r.getAchievements();
             var items = [];
             var clazz = '';
+            //achievementList = achievements.getAchievements();
             for (var key in as) {
-                var a = as[key];
+            	console.log(as);
+                var a = achievements.getAchievements()[as[key]];
+                console.log(a);
                 items.push(t.get('achievementRow', {
                             key: a.key,
                             title: a.title,
@@ -178,6 +202,7 @@ define({
         function onPageHide() {
             sectionChanger.destroy();
         	document.getElementById('summary-unlocks').classList.toggle('hidden', true);
+        	cancelAnimationFrame(raf);
             e.die('tizen.back', onBack);
         }        
         
@@ -220,6 +245,8 @@ define({
             page = document.getElementById('racesummary');
             list = document.getElementById('summary-achievements-list');
             changer = document.getElementById("race-summary-sectionchanger");
+            summaryCanvas = document.getElementById('summary-canvas');
+            summaryContext = summaryCanvas.getContext('2d');
             bindEvents();
         }
 
