@@ -47,7 +47,7 @@ define({
                 elimUnlockDist: 50,
                 weightUnlockDist: 5,
                 strengthUnlockDist: 10,
-                demoMode: 1,
+                demoMode: 0,
             },
             config = {},
             STORAGE_KEY = 'config';
