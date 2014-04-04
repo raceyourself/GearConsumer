@@ -933,11 +933,13 @@ define({
 */
             	
 
-            	
+            	e.fire('racegame.lapcomplete', numLaps);
             	if(playerIsAhead)
             	{
             	   	restart();
+            	   	
             	   	numLaps++;
+            	   	
 					//show notification
 					setNotification(green, '#fff', 'Lap Complete', null, 3000);
 
@@ -957,17 +959,24 @@ define({
 					//Rig pedometer speed if this is demo mode
 					if(config.getIsDemoMode())
 					{
-						switch(numLaps)
-						{
-							case 1:
-								mockPedometer.setRunSpeed(20.0);
-								break;
-							case 2:
-								mockPedometer.setRunSpeed(1.8);
-								break;
-							default:
-								//nothing to do
+						if(numLaps < 15) {
+							
+							mockPedometer.setRunSpeed(mockPedometer.getRunSpeed() + 0.3);
+						} else {
+							mockPedometer.setRunSpeed(mockPedometer.getRunSpeed() - 0.3);
 						}
+//						switch(numLaps)
+//						{
+//							case 1:
+//								mockPedometer.setRunSpeed(20.0);
+//								break;
+//							case 2:
+//								mockPedometer.setRunSpeed(1.8);
+//								break;
+//								
+//							default:
+//								//nothing to do
+//						}
 					}
 
             	}

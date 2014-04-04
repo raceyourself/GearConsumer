@@ -2087,6 +2087,12 @@ define({
 						break;
 					case 'finished':
 						finishedImage.draw(context, centreX - finishedImage.height/2, centreY - finishedImage.height/2, 0);
+						
+						//update star icon
+						var starDt = Date.now() - stars.lastRenderTime;
+						stars.lastRenderTime = Date.now();
+//						starGetting.time += starDt;
+						
 						//also draw text for finished
 						context.font = '25px Samsung Sans';
 						context.textAlign = 'center';
@@ -2100,10 +2106,6 @@ define({
 						var starHeight = canvas.height * 0.27;
 						var starSpacing = stars.icons[0].width * 1.2;
 						
-						//update star icon
-						var starDt = Date.now() - stars.lastRenderTime;
-						stars.lastRenderTime = Date.now();
-//						starGetting.time += starDt;
 						
 						//show stars
 						if(stars.currentlyAwardingIndex >= 0 && stars.currentlyAwardingIndex < stars.icons.length)
@@ -2379,6 +2381,7 @@ define({
         		heartGreen = new Sprite(this, this.width, 1000);
         		heartGreen.scale = 0.5;
         	});
+            
 
             loadImage('images/image_heart_red.png', function() {
         		heartRed = new Sprite(this, this.width, 1000);

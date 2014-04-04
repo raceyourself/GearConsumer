@@ -277,9 +277,14 @@ define({
         	runSpeed = speed;
         }
         
+        function getRunSpeed() {
+        	return runSpeed;
+        }
+        
         return {
             init: init,
-            setRunSpeed : setRunSpeed
+            setRunSpeed : setRunSpeed,
+            getRunSpeed: getRunSpeed
         };
     }
 });
