@@ -206,16 +206,22 @@ define({
             					impactedDistance: 0, 
             					impacted : false,
             					reset : function() {
-										this.mainMeteor.impactTimer = meteors.params.impactTime;
-										this.mainMeteor.impacted = false;
+										meteors.mainMeteor.impactTimer = meteors.params.impactTime;
+										meteors.mainMeteor.impacted = false;
 										canDie = false;
+										meteors.mainMeteor.shadowWidth = meteors.params.shadowMinSize;
 									}
 								},
             				sceneryMeteors : [],
             				lastUpdateTime : 0,
             				tickInterval : false,
             				impactSound : null,
-            				params: { startHeight: 200, resetTimeout: 5, impactTime: 2 },
+            				params: { 	startHeight: 800,
+            							resetTimeout: 5, 
+            							impactTime: 3, 
+            							shadowMinSize: 50, 
+            							shadowMaxSize: 25 
+            							},
 
 						 },
             canDie = true;
@@ -474,6 +480,7 @@ define({
 					//initialise update tick
 					meteors.lastUpdateTime = Date.now();
 					meteors.tickInterval = setInterval(meteorTick, 33);
+					meteors.mainMeteor.reset();
 					canDie = false;
 					break;
 				default:
@@ -599,7 +606,7 @@ define({
         	bannerTimeout = setTimeout(clearbanner, countDownParams.stageDuration * 1000);
 			countDownParams.startTime = Date.now();
 			zombiePosWeight = 0;
-			meteors.reset();
+			meteors.mainMeteor.reset();
         }
         
         function endWarmup() 
@@ -820,8 +827,15 @@ define({
         	//update timer
         	meteors.mainMeteor.impactTimer -= meteorDT/1000;
         	//update height
-        	meteors.mainMeteor.height = meteors.params.startHeight * meteors.mainMeteor.impactTimer / meteors.params.impactTime;
+        	var heightProportion = meteors.mainMeteor.impactTimer / meteors.params.impactTime;
+
+        	//ease height proportion for more drama
+        	heightProportion = 1 - (1-heightProportion)*(1-heightProportion);
+        	var shadowProportion = 1-heightProportion;
         	
+        	meteors.mainMeteor.height = meteors.params.startHeight * heightProportion;
+
+        	meteors.mainMeteor.shadowWidth = meteors.params.shadowMinSize + shadowProportion * (meteors.params.shadowMaxSize - meteors.params.shadowMinSize);
         	
         	//switch to impacted if timer expired
         	if(meteors.mainMeteor.impactTimer < 0 && !meteors.mainMeteor.impacted)
@@ -829,7 +843,6 @@ define({
         		meteors.mainMeteor.impacted = true; 
         		var r=race.getOngoingRace();
         		meteors.mainMeteor.impactedDistance = r.getDistance() + zombieOffset;	
-        		meteors.mainMeteor.impactedSprite.reset();
         		if(settings.getAudioActive() && meteors.meteorSound != null)
         		{
         			meteors.meteorSound.play();
@@ -850,7 +863,7 @@ define({
         	//reset if necessary
         	if(meteors.mainMeteor.impactTimer < -1*meteors.params.resetTimeout)
         	{	
-				meteors.reset();
+				meteors.mainMeteor.reset();
         	}
         }
         
@@ -1836,9 +1849,21 @@ define({
 						}
 						else
 						{
-							var xPos = distanceToTrackPos(zDistance);
+							var xPos = distanceToTrackPos(zDistance) + 30;
 							var yPos = meteorBaseHeight - meteors.mainMeteor.height * meteorScale;
 							meteors.mainMeteor.travelSprite.drawscaled(context, xPos - meteors.mainMeteor.travelSprite.width*0.5, yPos - meteors.mainMeteor.travelSprite.height*0.5, dt, meteorScale);
+							
+							//draw blob shadow on the track
+							context.save();
+							context.translate(xPos -22, canvas.height - trackHeight);
+							context.scale(1, 0.2);
+							context.beginPath();
+							context.arc(0, 0, meteors.mainMeteor.shadowWidth, 0, 2*Math.PI, false);
+							context.fillStyle = '#000';
+							context.globalAlpha = 0.75;
+							context.fill();
+							context.restore();
+							context.globalAlpha = 1;
 						}
 					}
 					break;
@@ -2090,7 +2115,6 @@ define({
 				}
             }
             runner.sprite.drawscaled(context, playerXPos, canvas.height -playerOffset , dt, playerScale);
-            
             				
 			//draw sweat point graphics
 //			for(var i=0; i<sweatPointGraphics.length; i++)
