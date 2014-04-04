@@ -375,7 +375,10 @@ define({
 			targetTime = Infinity;
 			if (type == 'time') { targetTime = settings.getTime() * 60 * 1000; }
 			else if (type == 'distance') { TRACK_LENGTH = settings.getDistance(); }
-				
+			
+			// TEST STARS - uncomment this line to quickly finish a run and test the stars screen.
+			//TRACK_LENGTH = 100;
+			
             lastHRtime = Date.now();
             
             canvas.width = canvas.offsetWidth;
@@ -1066,7 +1069,7 @@ define({
 				}
                 return;
             }
-            if (r.getDistance() >= TRACK_LENGTH || r.getDuration() >= targetTime && !finished) {
+            if ( (r.getDistance() >= TRACK_LENGTH || r.getDuration() >= targetTime) && !finished) {
 //                zombieMoan.play();
                 r.addPoints(config.getPointsBonusFinish());
                 if(settings.getVibrateActive()) {
@@ -1095,7 +1098,7 @@ define({
                 return;
             }
             
-            if (lastDistanceAwarded < r.getMetricDistance()) {
+            if (lastDistanceAwarded < r.getMetricDistance() && !finished) {
                 var distance = r.getMetricDistance();
                 var points = ((distance - lastDistanceAwarded)*ppm);
 				r.addPoints(points);
@@ -2529,7 +2532,7 @@ define({
 
 		function getNumStarsAchieved() {
 		
-			var potentialPoints = TRACK_LENGTH * config.getPpmGood();
+			var potentialPoints = TRACK_LENGTH * config.getPpmGood() + config.getPointsBonusFinish();
             var r = race.getOngoingRace();
             var netPoints = r.getPoints();
             
