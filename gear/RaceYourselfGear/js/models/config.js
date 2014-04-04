@@ -51,6 +51,7 @@ define({
                 ppmGood: 5,
                 ppmBad: -1,
                 pointsPenaltyDeath: -100,
+                pointsBonusFinish: 50,
             	thresholdOneStar: 0.25,
             	thresholdTwoStar: 0.6,
             	thresholdThreeStar: 0.8
@@ -141,6 +142,11 @@ define({
 			if(!isFinite(config.pointsPenaltyDeath)) return defaults.pointsPenaltyDeath;
 			return config.pointsPenaltyDeath;
 		}
+		
+		function getPointsBonusFinish() {
+			if(!isFinite(config.pointsBonusFinish)) return defaults.pointsBonusFinish;
+			return config.pointsBonusFinish;
+		}
         
         function getThresholdOneStar() {
         	if(!isFinite(config.thresholdOneStar)) return defaults.thresholdOneStar;
@@ -199,6 +205,7 @@ define({
             getPpmGood : getPpmGood,
             getPpmBad : getPpmBad,
             getPointsPenaltyDeath : getPointsPenaltyDeath,
+            getPointsBonusFinish : getPointsBonusFinish,
             getThresholdOneStar : getThresholdOneStar,
             getThresholdTwoStar : getThresholdTwoStar,
             getThresholdThreeStar : getThresholdThreeStar
