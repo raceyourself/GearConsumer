@@ -47,7 +47,7 @@ define({
                 elimUnlockDist: 50,
                 weightUnlockDist: 5,
                 strengthUnlockDist: 10,
-                demoMode: 0,
+                demoMode: 1,
                 ppmGood: 5,
                 ppmBad: -1,
                 pointsPenaltyDeath: -100,
