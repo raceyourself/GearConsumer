@@ -1075,6 +1075,7 @@ define({
                 }
                 
                 showUnlockNotification('finished', 5);
+				stars.numEarned = getNumStarsAchieved();
                 stars.currentlyAwardingIndex = -1;
 				stars.lastRenderTime = Date.now();
                 setTimeout(showNextStar, 500);
@@ -2093,15 +2094,15 @@ define({
 						context.textBaseline = 'bottom';
 						
 						// Stars
-						stars.numEarned = getNumStarsAchieved();
-						var starHeight = canvas.height * 0.333;
-						var starSpacing = starGot.width * 1.2;
+						var starHeight = canvas.height * 0.27;
+						var starSpacing = stars.icons[0].width * 1.2;
 						
 						//update star icon
 						var starDt = Date.now() - stars.lastRenderTime;
 						stars.lastRenderTime = Date.now();
 //						starGetting.time += starDt;
 						
+						//show stars
 						if(stars.currentlyAwardingIndex >= 0 && stars.currentlyAwardingIndex < stars.icons.length)
 						{
 							//progress animation on the one currently being awarded
@@ -2113,7 +2114,35 @@ define({
 							stars.icons[i].draw(context, canvas.width/2 + (i-1)*starSpacing - stars.icons[i].width/2, starHeight, dt);
 						}
 						
+						//show points earned
+						
+						var r = race.getOngoingRace();
+						var points = Math.round(r.getPoints());
+						var sweatAmountString = '' + points;
+						var padding = 6;		//how much space between the icon and the number
+						
+						context.font = 'bold 36px Samsung Sans';
+						context.textAlign = 'left';
+						context.textBaseline = 'middle';
+						var stringWidth = context.measureText(sweatAmountString).width;
+						var totalWidth = sweat.width + padding + stringWidth;		//padding of 6
+						
+						var sweatHeight = canvas.height * 0.6;
+						var sweatXpos = canvas.width/2 - totalWidth/2 + sweat.width;
+						
+						//icon
+						sweat.draw(context, sweatXpos - sweat.width - padding/2, sweatHeight - sweat.height/2, dt);
+						//text
+						context.fillStyle = '#fff';
+						context.fillText(points, sweatXpos + padding/2, sweatHeight);
+						
+						context.lineWidth = 2;
+						context.strokeStyle = '#000';
+						context.strokeText(points, sweatXpos + padding/2, sweatHeight);
+						
 						// Awards
+						context.textAlign = 'center';
+						context.textBaseline = 'bottom';
 						if(numAwardsAtFinish == 1)
 						{
 							context.fillText('1 Award Unlocked', centreX, canvas.height - margin - margin*3 - awardImage.height);
