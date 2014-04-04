@@ -51,6 +51,7 @@ define({
                 ppmGood: 5,
                 ppmBad: -1,
                 pointsPenaltyDeath: -100,
+                pointsBonusFinish: 50,
             },
             config = {},
             STORAGE_KEY = 'config';
@@ -138,6 +139,11 @@ define({
 			if(!isFinite(config.pointsPenaltyDeath)) return defaults.pointsPenaltyDeath;
 			return config.pointsPenaltyDeath;
 		}
+		
+		function getPointsBonusFinish() {
+			if(!isFinite(config.pointsBonusFinish)) return defaults.pointsBonusFinish;
+			return config.pointsBonusFinish;
+		}
         
         function saveConfig(configuration) {
             if (s.add(STORAGE_KEY, configuration)) {
@@ -180,7 +186,8 @@ define({
             getIsDemoMode : getIsDemoMode,
             getPpmGood : getPpmGood,
             getPpmBad : getPpmBad,
-            getPointsPenaltyDeath : getPointsPenaltyDeath
+            getPointsPenaltyDeath : getPointsPenaltyDeath,
+            getPointsBonusFinish : getPointsBonusFinish
         };
     }
 

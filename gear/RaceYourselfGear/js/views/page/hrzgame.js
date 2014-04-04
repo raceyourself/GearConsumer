@@ -1059,9 +1059,9 @@ define({
 				}
                 return;
             }
-            if (r.getDistance() >= TRACK_LENGTH || r.getDuration() >= targetTime) {
+            if (r.getDistance() >= TRACK_LENGTH || r.getDuration() >= targetTime && !finished) {
 //                zombieMoan.play();
-                r.addPoints(50);
+                r.addPoints(config.getPointsBonusFinish());
                 if(settings.getVibrateActive()) {
 					console.log('vibrate: run complete');
                 	navigator.vibrate(1000);
