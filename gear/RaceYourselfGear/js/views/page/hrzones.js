@@ -436,7 +436,7 @@ define({
 				}
 				else
 				{
-					context.fillStyle = grey;
+					context.fillStyle = white;
 				}
 				if(infoOnly) { context.fillStyle = grey; }
 				context.textAlign = 'center';

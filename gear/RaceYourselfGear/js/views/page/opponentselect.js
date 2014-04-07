@@ -51,6 +51,14 @@ define({
             zombieCanvas,
             zombieContext,
             zombieSprite,
+            meteorCanvas,
+            meteorContext,
+            meteorLockedSprite,
+            meteorUnlockedSprite,
+            eagleCanvas,
+            eagleContext,
+            eagleLockedSprite,
+            eagleUnlockedSprite,
             raf = null,
             lastRenderTime;
 
@@ -86,8 +94,17 @@ define({
         	dinoSprite.drawscaled(dinoContext, dinoCanvas.width / 2 - dinoSprite.width * 1.5/2, (dinoCanvas.height /2 - 50) - dinoSprite.height * 1.5/2, dt, 1.5);
         	
         	zombieContext.clearRect(0, 0, zombieCanvas.width, zombieCanvas.height);
-        	
         	zombieSprite.drawscaled(zombieContext, zombieCanvas.width/2 - zombieSprite.width * 1.5 / 2, (zombieCanvas.height / 2 - 25) - zombieSprite.height * 1.5/2, dt, 1.5);
+        
+        	//meteorContext.clearRect(0, 0, meteorCanvas.width, meteorCanvas.height);
+        	if(game.isLocked('meteor')) {
+        		meteorLockedSprite.drawscaled(meteorContext, meteorCanvas.width/2 - meteorLockedSprite.width / 2, (meteorCanvas.height / 2 - 50) - meteorLockedSprite.height / 2, dt, 1);
+        	} else {
+        		meteorUnlockedSprite.drawscaled(meteorContext, meteorCanvas.width/2 - meteorUnlockedSprite.width / 2, (meteorCanvas.height / 2 - 50) - meteorUnlockedSprite.height / 2, dt, 1);
+        	}
+        	
+        	//eagleContext.clearRect(0, 0, eagleCanvas.width, eagleCanvas.height);
+        	//eagleLockedSprite.drawscaled(eagleContext, eagleCanvas.width / 2 - eagleLockedSprite.width / 2, (eagleCanvas.height / 2 - 50) - eagleLockedSprite.height / 2, dt, 1);
         }
         
         function loadImage(url, onload) {
@@ -113,7 +130,7 @@ define({
         }   
         
         function onBack() {
-            e.fire('newmain.show');
+            e.fire('runselect.show');
         }
         
         function bindEvents() {
@@ -123,11 +140,16 @@ define({
         		dinoBtnEl = document.getElementById('dino-mode-btn');
         
         	dinoCanvas = document.getElementById('dino-canvas');
-        	
         	dinoContext = dinoCanvas.getContext('2d');
         	
         	zombieCanvas = document.getElementById('zombie-canvas');
         	zombieContext = zombieCanvas.getContext('2d');
+        	
+        	meteorCanvas = document.getElementById('meteor-canvas');
+        	meteorContext = meteorCanvas.getContext('2d');
+        	
+        	//eagleCanvas = document.getElementById('eagle-canvas');
+        	//eagleContext = eagleCanvas.getContext('2d');
         	
         	page.addEventListener('pageshow', onPageShow);
             page.addEventListener('pagehide', onPageHide);
@@ -139,7 +161,23 @@ define({
             loadImage('images/animation_zombie_stationary.png', function() {
 				zombieSprite = new Sprite(this, this.width/14, 2000);
 			});
+            
+            loadImage('images/animation_meteor_character_selection_locked.png', function() {
+            	meteorLockedSprite = new Sprite(this, this.width/5, 500);
+            });
              
+            loadImage('images/animation_meteor_character_selection_unlocked.png', function() {
+            	meteorUnlockedSprite = new Sprite(this, this.width/5, 500);
+            });
+            
+//            loadImage('images/animation_eagle_character_selection_locked.png', function() {
+//            	eagleLockedSprite = new Sprite(this, this.width/18, 800);
+//            });
+//            
+//            loadImage('images/animation_eagle_character_selection_unlocked.png', function() {
+//            	eagleUnlockedSprite = new Sprite(this, this.width/7, 800);
+//            });
+            
             zombieBtnEl.addEventListener('click', onZombieBtnClick);
             dinoBtnEl.addEventListener('click', onDinoBtnClick);
         }

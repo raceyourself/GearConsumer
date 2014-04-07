@@ -124,7 +124,7 @@
 }
 
 .menu-item:active {
-	background-color: #3db44a;		
+	background-image:url('../images/highlight-test.png');	
 }
 
 .menu-item img {
@@ -186,12 +186,12 @@ img {
 
 .stat {
 	width: 100%;
-	height: 33%;
+	height: 28%;
 	padding: 15px 0px;
 }
 
 .statsduo .stat {
-	height: 50%;
+	height: 35%;
 }
 
 .stat-label {
@@ -418,6 +418,11 @@ img {
 	display: none;
 }
 
+.history-list {
+	padding: 15px !important;
+	font-size: 32px !important;
+}
+
 .skip-gps-btn {
 	width: 100%;
 	color: black;
@@ -482,7 +487,7 @@ img {
 }
 
 #eliminator-highscore {
-	background: url('../images/Game_Eliminator/image_hexagon_big_w_effect.png');
+	
 }
 
 #eliminator-new-hs {

@@ -46,7 +46,17 @@ define({
                 lapLength: 100,  
                 elimUnlockDist: 50,
                 weightUnlockDist: 5,
-                strengthUnlockDist: 10
+                strengthUnlockDist: 10,
+                demoMode: 0,
+                meteorUnlockPoints: 50000,
+                ppmGood: 5,
+                ppmBad: -1,
+                pointsPenaltyDeath: -100,
+                pointsBonusFinish: 50,
+            	thresholdOneStar: 0.1,
+            	thresholdTwoStar: 0.3,
+            	thresholdThreeStar: 0.6
+
             },
             config = {},
             STORAGE_KEY = 'config';
@@ -110,9 +120,39 @@ define({
 			return config.catchupTime;
 		}
 		
+		function getMeteorUnlockPoints() {
+			if(!isFinite(config.meteorUnlockPoints)) return defaults.meteorUnlockPoints;
+			return config.meteorUnlockPoints;
+		}
+		
 		function getLapLength() {
 			if(!isFinite(config.lapLength)) return defaults.lapLength;
-			return defaults.lapLength;
+			return config.lapLength;
+		}
+        
+        function getIsDemoMode() {
+        	if(!isFinite(config.demoMode)) return defaults.demoMode>0;
+        	return config.demoMode>0;
+		}
+		
+		function getPpmGood() {
+			if(!isFinite(config.ppmGood)) return defaults.ppmGood;
+			return config.ppmGood;
+		}
+
+		function getPpmBad() {
+			if(!isFinite(config.ppmBad)) return defaults.ppmBad;
+			return config.ppmBad;
+		}
+
+		function getPointsPenaltyDeath() {
+			if(!isFinite(config.pointsPenaltyDeath)) return defaults.pointsPenaltyDeath;
+			return config.pointsPenaltyDeath;
+		}
+		
+		function getPointsBonusFinish() {
+			if(!isFinite(config.pointsBonusFinish)) return defaults.pointsBonusFinish;
+			return config.pointsBonusFinish;
 		}
         
         function saveConfig(configuration) {
@@ -126,6 +166,7 @@ define({
         	var configuration = event.detail;
         	saveConfig(configuration);
         }
+        
         
         /**
          * Initializes module.
@@ -151,7 +192,13 @@ define({
             getElimUnlockDist: getElimUnlockDist,
             getWeightUnlockDist: getWeightUnlockDist,
             getStrengthUnlockDist: getStrengthUnlockDist,
-            getLapLength : getLapLength           
+            getLapLength : getLapLength, 
+            getIsDemoMode : getIsDemoMode,
+            getPpmGood : getPpmGood,
+            getPpmBad : getPpmBad,
+            getPointsPenaltyDeath : getPointsPenaltyDeath,
+            getPointsBonusFinish : getPointsBonusFinish,
+            getMeteorUnlockPoints: getMeteorUnlockPoints
         };
     }
 

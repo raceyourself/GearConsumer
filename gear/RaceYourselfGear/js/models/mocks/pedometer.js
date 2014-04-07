@@ -2,11 +2,14 @@
 
 define({
     name: 'models/mocks/pedometer',
-    def: function pedometerMock() {
+    requires: ['models/config'],
+    def: function pedometerMock(req) {
         'use strict';
 
         var pedometerInfo = null,
             changeListeners = [],
+            config = req,
+            runSpeed = 1,
 
         /**
          * 1. Type Definitions
@@ -133,7 +136,7 @@ define({
                 case PedometerStepStatus.NOT_MOVING:
                     return 0;
                 }
-                return 1; // running
+                return runSpeed; // running
             }
 
             function getStepCalories(speed) {
@@ -235,12 +238,20 @@ define({
             }
 
             function init() {
-
-                // every 10 seconds randomly update the status
-                randomizeStatus();
-                setInterval(randomizeStatus, 10000);
-                // assume a step always lasts the same amount of time...
+            	//in demo mode, always run, else randomise state
+				if(config.getIsDemoMode())
+				{
+					pedometerInfo.stepStatus = PedometerStepStatus.RUNNING;
+				}
+				else
+				{
+					// every 10 seconds randomly update the status
+					randomizeStatus();
+					setInterval(randomizeStatus, 10000);
+					// assume a step always lasts the same amount of time...
+                }
                 setInterval(step, 430);
+
             }
 
             this.getPedometerInfo = getPedometerInfo;
@@ -260,8 +271,15 @@ define({
             }
             window.webapis.pedometer = new PedometerManager();
         }
+        
+        function setRunSpeed(speed)
+        {
+        	runSpeed = speed;
+        }
+        
         return {
-            init: init
+            init: init,
+            setRunSpeed : setRunSpeed
         };
     }
 });

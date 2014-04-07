@@ -27,7 +27,8 @@ define({
         'core/storage',
         'helpers/date',
         'models/race',        
-        'models/game',        
+        'models/game',  
+        'models/sprite',
         'models/settings',
         'models/config',
     ],
@@ -38,6 +39,7 @@ define({
             s = req.core.storage,
             d = req.helpers.date,
             game = req.models.game,
+            Sprite = req.models.sprite.Sprite,
             race = req.models.race,
             settings = req.models.settings,
             config = req.models.config,
@@ -48,7 +50,7 @@ define({
                 'run' : {
                     title: 'First run',
                     description: 'Complete a run',
-                    points: 100,
+                    points: 0,
                     uses: 1,
                     init: function() {
                         e.listen('race.end', function(event) {
@@ -80,7 +82,7 @@ define({
                 'run_in_zone' : {
                     title: 'Trainer',
                     description: 'Complete a run without leaving the target heart rate zone',
-                    points: 150,
+                    points: 0,
                     uses: Infinity,
                     init: function() {
                         e.listen('race.end', function(event) {
@@ -96,7 +98,7 @@ define({
                 'survived' : {
                     title: 'Survivor',
                     description: 'Survive a run without getting caught by a pursuer',
-                    points: 50,
+                    points: 0,
                     uses: Infinity,
                     init: function() {
                         e.listen('race.end', function(event) {
@@ -113,7 +115,7 @@ define({
                 '1km_run' : {
                     title: '1k',
                     description: 'Complete a 1km run',
-                    points: 100,
+                    points: 0,
                     uses: 1,
                     init: function() {
                         e.listen('race.end', function(event) {
@@ -129,7 +131,7 @@ define({
                 '3km_run' : {
                     title: '3k',
                     description: 'Complete a 3km run',
-                    points: 150,
+                    points: 0,
                     uses: 1,
                     init: function() {
                         e.listen('race.end', function(event) {
@@ -145,7 +147,7 @@ define({
                 '5km_run' : {
                     title: '5k',
                     description: 'Complete a 5km run',
-                    points: 250,
+                    points: 0,
                     uses: 1,
                     init: function() {
                         e.listen('race.end', function(event) {
@@ -161,7 +163,7 @@ define({
                 'half_marathon' : {
                     title: 'Half marathon',
                     description: 'Complete a half marathon',
-                    points: 500,
+                    points: 0,
                     uses: 1,
                     init: function() {
                         e.listen('race.end', function(event) {
@@ -177,7 +179,7 @@ define({
                 'marathon' : {
                     title: 'Marathon',
                     description: 'Complete a full marathon',
-                    points: 1000,
+                    points: 0,
                     uses: 1,
                     init: function() {
                         e.listen('race.end', function(event) {
@@ -225,31 +227,13 @@ define({
                     	var unlockDist = config.getDinoUnlockDist() * 1000;
                         return Number(Math.min(unlockDist, progress.total.distance)*100/unlockDist).toFixed(1).replace('.0', '') + '%';
                     }
-                }, 
-                'eliminator' : {
-                    title: 'Eliminator Mode',
-                    description: 'Unlocked the Eliminator game by running a total of ' + config.getElimUnlockDist() + 'km',
-                    points: 0,
-                    uses: 1,
-                    init: function() {
-                        e.listen('race.progress', function(event) {
-                            if (progress.total.distance >= config.getElimUnlockDist() * 1000) {
-                                achieve('eliminator');
-                                game.unlock('eliminator');
-                            }
-                        });
-                    },
-                    progress: function() {
-                    	var unlockDist = config.getElimUnlockDist() * 1000;
-                        return Number(Math.min(unlockDist, progress.total.distance)*100/unlockDist).toFixed(1).replace('.0', '') + '%';
-                    }
                 }, */
                 'Endurance' : {
                     title: 'Race Yourself Fitter',
                     description: 'Unlock <b>Race Yourself Fitter</b> by playing one game of Eliminator',
                     points: 0,
                     uses: 1,
-                    image: 'unlocks/ry_fitter_ingameunlock.png',
+                    sprite: new Sprite('images/animation_RY_Fitter_unlocked_all-together.png', 320, 2000, {loop: true, loopstart: 9}),
                     init: function() {
                         e.listen('race.end', function(event) {
                         	var race = event.detail;
@@ -299,11 +283,29 @@ define({
                         return Number(Math.min(unlockDist, progress.total.distance)*100/unlockDist).toFixed(1).replace('.0', '') + '%';
                     }
                 },
+                'Meteor' : {
+                	title: 'Meteor Opponent',
+                	description: 'Unlock the meteors as an opponent for heart rate training by earning 50,000SP',
+                	points: 0,
+                	uses: 1,
+                	init: function() {
+                		e.listen('race.progress', function(event) {
+                			if(progress.total.points >= config.getMeteorUnlockPoints()) {
+                				achieve('Meteor');
+                				game.unlock('meteor');
+                			}
+                		});
+                	},
+                	progress: function() {
+                		var unlockPoints = config.getMeteorUnlockPoints();
+                		return Number(Math.min(unlockPoints, progress.total.points) * 100 / unlockPoints).toFixed(1).replace('.0', '') + '%';
+                	}
+                },
                 // Dedication
                 'thrice_weekly' : {
                     title: 'Addict',
                     description: 'Run three times within a week',
-                    points: 1000,
+                    points: 0,
                     uses: Infinity,
                     init: function() {
                         e.listen('race.end', function(event) {
@@ -325,6 +327,7 @@ define({
         function saveAchievements() {
             clearTimeout(flushTimeout);
             flushTimeout = false;
+            console.log(progress.total.points);
             if (s.add(STORAGE_KEY, {achieved: achieved, progress: progress, version: 1})) {
                 return true;
             }
@@ -409,6 +412,7 @@ define({
             progress.daily.distance = progress.daily.distance || 0;
             progress.weekly.distance = progress.weekly.distance || 0;
             progress.monthly.distance = progress.monthly.distance || 0;
+            progress.total.points = progress.total.points || 0;
             progress.total.distance = progress.total.distance || 0;
             e.listen('race.end', function(event) {
                 var race = event.detail;
@@ -427,6 +431,7 @@ define({
                 progress.weekly.distance += data.distance;
                 progress.monthly.distance += data.distance;
                 progress.total.distance += data.distance;
+                progress.total.points = data.points;
                 
                 save();
             });            

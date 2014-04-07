@@ -31,8 +31,8 @@
     	
     	<section class="ui-content noautooverflow menu">
     			<a href="#" id="games-btn" class="menu-item">
-    				<img src="images/icon_games.png" />
-    				<div class="menu-label">Games</div>
+    				<canvas id="games-select-canvas" width="140px" height="130px"></canvas>
+    				<div class="menu-label" style="top: -92px !important;">Games</div>
     			</a>
     			<a href="#" id="achievements-btn" class="menu-item">
     				<img src="images/icon_achievements.png" />
@@ -185,11 +185,12 @@
     				</a>
     			</section>
     			<section>
-    				<img class="enemy-select" src="images/screen_characters_meteor.png"/>
-    			</section>
-    			<section>
-    				<img class="enemy-select" src="images/screen_characters_eagle.png"/>
-    			</section>
+					<a href="#" id="meteor-mode-btn">
+						<canvas id="meteor-canvas" width="320" height="320" >
+						
+						</canvas>
+					</a>
+				</section>
     		</div>
     	</div>
     </div>
@@ -440,6 +441,17 @@
     	</div>
     </div>
     
+    <div class="ui-page" id="historypage">
+    	<header class="ui-header" data-position="fixed">
+    		<h2 class="ui-title">History</h2>
+    	</header>
+    	<div class="ui-content">
+    		<ul class="ui-listview" id="historylist">
+    			
+    		</ul>
+    	</div>
+    </div>
+    
     <div class="ui-page" id="settingspage">
     	<header class="ui-header" data-position="fixed">
     		<h2 class="ui-title">Settings</h2>
@@ -547,6 +559,8 @@
 			Dinosaur Scream.flac http://www.freesound.org/people/qubodup/sounds/219945 by Iwan ‘qubodup’ Gabovitch http://freesound.org/people/qubodup under CC-BY 3.0 License http://creativecommons.org/licenses/by/3.0/legalcode<br/>
 			<br/>
 			Fighting Game grunts - young female.wav http://freesound.org/people/AderuMoro/sounds/213295/ by AderuMoro http://freesound.org/people/AderuMoro<br/>
+			<br/>
+			Synthesized_Explosion_01.wab http://www.freesound.org/people/RSilveira_88/sounds/216278/<br/>
 		</div>
     </div>
     
@@ -654,7 +668,7 @@
     <div class="ui-page" id="race-game">
 		<div id="quit-confirmation" class="overlay hidden">
 			<p>Are you sure you want to exit the current run?</p>
-			*your data will not be lost
+			Your run data will be saved
 		    <div class="left-btn" id="game-yesquit-btn">
 				YES
 			</div>
@@ -675,9 +689,9 @@
 			</div>
 		</div>
 		<div id="eliminator-highscore" class="eliminator overlay hidden">
-			<div id="eliminator-new-hs">New<br/>High Score</div>
-			<div id="eliminator-new-hs-value">0</div>
-		    <div class="left-btn" id="eliminator-hs-again-btn">
+			<canvas id="highscore-canvas" height="320" width = "320" style="margin-left:-30px; margin-top: -10px;"></canvas>
+			
+			<div class="left-btn" id="eliminator-hs-again-btn">
 				RACE AGAIN
 			</div>
 		    <div class="right-btn" id="eliminator-hs-quit-btn">
@@ -783,15 +797,19 @@
     </div>
     
     <div class="ui-page" id="racesummary">
-    	<header class="ui-header" data-position="fixed">
-    		<h2 class="ui-title">Race Summary</h2>
-    	</header>
-    	<div id="race-summary-sectionchanger" class="ui-content">
+    	
+    	<div id="race-summary-sectionchanger" class="ui-content" style="z-index:0;">
     		<div>
-    			<section id="summary-unlocks" class="hidden">
+    			<section id="summary-unlocks" class="hidden" style="z-index:1;">
+	    			<canvas id="summary-canvas" width="320" height="320" >
+	    			</canvas>
     			</section>
-    			<section id="summary">
+    			<section>
+	    			<header class="ui-header" data-position="fixed">
+			    		<h2 class="ui-title">Race Summary</h2>
+			    	</header>
     				<div>
+    				
 		        		<div class="stat-label"><img src="images/icon-time.png" /></div>
 			        	<div id="duration-final" class="stat-value">0 00</div>
 			        	<div class="stat-sub" id="s-duration-units">hrs&nbsp;&nbsp;&nbsp;min</div>
@@ -807,7 +825,10 @@
 			        	<div class="stat-sub" id="s-kcal-units">kcal</div>
 			        </div>
     			</section>
-    			<section>  
+    			<section> 
+    				<header class="ui-header" data-position="fixed">
+			    		<h2 class="ui-title">Race Summary</h2>
+			    	</header> 
     				<div>
 		        		<div class="stat-label"><img src="images/icon-sweat-earned.png" /></div>
 			        	<div id="current-sweat-final" class="stat-value">0</div>
@@ -825,6 +846,9 @@
 			        </div>
     			</section>
     			<section class="statsduo">
+    			<header class="ui-header" data-position="fixed">
+			    	<h2 class="ui-title">Race Summary</h2>
+			    </header> 
     				<div class="stat">
 		        		<div class="stat-label"><img src="images/icon-steps.png" /></div>
 			        	<div id="steps-final" class="stat-value">0</div>
@@ -837,8 +861,11 @@
 			        </div>
     			</section>
 				<section id="summary-achievements">
+					<header class="ui-header" data-position="fixed">
+			    		<h2 class="ui-title">Race Summary</h2>
+			    	</header> 
 			    	<div class="ui-content">
-	            		<div class="ry-title">Awards</div>
+	            		<div class="ry-title" style="padding: 3px 0px;">Awards</div>
 			    		<ul class="ui-listview" id="summary-achievements-list">
 			    		</ul>
 			    	</div>

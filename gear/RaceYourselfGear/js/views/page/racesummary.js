@@ -26,7 +26,9 @@ define({
         'models/race',
         'models/game',
         'models/race',
+        'models/racedata',
         'models/settings',
+        'models/achievements',
         'helpers/units',
         'views/page/pregame',
         'views/page/trainingtype',
@@ -42,38 +44,62 @@ define({
          	list = null,
          	game = req.models.game,
          	race = req.models.race,
+         	racedata = req.models.racedata,
+         	achievements = req.models.achievements,
          	settings = req.models.settings,
          	units = req.helpers.units,
             changer,
             sectionChanger,
-            r = null;
+            r = null,
+            
+            raf,
+            lastRenderTime = 0,
+            summaryCanvas,
+            summaryContext,
+            achievementSprites = [],
+            isHistory = false;
 
-        function show() {
+        function show(event) {
             gear.ui.changePage('#racesummary');
+            
+            var r;
+
+            if(event.detail !== undefined) {
+            	r = event.detail;
+            	isHistory = true;
+            } else {
+            	r = racedata.getLatestData();
+                isHistory = false;
+            }  
+              
+            if (!!r) {
+               	// Build sections
+               	var as = r.achievements;
+               	buildAchievements(as);
+            } 
+                
+            renderPrevious(r);
+            
+        }
+        
+        function buildAchievements(as) {
+        	achievementSprites = []
+        	for (var key in as) {
+            	if (!!achievements.getAchievements()[as[key]].sprite) {
+            		var unlocksEl = document.getElementById('summary-unlocks');
+                	unlocksEl.classList.toggle('hidden', false);
+                	//unlocksEl.style.backgroundImage = "url('images/" + as[key].image + "')";
+                	var achievImage = achievements.getAchievements()[as[key]].sprite;
+                	console.log(achievImage);
+                	achievementSprites.push(achievImage);
+                	break;
+            	}
+            }
         }
 
         function onPageShow() {
-            r = race.getOngoingRace();
-            if (!r) {
-                var history = race.getRaceHistory();
-                if (history.length > 0) r = history[0];
-            }
-            
-            if (!!r) {
-            	// Build sections
-            	var as = r.getAchievements();
-                for (var key in as) {
-                	if (!!as[key].image) {
-                		var unlocksEl = document.getElementById('summary-unlocks');
-                    	unlocksEl.classList.toggle('hidden', false);
-                    	unlocksEl.style.backgroundImage = "url('images/" + as[key].image + "')";
-                    	// TODO: Multiple unlocks
-                    	break;
-                	}
-                }
-            }
-            
-            sectionChanger = new SectionChanger(changer, {
+            //r = race.getOngoingRace();
+        	sectionChanger = new SectionChanger(changer, {
             	items: 'section:not(.hidden)',
                 circular: false,
                 orientation: "horizontal",
@@ -81,34 +107,78 @@ define({
             });
 
             e.listen('tizen.back', onBack);
-            render();
         }
         
-        function render() {
+        function renderPrevious(r) {
             if (!r) {
                 onBack();
                 return;
             }
-            document.getElementById('duration-final').innerHTML = hmm(r.getDuration()/1000);
-            distance();
-            document.getElementById('kcal-final').innerHTML = ~~(r.getCalories());
-            document.getElementById('current-sweat-final').innerHTML = ~~(r.getPointsEarned());
-            document.getElementById('sweat-lost-final').innerHTML = ~~(r.getPointsLost());
-            document.getElementById('total-sweat-final').innerHTML = ~~(r.getPoints());
-            document.getElementById('steps-final').innerHTML = r.getSteps();
+            document.getElementById('duration-final').innerHTML = hmm(r.duration/1000);
+            distance(r.distance, r.distanceunits);
+            document.getElementById('kcal-final').innerHTML = ~~(r.calories);
+            document.getElementById('current-sweat-final').innerHTML = ~~(r.pointsgained);
+            document.getElementById('sweat-lost-final').innerHTML = ~~(r.pointslost);
+            document.getElementById('total-sweat-final').innerHTML = ~~(r.totalpoints);
+            document.getElementById('steps-final').innerHTML = r.steps;
             var ideal = 'N/A';
-            if (isFinite(r.data.time_in_zone)) ideal = ~~(r.data.time_in_zone*100/r.getDuration()) + '%';
+            if (isFinite(r.hrtime)) ideal = ~~(r.hrtime_in_zone*100/r.duration) + '%';
             document.getElementById('ideal-hr-final').innerHTML = ideal;
+           
+            generateAwards(r.achievements);
             
-            generateAwards();
+            lastRenderTime = Date.now();
+            animate();
         }
         
-        function generateAwards() {
-            var as = r.getAchievements();
+//        function render(r) {
+//            if (!r) {
+//                onBack();
+//                return;
+//            }
+//            document.getElementById('duration-final').innerHTML = hmm(r.getDuration()/1000);
+//            distance(r.getDistance(), r.getDistanceUnits());
+//            document.getElementById('kcal-final').innerHTML = ~~(r.getCalories());
+//            document.getElementById('current-sweat-final').innerHTML = ~~(r.getPointsEarned());
+//            document.getElementById('sweat-lost-final').innerHTML = ~~(r.getPointsLost());
+//            document.getElementById('total-sweat-final').innerHTML = ~~(r.getPoints());
+//            document.getElementById('steps-final').innerHTML = r.getSteps();
+//            var ideal = 'N/A';
+//            if (isFinite(r.data.time_in_zone)) ideal = ~~(r.data.time_in_zone*100/r.getDuration()) + '%';
+//            document.getElementById('ideal-hr-final').innerHTML = ideal;
+//            
+//            
+//            
+//            generateAwards(r.getAchievements());
+//            
+//            lastRenderTime = Date.now();
+//            animate();
+//        }
+        
+        function animate(time) {
+        	raf = requestAnimationFrame(animate);
+        	render();
+        }
+        
+        function render() {
+        	var dt = Date.now() - lastRenderTime;
+        	lastRenderTime = Date.now();
+        	//console.log(dt);
+        	for(var i=0; i<achievementSprites.length; i++) {
+            	achievementSprites[i].draw(summaryContext, summaryCanvas.width / 2 - achievementSprites[i].width / 2, summaryCanvas.height / 2 - achievementSprites[i].height / 2, dt);
+            }
+            
+        }
+        
+        function generateAwards(as) {
+//            var as = r.getAchievements();
             var items = [];
             var clazz = '';
+            //achievementList = achievements.getAchievements();
             for (var key in as) {
-                var a = as[key];
+            	console.log(as);
+                var a = achievements.getAchievements()[as[key]];
+                console.log(a);
                 items.push(t.get('achievementRow', {
                             key: a.key,
                             title: a.title,
@@ -121,12 +191,18 @@ define({
         }
         
         function onBack() {
-            e.fire('newmain.show');
+        	if(isHistory) {
+        		e.fire('historypage.show');
+        	} else {
+        		e.fire('newmain.show');
+        	}
+            
         }
         
         function onPageHide() {
             sectionChanger.destroy();
         	document.getElementById('summary-unlocks').classList.toggle('hidden', true);
+        	cancelAnimationFrame(raf);
             e.die('tizen.back', onBack);
         }        
         
@@ -135,12 +211,14 @@ define({
              page.addEventListener('pagehide', onPageHide);
              
              page.addEventListener('click', onSummaryEndClick);
+             
              list.addEventListener('click', onItemTap);
         }
 
         function onSummaryEndClick() {
             if (isScrolling()) return;
-        	e.fire('newmain.show');
+            if(sectionChanger.getActiveSectionIndex() < sectionChanger.getNumberOfSections() - 1)
+            	sectionChanger.nextSection(500);
         }        
         
         function onItemTap(event) {
@@ -167,6 +245,8 @@ define({
             page = document.getElementById('racesummary');
             list = document.getElementById('summary-achievements-list');
             changer = document.getElementById("race-summary-sectionchanger");
+            summaryCanvas = document.getElementById('summary-canvas');
+            summaryContext = summaryCanvas.getContext('2d');
             bindEvents();
         }
 
@@ -183,10 +263,9 @@ define({
             return hours + ' ' + mins;
         }
         
-        function distance() {
+        function distance(value, u) {
             var decimals = 0;
-            var value = r.getDistance();
-            var u = r.getDistanceUnits();
+            //var u = settings.getDistanceUnits();
             
             if (value > 1000 && u == 'meters') {
                 value = value / 1000;

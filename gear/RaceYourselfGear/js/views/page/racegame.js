@@ -29,14 +29,15 @@ define({
         'views/page/gamestats2',
         'views/page/gamestats3',
         'views/page/gamestats4',
-//        'views/page/gameselect',
         'models/race',
         'models/hrm',
         'models/mocks/hrm',
+        'models/mocks/pedometer',
         'models/sprite',
         'models/settings',
         'models/config',
 		'models/game',
+		'views/page/sweatpoint_rising',
     ],
     def: function viewsRaceGame(req) {
         'use strict';
@@ -49,6 +50,8 @@ define({
             settings = req.models.settings,
             config = req.models.config,
             Sprite = req.models.sprite.Sprite,
+            SweatPoint = req.views.page.sweatpoint_rising.SweatPoint,
+            mockPedometer = req.models.mocks.pedometer,
             page = null,
             canvas,
             context,
@@ -97,9 +100,10 @@ define({
             dino = null,
             boulder = null,
             dinoGameImage = null,
-//            boulderGameImage = null,
+            highscoreImage = null,
             weightLossGameImage = null,
             strengthGameImage = null,
+            meteorGameImage = null,
             dinoUnlockImageFS = null,
             finishedImage = null,
             numZombies = 0,
@@ -123,7 +127,7 @@ define({
             frames = 0,
             fps = 0,
             lastDistanceAwarded = 0,
-            ppm = 5, // pts/meter
+            ppm = 0, // pts/meter
             hr = 100,
             rToRTime= 1,
             maxHeartRate = 150,
@@ -164,7 +168,7 @@ define({
             hrWarningPeriod = 3*1000,
             lightRed = '#731216',
 			flashingRed = 'flashingRed',
-			flashingRedParams = { colour: '#fff', period:400, phase: 0 },
+			flashingRedParams = { colour: '#fff', lightColour: '#fff', period:400, phase: 0 },
 			hrNotFound = false,
 			unlockNotification = null,
 			unlockNotificationTimer = null,
@@ -184,7 +188,9 @@ define({
             numAwardsAtFinish = 0,
             unlockNotificationActive = false,
             hasBeenInGoalHRZone = false,
-            
+			sweatPointGraphics = [],
+            sweatPointAwardsSinceLastGraphic = 0,
+
             
             //eliminator vars
             nextLapDistance = config.getLapLength(),
@@ -207,10 +213,17 @@ define({
 			loaded = false,
             loading = false,
             waiting = false,
+            isHighscore = false,
             pendingAssets = 0,
             showOpponentProgressBar = true,
             eliminatedEndImage = null,
-            started = false;
+            started = false,
+			timeOfLastOvertakeWarning = 0,
+			minTimeBetweenOvertakeWarnings = 5000,
+			highscoreCanvas,
+			highscoreContext,
+        	drawHighscoreText = false;
+        
 			
 //// in common with zombie game <---
         function show() {
@@ -312,6 +325,10 @@ define({
 			showUnlockNotification('Strength', 5);
 		}
 
+		function onUnlockMeteor() {
+			showUnlockNotification('meteor', 5);
+		}
+		
 /// ---> /in common with zombie game
 
         function onPageShow() {
@@ -321,12 +338,23 @@ define({
         	gameOver = false;
             document.getElementById('eliminator-end').classList.toggle('hidden', true);
             document.getElementById('eliminator-highscore').classList.toggle('hidden', true);
+            isHighscore = false;
+            drawHighscoreText = false;
         	if (!loaded) {
         		waiting = true;
         		loadAssets();
         		return;
         	}
         	
+        	ppm = 0;
+        	
+			//start the canned hrm sequence if in demo mode
+			if (config.getIsDemoMode()) {
+				hrmMock.startCanned();
+				//set an initial run speed of 1.5 m per stride
+				mockPedometer.setRunSpeed(1.6);
+            }  
+            
             visible = true;
             finished = false;
             started = false;
@@ -362,7 +390,7 @@ define({
 			e.listen('game.unlock.dino', onUnlockDino);
 			e.listen('game.unlock.WeightLoss', onUnlockWeightLoss);
             e.listen('game.unlock.Strength', onUnlockStrength);
-            
+            e.listen('game.unlock.meteor', onUnlockMeteor);
 			e.listen('achievement.awarded', onAchievementAwarded);
 			page.addEventListener('click', onTapHandler);
 ////            isDead = false;
@@ -456,7 +484,7 @@ define({
 			race.getOngoingRace().start();
 ////            startZombies();
 			lastRender = Date.now();
-			ppm = 5;
+			ppm = config.getPpmGood();
 			started = true;
 			timeCurrentLapStarted = Date.now();
 			
@@ -473,7 +501,10 @@ define({
 			{
 				numAwardsAtFinish++;
 			}
-			chime.play();
+
+			if(settings.getAudioActive() && chime != null) {
+				chime.play();
+			}
         }
         
       
@@ -517,7 +548,7 @@ define({
 //            e.die('game.unlock.boulder', onUnlockBoulder);
             e.die('game.unlock.WeightLoss', onUnlockWeightLoss);
             e.die('game.unlock.Strength', onUnlockStrength);
-            
+            e.die('game.unlock.meteor', onUnlockMeteor);
             e.die('achievement.awarded', onAchievementAwarded);
 			page.removeEventListener('click', onTapHandler);
         }        
@@ -527,7 +558,7 @@ define({
         }
         
         function onWristUp() {
-        	sectionChanger.setActiveSection(1, 1000);
+//        	sectionChanger.setActiveSection(1, 1000);
         }        
         
         function onAgain() {
@@ -536,7 +567,7 @@ define({
             document.getElementById('eliminator-end').classList.toggle('hidden', true);
             document.getElementById('eliminator-highscore').classList.toggle('hidden', true);
             gameOver = false;
-            ppm = 5;
+            ppm = config.getPpmGood();
             playerIsAhead = true;
             timeAheadnessSwitched = Date.now();
         	restart();
@@ -557,6 +588,10 @@ define({
             bannerTimeout = setTimeout(ready, countDownParams.stageDuration * 1000);
 			countDownParams.outerRadius = countDownParams.outerRadiusMax;
 			countDownParams.startTime = Date.now();
+			if(settings.getVibrateActive()) {
+				console.log('vibrate: countdown');
+				navigator.vibrate([500]);
+			}
         }
         
         function ready() {
@@ -566,6 +601,10 @@ define({
             bannerTimeout = setTimeout(set, countDownParams.stageDuration * 1000);
             countDownParams.outerRadius = countDownParams.outerRadiusMax;
 			countDownParams.startTime = Date.now();
+			if(settings.getVibrateActive()) {
+				console.log('vibrate: countdown');
+				navigator.vibrate([250]);
+			}
         }
         function set() {
             banner = 'GO';
@@ -574,7 +613,12 @@ define({
             bannerTimeout = setTimeout(go, countDownParams.stageDuration * 1000);
             countDownParams.outerRadius = countDownParams.outerRadiusMax;
 			countDownParams.startTime = Date.now();
+			if(settings.getVibrateActive()) {
+				console.log('vibrate: countdown');
+				navigator.vibrate([250]);
+			}
 		}
+		
         function go() {
 
 			startRun();
@@ -591,6 +635,11 @@ define({
 //            var warmupDurationMinutes = Math.floor(config.getWarmupPeriod() / 60);
 //			setNotification(green, '#fff', 'Warm up for ' + warmupDurationMinutes + 'min', 'Tap to skip', 10*1000);
 //			warmingUp = true;
+
+			if(settings.getVibrateActive()) {
+				console.log('vibrate: countdown');
+				navigator.vibrate([750]);
+			}
 
         }
         
@@ -667,6 +716,7 @@ define({
 			
 			var r = race.getOngoingRace();
 			var playerLapDistance = (r.getMetricDistance() - lapStartDist) % TRACK_LENGTH;
+			
 			var playerIsAheadNow = true;
 			
 			//update runner distances
@@ -688,13 +738,39 @@ define({
 				}
 			}
 			
-			//flip this bool, but with some stickingess
+			//update sweat point graphics
+			for(var i=0; i<sweatPointGraphics.length; i++)
+			{
+				sweatPointGraphics[i].tick();
+			}
+
+			
+			//flip this bool, but with some stickiness
 			var timeSinceLastSwitch = Date.now() - timeAheadnessSwitched;
 			if(timeSinceLastSwitch > 500)
 			{
+				//vibrate if overtaken
+				if(playerIsAhead && !playerIsAheadNow)
+				{
+					//only if minimum time has passed
+					var timeSinceLastOvertakeWarning = Date.now() - timeOfLastOvertakeWarning;
+					if(timeSinceLastOvertakeWarning > minTimeBetweenOvertakeWarnings)
+					{
+						if(settings.getVibrateActive()) {
+							console.log('vibrate: overtake warning');
+							navigator.vibrate([100]);	
+						}
+						timeOfLastOvertakeWarning = Date.now();
+					}
+				}
+				
+				
 				playerIsAhead = playerIsAheadNow;
 				timeAheadnessSwitched = Date.now();
+				ppm = playerIsAhead ? config.getPpmGood() : 0;
 			}
+			
+
 			
 			//check if we're actually moving
 			if(r.getMetricSpeed() > 1)
@@ -758,7 +834,11 @@ define({
 						document.getElementById('eliminator-end').classList.toggle('hidden');
 					} else {
 						settings.setEliminatorHighScore(numLaps);
-						document.getElementById('eliminator-new-hs-value').innerHTML = numLaps;
+						isHighscore = true;
+						setTimeout(function() {
+							drawHighscoreText = true;
+						}, 1200);
+						//document.getElementById('eliminator-new-hs-value').innerHTML = numLaps;
 						document.getElementById('eliminator-highscore').classList.toggle('hidden');
 					}
 					}, 2000);
@@ -767,8 +847,9 @@ define({
 //				var r = race.getOngoingRace();
 //				e.fire('race.end', r);
 //				r.stop();
-			
-				chime.play();
+				if(settings.getAudioActive() && chime != null) {
+					chime.play();
+				}
 			}
         }
         
@@ -856,13 +937,19 @@ define({
 				}
 */
             	
+
+            	
             	if(playerIsAhead)
             	{
             	   	restart();
             	   	numLaps++;
 					//show notification
 					setNotification(green, '#fff', 'Lap Complete', null, 3000);
-					chime.play();
+
+					if(settings.getAudioActive() && chime != null) {
+						chime.play();
+					}
+
 					if(settings.getVibrateActive()) {
 						console.log('vibrate: lap complete');
 						navigator.vibrate([500]);
@@ -871,6 +958,22 @@ define({
 					showLapCompleteBox = true;
 					setTimeout(hideLapCompleteBox, 5000);
 					addGhost(lastLapTime);
+
+					//Rig pedometer speed if this is demo mode
+					if(config.getIsDemoMode())
+					{
+						switch(numLaps)
+						{
+							case 1:
+								mockPedometer.setRunSpeed(20.0);
+								break;
+							case 2:
+								mockPedometer.setRunSpeed(1.8);
+								break;
+							default:
+								//nothing to do
+						}
+					}
 
             	}
             	else
@@ -883,10 +986,28 @@ define({
             
             if (lastDistanceAwarded < r.getMetricDistance()) {
                 var distance = r.getMetricDistance();
-				r.addPoints((distance - lastDistanceAwarded)*ppm);
+                var points = (distance - lastDistanceAwarded)*ppm;
+				r.addPoints(points);
 				lastDistanceAwarded = distance;
+				if(!(points==0))
+				{
+					spawnPointsGraphic(points);
+				}
             }
             
+			//clear up old sweat point graphics
+            var done = false;
+			while(!done)
+			{    
+				if(sweatPointGraphics.length > 0 && sweatPointGraphics[0].getFinished())
+				{
+					//remove first element;
+					sweatPointGraphics.shift();
+				}
+				else
+				{ done = true; }
+			}        
+
             
             /*
             if (runner.next !== null && r.getSpeed() >= runner.next.speedThreshold) {
@@ -907,6 +1028,20 @@ define({
             
             requestRender();
         }
+
+		function spawnPointsGraphic(rawPoints)
+		{
+			//points seems to come in with a small fractional part sometimes, so round it.
+			var points = Math.round(rawPoints);
+			if(points == 0) return;
+			var colour = points > 0 ? green : red;
+			var r = race.getOngoingRace();
+			var playerLapDist = r.getDistance() - lapStartDist;
+			var startPos = { x:distanceToTrackPos(playerLapDist) + 40, y:canvas.height - 55 - runner.sprite.height * scale};
+			var destPos = { x:sweat.width/2, y:sweat.height };
+			var pointsPenaltyGraphic = new SweatPoint(points, colour, startPos, destPos);
+			sweatPointGraphics.push(pointsPenaltyGraphic);
+		}
 
 		function hideLapCompleteBox() 
 		{
@@ -1079,9 +1214,15 @@ define({
 			flashingRedParams.phase += dt;
 			flashingRedParams.phase = flashingRedParams.phase % flashingRedParams.period;
 			if(flashingRedParams.phase > flashingRedParams.period/2)
-			{ flashingRedParams.colour = red; }
+			{ 
+				flashingRedParams.colour = red; 
+				flashingRedParams.lightColour = '#fff';
+			}
 			else
-			{ flashingRedParams.colour = lightRed;}
+			{
+				flashingRedParams.colour = lightRed;
+				flashingRedParams.colour = red;
+			}
             
             context.clearRect(0, 0, canvas.width, canvas.height);            
             var trackWidth = canvas.width - 0 - runner.sprite.width;
@@ -1094,6 +1235,13 @@ define({
 			context.drawImage(badBG, 0, 0, canvas.width, canvas.height - trackHeight);
 			context.globalAlpha = 1;
 */
+
+			//fill the 'Basecoat' for the lap counter
+			context.beginPath();
+			context.arc( counterXPos, counterHeight, counterRadius, 0, 2*Math.PI, false);
+			context.fillStyle = playerIsAhead? green : red;
+			context.fill();
+
 			//Header
 			//sweat points
 			if(true)
@@ -1108,8 +1256,17 @@ define({
 				context.textBaseline = "middle";
 				context.textAlign = "left";
 				context.fillText('SP', xpos + sweat.width + 8, ypos + sweat.height/2);
-				context.fillStyle = ppm > 0 ? '#fff' : flashingRedParams.colour;
+				context.fillStyle = ppm > 0 ? '#fff' : flashingRedParams.lightColour;
 				context.fillText(~~settings.getPoints(), xpos + sweat.width + 8 + 36, ypos + sweat.height/2);
+				
+												
+				//draw sweat point graphics
+				for(var i=0; i<sweatPointGraphics.length; i++)
+				{
+					var sweatImg = sweatPointGraphics[i].amount > 0 ? sweat : sweat_red;
+					sweatPointGraphics[i].render(context, sweatImg);
+				}
+
 			}
 ///////////////////////////
 
@@ -1225,7 +1382,7 @@ define({
 				if(true)	//new box version
 				{
 					context.fillStyle = '#000';
-					context.fillRect( 0, canvas.height - trackHeight + trackThickness/2, canvas.width, canvas.height);
+//					context.fillRect( 0, canvas.height - trackHeight + trackThickness/2, canvas.width, canvas.height);
 
 					context.fillStyle = '#fff';
 //					context.fillRect(whiteInset, canvas.height - trackHeight + trackThickness/2 + whiteInset, canvas.width - 2 * whiteInset, trackHeight - trackThickness - 2 * whiteInset);
@@ -1323,7 +1480,7 @@ define({
 			
 			//black line above track
 			context.fillStyle = '#000';
-			context.fillRect(0, trackHeight - 7, canvas.width, 10);
+//			context.fillRect(0, trackHeight - 7, canvas.width, 10);
 			
             context.beginPath();
             context.moveTo(0, canvas.height - trackHeight);
@@ -1555,7 +1712,9 @@ define({
 				context.beginPath();
 				context.arc( counterXPos, counterHeight, counterRadius, 0, 2*Math.PI, false);
 				context.fillStyle = playerIsAhead? green : red;
-			
+//				context.globalCompositeOperation = lighter;
+				//partly transparent so that the sweat point numbers show through
+				context.globalAlpha = 0.9;
 				context.fill();
 				//text
 				context.font = '85px Samsung Sans';
@@ -1567,6 +1726,8 @@ define({
 				context.font = '24px Samsung Sans';
 	//        	context.fillText('laps', counterXPos, counterHeight + 40);
 				context.fillText('lap', counterXPos, counterHeight -45);
+//				context.globalCompositeOperation = source-over;
+				context.globalAlpha = 1;
         	}
         	else
         	{
@@ -1904,16 +2065,19 @@ define({
             	switch(unlockNotification)
             	{
             		case 'dino':
-            			dinoGameImage.draw(context, 0, 0, 0);
-            			break;
+//            			dinoGameImage.draw(context, 0, 0, 0);
+//            			break;
 //					case 'boulder':
 //						boulderGameImage.draw(context, 0, 0, 0);
 //						break;
 					case 'WeightLoss':
-						weightLossGameImage.draw(context, 0, 0, 0);
+						weightLossGameImage.draw(context, 0, 0, dt);
 						break;
 					case 'Strength':
-						strengthGameImage.draw(context, 0, 0, 0);
+						strengthGameImage.draw(context, 0, 0, dt);
+						break;
+					case 'meteor':
+						meteorGameImage.draw(context, 0, 0, dt);
 						break;
 					case 'finished':
 						finishedImage.draw(context, centreX - finishedImage.height/2, centreY - finishedImage.height/2, 0);
@@ -1940,9 +2104,19 @@ define({
             }
             
             if(gameOver) {
-            	console.log('about to draw eliminated');
             	eliminatedEndImage.draw(context, 0, 0, dt);
             }
+            
+            if(isHighscore) {
+            	highscoreImage.draw(highscoreContext, 0, 0, dt);
+            	highscoreContext.font = 'bold 50px Samsung Sans';
+            	highscoreContext.textAlign = 'center';
+            	highscoreContext.textBaseline = 'middle';
+            	highscoreContext.fillStyle = '#000';
+            	if(drawHighscoreText) {
+            	 	highscoreContext.fillText(numLaps, highscoreCanvas.width/2, highscoreCanvas.height/2 - 30);
+                }
+           }
             
             context.save();
             frames++;
@@ -2036,15 +2210,22 @@ define({
             canvas = document.getElementById('race-canvas');
             context = canvas.getContext('2d');
             
-        	//leave hrm in, still want it for side screen
-            if (hrm.isAvailable()) {
-                  hrm.start();
-                  // Availability will change if start fails
-              } 
-              if (!hrm.isAvailable()) {
-              	hrmMock.start();
-              }                       
-              
+            highscoreCanvas = document.getElementById('highscore-canvas');
+            highscoreContext = highscoreCanvas.getContext('2d');
+            
+            if(!config.getIsDemoMode())
+            {
+				//leave hrm in for race game, still want it for side screen
+				if (hrm.isAvailable()) {
+					  hrm.start();
+					  // Availability will change if start fails
+				  } 
+				  if (!hrm.isAvailable()) {
+					hrmMock.start();
+	//              	hrmMock.startCanned();
+						//start this in onpageshow
+				  }                       
+             } 
               bindEvents();
         }
         
@@ -2113,24 +2294,27 @@ define({
 				animatedSprites.push(sweat_red);
 			});
 			
-			//dino game image
-			loadImage('images/race_dino_unlocked_ingame.png', function() {
-				dinoGameImage = new Sprite(this, this.width, 1000);
+			loadImage('images/animation_new_high_score_all_together.png', function() {
+				highscoreImage = new Sprite(this, this.width / 11, 1800, {loop: true, loopstart: 8});
 			});
 			
-			//boulder game image
-//			loadImage('images/image_boulder_achievement_screen.png', function() {
-//				boulderGameImage = new Sprite(this, this.width, 1000);
+			//dino game image
+//			loadImage('images/race_dino_unlocked_ingame.png', function() {
+//				dinoGameImage = new Sprite(this, this.width, 1000);
 //			});
 			
 			// Weight loss game image
-			loadImage('images/Game_Eliminator/screen_RY_Slimmer_unlocked.png', function() {
-				weightLossGameImage = new Sprite(this, this.width, 1000);
+			loadImage('images/animation_RY_Slimmer_unlocked_all_together.png', function() {
+				weightLossGameImage = new Sprite(this, this.width / 12, 2000, {loop: true, loopstart: 9});
 			});
 			
 			// Strength game image
-			loadImage('images/Game_Eliminator/screen_RY_Faster_unlocked.png', function() {
-				strengthGameImage = new Sprite(this, this.width, 1000);
+			loadImage('images/animation_RY_Faster_unlocked_all_together.png', function() {
+				strengthGameImage = new Sprite(this, this.width / 12, 2000, {loop: true, loopstart: 9});
+			});
+			
+			loadImage('images/animation_meteor_unlocked_all_together.png', function() {
+				meteorGameImage = new Sprite(this, this.width/12, 2000, {loop: true, loopstart: 9});
 			});
 			
 			//finished image
