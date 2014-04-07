@@ -137,7 +137,8 @@ define({
         	console.log('binding events for opponent');
         	
         	var zombieBtnEl = document.getElementById('zombie-mode-btn'),
-        		dinoBtnEl = document.getElementById('dino-mode-btn');
+        		dinoBtnEl = document.getElementById('dino-mode-btn'),
+        		meteorBtnEl = document.getElementById('meteor-mode-btn');
         
         	dinoCanvas = document.getElementById('dino-canvas');
         	dinoContext = dinoCanvas.getContext('2d');
@@ -180,6 +181,7 @@ define({
             
             zombieBtnEl.addEventListener('click', onZombieBtnClick);
             dinoBtnEl.addEventListener('click', onDinoBtnClick);
+            meteorBtnEl.addEventListener('click', onMeteorBtnClick);
         }
 
         function isScrolling() {
@@ -216,6 +218,25 @@ define({
             game.setCurrentGame('hrzgame');
             game.setCurrentOpponentType('dinosaur');
             if(settings.getZombieTutorial()) {
+        		if(settings.getFirstTimeAge()) {
+        			console.log('showing age');
+            		e.fire('ageselect.show', 'choosegoal');
+            	} else {
+            		console.log('choosing goal');
+            		e.fire('choosegoal.show');
+            	}
+        	}
+        	else {
+        		console.log('showing zombie tutorial');
+        		e.fire('zombietutorial.show');
+        	}
+        }
+        
+        function onMeteorBtnClick(event) {
+        	if(isScrolling()) return;
+        	game.setCurrentGame('hrzgame');
+        	game.setCurrentOpponentType('meteor');
+        	if(settings.getZombieTutorial()) {
         		if(settings.getFirstTimeAge()) {
         			console.log('showing age');
             		e.fire('ageselect.show', 'choosegoal');
