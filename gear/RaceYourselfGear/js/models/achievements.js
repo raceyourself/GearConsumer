@@ -283,6 +283,24 @@ define({
                         return Number(Math.min(unlockDist, progress.total.distance)*100/unlockDist).toFixed(1).replace('.0', '') + '%';
                     }
                 },
+                'Meteor' : {
+                	title: 'Meteor Opponent',
+                	description: 'Unlock the meteors as an opponent for heart rate training by earning 50,000SP',
+                	points: 0,
+                	uses: 1,
+                	init: function() {
+                		e.listen('race.progress', function(event) {
+                			if(progress.total.points >= config.getMeteorUnlockPoints()) {
+                				achieve('Meteor');
+                				game.unlock('meteor');
+                			}
+                		});
+                	},
+                	progress: function() {
+                		var unlockPoints = config.getMeteorUnlockPoints();
+                		return Number(Math.min(unlockPoints, progress.total.points) * 100 / unlockPoints).toFixed(1).replace('.0', '') + '%';
+                	}
+                },
                 // Dedication
                 'thrice_weekly' : {
                     title: 'Addict',
@@ -309,6 +327,7 @@ define({
         function saveAchievements() {
             clearTimeout(flushTimeout);
             flushTimeout = false;
+            console.log(progress.total.points);
             if (s.add(STORAGE_KEY, {achieved: achieved, progress: progress, version: 1})) {
                 return true;
             }
@@ -393,6 +412,7 @@ define({
             progress.daily.distance = progress.daily.distance || 0;
             progress.weekly.distance = progress.weekly.distance || 0;
             progress.monthly.distance = progress.monthly.distance || 0;
+            progress.total.points = progress.total.points || 0;
             progress.total.distance = progress.total.distance || 0;
             e.listen('race.end', function(event) {
                 var race = event.detail;
@@ -411,6 +431,7 @@ define({
                 progress.weekly.distance += data.distance;
                 progress.monthly.distance += data.distance;
                 progress.total.distance += data.distance;
+                progress.total.points = data.points;
                 
                 save();
             });            

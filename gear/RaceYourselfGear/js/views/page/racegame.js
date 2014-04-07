@@ -103,6 +103,7 @@ define({
             highscoreImage = null,
             weightLossGameImage = null,
             strengthGameImage = null,
+            meteorGameImage = null,
             dinoUnlockImageFS = null,
             finishedImage = null,
             numZombies = 0,
@@ -324,6 +325,10 @@ define({
 			showUnlockNotification('Strength', 5);
 		}
 
+		function onUnlockMeteor() {
+			showUnlockNotification('meteor', 5);
+		}
+		
 /// ---> /in common with zombie game
 
         function onPageShow() {
@@ -385,7 +390,7 @@ define({
 			e.listen('game.unlock.dino', onUnlockDino);
 			e.listen('game.unlock.WeightLoss', onUnlockWeightLoss);
             e.listen('game.unlock.Strength', onUnlockStrength);
-            
+            e.listen('game.unlock.meteor', onUnlockMeteor);
 			e.listen('achievement.awarded', onAchievementAwarded);
 			page.addEventListener('click', onTapHandler);
 ////            isDead = false;
@@ -543,7 +548,7 @@ define({
 //            e.die('game.unlock.boulder', onUnlockBoulder);
             e.die('game.unlock.WeightLoss', onUnlockWeightLoss);
             e.die('game.unlock.Strength', onUnlockStrength);
-            
+            e.die('game.unlock.meteor', onUnlockMeteor);
             e.die('achievement.awarded', onAchievementAwarded);
 			page.removeEventListener('click', onTapHandler);
         }        
@@ -2071,6 +2076,9 @@ define({
 					case 'Strength':
 						strengthGameImage.draw(context, 0, 0, dt);
 						break;
+					case 'meteor':
+						meteorGameImage.draw(context, 0, 0, dt);
+						break;
 					case 'finished':
 						finishedImage.draw(context, centreX - finishedImage.height/2, centreY - finishedImage.height/2, 0);
 						//also draw text for finished
@@ -2303,6 +2311,10 @@ define({
 			// Strength game image
 			loadImage('images/animation_RY_Faster_unlocked_all_together.png', function() {
 				strengthGameImage = new Sprite(this, this.width / 12, 2000, {loop: true, loopstart: 9});
+			});
+			
+			loadImage('images/animation_meteor_unlocked_all_together.png', function() {
+				meteorGameImage = new Sprite(this, this.width/12, 2000, {loop: true, loopstart: 9});
 			});
 			
 			//finished image

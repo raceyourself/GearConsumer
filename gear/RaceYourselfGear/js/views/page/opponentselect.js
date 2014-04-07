@@ -97,7 +97,11 @@ define({
         	zombieSprite.drawscaled(zombieContext, zombieCanvas.width/2 - zombieSprite.width * 1.5 / 2, (zombieCanvas.height / 2 - 25) - zombieSprite.height * 1.5/2, dt, 1.5);
         
         	//meteorContext.clearRect(0, 0, meteorCanvas.width, meteorCanvas.height);
-        	meteorLockedSprite.drawscaled(meteorContext, meteorCanvas.width/2 - meteorLockedSprite.width / 2, (meteorCanvas.height / 2 - 50) - meteorLockedSprite.height / 2, dt, 1);
+        	if(game.isLocked('meteor')) {
+        		meteorLockedSprite.drawscaled(meteorContext, meteorCanvas.width/2 - meteorLockedSprite.width / 2, (meteorCanvas.height / 2 - 50) - meteorLockedSprite.height / 2, dt, 1);
+        	} else {
+        		meteorUnlockedSprite.drawscaled(meteorContext, meteorCanvas.width/2 - meteorUnlockedSprite.width / 2, (meteorCanvas.height / 2 - 50) - meteorUnlockedSprite.height / 2, dt, 1);
+        	}
         	
         	//eagleContext.clearRect(0, 0, eagleCanvas.width, eagleCanvas.height);
         	//eagleLockedSprite.drawscaled(eagleContext, eagleCanvas.width / 2 - eagleLockedSprite.width / 2, (eagleCanvas.height / 2 - 50) - eagleLockedSprite.height / 2, dt, 1);
@@ -167,7 +171,7 @@ define({
             });
             
 //            loadImage('images/animation_eagle_character_selection_locked.png', function() {
-//            	eagleLockedSprite = new Sprite(this, this.width/7, 800);
+//            	eagleLockedSprite = new Sprite(this, this.width/18, 800);
 //            });
 //            
 //            loadImage('images/animation_eagle_character_selection_unlocked.png', function() {

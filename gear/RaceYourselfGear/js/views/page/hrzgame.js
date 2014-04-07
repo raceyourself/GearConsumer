@@ -98,6 +98,7 @@ define({
             zombies = [],
             zombieIdle = null,
             dino = null,
+            meteor = null,
             dinoBiting = null,
             dinoIdle = null,
             boulder = null,
@@ -106,6 +107,7 @@ define({
             //boulderGameImage = null,
             weightLossGameImage = null,
             strengthGameImage = null,
+            meteorGameImage = null,
             dinoUnlockImageFS = null,
             finishedImage = null,
             awardImage = null,
@@ -196,7 +198,33 @@ define({
             bgHeight = 246,
             sweatPointGraphics = [],
             sweatPointAwardsSinceLastGraphic = 0,
-            started = false;
+            started = false,
+            meteors = { 	mainMeteor : { 
+            					TravellingSprite: null, 
+            					impactedSprite: null, 
+            					impactTimer: 5, 
+            					impactedDistance: 0, 
+            					impacted : false,
+            					reset : function() {
+										meteors.mainMeteor.impactTimer = meteors.params.impactTime;
+										meteors.mainMeteor.impacted = false;
+										canDie = false;
+										meteors.mainMeteor.shadowWidth = meteors.params.shadowMinSize;
+									}
+								},
+            				sceneryMeteors : [],
+            				lastUpdateTime : 0,
+            				tickInterval : false,
+            				impactSound : null,
+            				params: { 	startHeight: 800,
+            							resetTimeout: 5, 
+            							impactTime: 3, 
+            							shadowMinSize: 50, 
+            							shadowMaxSize: 25 
+            							},
+
+						 },
+            canDie = true;
 
 
         function show() {
@@ -303,6 +331,10 @@ define({
 			showUnlockNotification('Strength', 5);
 		}
 		
+		function onUnlockMeteor() {
+			showUnlockNotification('meteor', 5);
+		}
+		
 		
         function onPageShow() {
         	console.log('hrzgame:pageshow');
@@ -311,6 +343,7 @@ define({
         		loadAssets();
         		return;
         	}
+        	canDie = true;
             visible = true;
             finished = false;
             sectionChanger = new SectionChanger(changer, {
@@ -353,6 +386,7 @@ define({
             
 			e.listen('game.unlock.dino', onUnlockDino);
 			e.listen('game.unlock.WeightLoss', onUnlockWeightLoss);
+			e.listen('game.unlock.meteor', onUnlockMeteor);
             e.listen('game.unlock.Strength', onUnlockStrength);
 			//e.listen('game.unlock.boulder', onUnlockBoulder);
 			//e.listen('game.unlock.eliminator', onUnlockEliminator)
@@ -388,7 +422,7 @@ define({
             
             //get opponent type from game
 			setOpponent(game.getCurrentOpponentType());
-//			setOpponent('dinosaur');
+//			setOpponent('meteor');
 
             zombieCatchupSpeed = -zombieStartOffset/config.getCatchupTime();
             zombiesCatchingUp = false;
@@ -440,6 +474,15 @@ define({
         			regularSound = zombieMoan;
         			killSound = zombieGrowl;
 					break;
+				case 'meteor':
+					regularSound = null;
+					killSound = null;
+					//initialise update tick
+					meteors.lastUpdateTime = Date.now();
+					meteors.tickInterval = setInterval(meteorTick, 33);
+					meteors.mainMeteor.reset();
+					canDie = false;
+					break;
 				default:
 					console.error('unrecognised opponent type: ' + game.getCurrentOpponentType());
 					break;
@@ -458,6 +501,8 @@ define({
             clearTimeout(warningTimeoutLow);
 			clearTimeout(warningTimeoutHigh);
 			clearInterval(heartBeatInterval);
+			if(meteors.tickInterval != false) { clearInterval(meteors.tickInterval); }
+			
             if (!!sectionChanger) {
             	sectionChanger.destroy();
             	sectionChanger = false;
@@ -476,6 +521,7 @@ define({
             e.die('game.unlock.dino', onUnlockDino);
             //e.die('game.unlock.boulder', onUnlockBoulder);
             e.die('game.unlock.WeightLoss', onUnlockWeightLoss);
+            e.die('game.unlock.meteor', onUnlockMeteor);
             e.die('game.unlock.Strength', onUnlockStrength);
             e.die('achievement.awarded', onAchievementAwarded);
 			page.removeEventListener('click', onTapHandler);
@@ -560,6 +606,7 @@ define({
         	bannerTimeout = setTimeout(clearbanner, countDownParams.stageDuration * 1000);
 			countDownParams.startTime = Date.now();
 			zombiePosWeight = 0;
+			meteors.mainMeteor.reset();
         }
         
         function endWarmup() 
@@ -772,6 +819,55 @@ define({
             zombieInterval = setInterval(zombieTick, intervalTime);
         }
         
+        function meteorTick()
+        {
+        	//update main meteor
+        	var meteorDT = Date.now() - meteors.lastUpdateTime;
+        	meteors.lastUpdateTime = Date.now();
+        	//update timer
+        	meteors.mainMeteor.impactTimer -= meteorDT/1000;
+        	//update height
+        	var heightProportion = meteors.mainMeteor.impactTimer / meteors.params.impactTime;
+
+        	//ease height proportion for more drama
+        	heightProportion = 1 - (1-heightProportion)*(1-heightProportion);
+        	var shadowProportion = 1-heightProportion;
+        	
+        	meteors.mainMeteor.height = meteors.params.startHeight * heightProportion;
+
+        	meteors.mainMeteor.shadowWidth = meteors.params.shadowMinSize + shadowProportion * (meteors.params.shadowMaxSize - meteors.params.shadowMinSize);
+        	
+        	//switch to impacted if timer expired
+        	if(meteors.mainMeteor.impactTimer < 0 && !meteors.mainMeteor.impacted)
+        	{	
+        		meteors.mainMeteor.impacted = true; 
+        		var r=race.getOngoingRace();
+        		meteors.mainMeteor.impactedDistance = r.getDistance() + zombieOffset;	
+        		if(settings.getAudioActive() && meteors.meteorSound != null)
+        		{
+        			meteors.meteorSound.play();
+        		}
+        		if(settings.getVibrateActive())
+        		{
+        			navigator.vibrate([10,10,10,10]);
+        		}
+        		canDie = true;
+        	}
+        	
+        	//set the canDie flag to false a half second after impact
+        	if(meteors.mainMeteor.impactTimer < -0.5 && canDie)
+        	{
+        		canDie = false;
+        	}
+        	
+        	//reset if necessary
+        	if(meteors.mainMeteor.impactTimer < -1*meteors.params.resetTimeout)
+        	{	
+				meteors.mainMeteor.reset();
+        	}
+        }
+        
+        
         function zombieTick() 
         {
         	//zombies catch up
@@ -829,7 +925,7 @@ define({
 					clearNotification();
 					setNotification(flashingRed, '#fff', 'Heart Rate too low!', null, 0);
 					showWarningLow = true;
-					if(settings.getAudioActive()) {
+					if(settings.getAudioActive() && regularSound != null) {
 						regularSound.play();
 					}
 					if(settings.getVibrateActive()) {
@@ -1032,7 +1128,7 @@ define({
         function step() {
             var r = race.getOngoingRace();
 //            if (r.getDistance() < zombieDistance && !isDead) {
-			if(zombieOffset >=0 && !isDead) {
+			if(zombieOffset >=0 && !isDead && canDie) {
                 if(!isDead)
                 {
                 r.data.caught_by = game.getCurrentOpponentType();
@@ -1041,7 +1137,7 @@ define({
                 r.addPoints(config.getPointsPenaltyDeath());
                 
 
-					if(settings.getAudioActive()) {
+					if(settings.getAudioActive() && killSound != null) {
 						killSound.play();
 					}
 					if(settings.getVibrateActive()) {
@@ -1056,7 +1152,7 @@ define({
 				spawnPointsGraphic(-100);
 				started = false;
 				ppm = 0;
-				
+
                 requestRender();
                 clearTimeout(bannerTimeout);
                 bannerTimeout = setTimeout(nextWave, 10000);
@@ -1082,7 +1178,6 @@ define({
                 r.stop();
                 lastRender = null;
                 stopZombies();
-                
                 return;
             }
             
@@ -1677,7 +1772,7 @@ define({
             var playerXPos = 0 + distanceToTrackPos(playerDistance)
             
             var opponentType = game.getCurrentOpponentType()
-//            opponentType = 'dinosaur';
+//            opponentType = 'meteor';
             switch(opponentType)
             {
 	            case 'zombie':
@@ -1746,6 +1841,42 @@ define({
 						context.rotate(boulder.rotation);
 						boulder.drawscaled(context, 0,0, dt, scale);
 						context.restore();
+					}
+					break;
+				case 'meteor':
+					if(zDistance != false && currentHRZone!='Recovery' && hasBeenInGoalHRZone) {
+						var meteorPos = distanceToTrackPos(zDistance);
+						var meteorScale = scale *1;
+//						meteor.drawscaled(context, meteorPos - meteor.width*0.5*meteorScale, canvas.height - (meteor.Height) * meteorScale, dt, meteorScale);
+//						meteor.drawscaled(context, meteorPos - meteor.width * 0.3, canvas.height - trackHeight - (meteor.height + 3)*meteorScale, dt, meteorScale);
+						
+						var meteorBaseHeight = canvas.height - (meteors.mainMeteor.travelSprite.height) * meteorScale;
+
+						if(meteors.mainMeteor.impacted)
+						{	
+							//draw impact sprite
+							var xPos = distanceToTrackPos(meteors.mainMeteor.impactedDistance);
+							var yPos = meteorBaseHeight + 15;
+							meteors.mainMeteor.impactedSprite.drawscaled(context, xPos - meteors.mainMeteor.impactedSprite.width*0.5, yPos - meteors.mainMeteor.impactedSprite.height * meteorScale, dt, meteorScale);
+						}
+						else
+						{
+							var xPos = distanceToTrackPos(zDistance) + 30;
+							var yPos = meteorBaseHeight - meteors.mainMeteor.height * meteorScale;
+							meteors.mainMeteor.travelSprite.drawscaled(context, xPos - meteors.mainMeteor.travelSprite.width*0.5, yPos - meteors.mainMeteor.travelSprite.height*0.5, dt, meteorScale);
+							
+							//draw blob shadow on the track
+							context.save();
+							context.translate(xPos -22, canvas.height - trackHeight);
+							context.scale(1, 0.2);
+							context.beginPath();
+							context.arc(0, 0, meteors.mainMeteor.shadowWidth, 0, 2*Math.PI, false);
+							context.fillStyle = '#000';
+							context.globalAlpha = 0.75;
+							context.fill();
+							context.restore();
+							context.globalAlpha = 1;
+						}
 					}
 					break;
 				default:
@@ -2001,7 +2132,6 @@ define({
 				}
             }
             runner.sprite.drawscaled(context, playerXPos, canvas.height -playerOffset , dt, playerScale);
-            
             				
 			//draw sweat point graphics
 //			for(var i=0; i<sweatPointGraphics.length; i++)
@@ -2079,11 +2209,14 @@ define({
 //					case 'boulder':
 //						boulderGameImage.draw(context, 0, 0, 0);
 //						break;
-					case 'WeightLoss':
+            		case 'WeightLoss':
 						weightLossGameImage.draw(context, 0, 0, dt);
 						break;
 					case 'Strength':
 						strengthGameImage.draw(context, 0, 0, dt);
+						break;
+					case 'meteor':
+						meteorGameImage.draw(context, 0, 0, dt);
 						break;
 					case 'finished':
 						finishedImage.draw(context, centreX - finishedImage.height/2, centreY - finishedImage.height/2, 0);
@@ -2293,6 +2426,11 @@ define({
                 throw "Could not load " + this.src;
             }
             dinoKill = dinoRoar;
+                       
+            meteors.meteorSound = new Audio('audio/meteor_impact.mp3')
+            meteors.meteorSound.onerror = function() {
+            	throw "Could not load " + this.src;
+            }
             
             //chime
             chime = new Audio('audio/Chime.wav');
@@ -2357,6 +2495,19 @@ define({
 				dinoIdle = new Sprite(this, this.width/5, 500);
 			});
 			
+			//meteor image
+			loadImage('images/animation_meteor_big_in_game.png', function() {
+				meteor = new Sprite(this, this.width/5, 500);
+			});
+			
+			loadImage('images/animation_meteor_in_game_travel.png', function() {
+				meteors.mainMeteor.travelSprite = new Sprite(this, this.width/2, 200);
+			});
+			loadImage('images/animation_meteor_in_game_impact.png', function() {
+				meteors.mainMeteor.impactedSprite = new Sprite(this, this.width/2, 300);
+				meteors.mainMeteor.impactedSprite.loop = false;
+			});
+			
 			//boulder image
 			loadImage('images/image_boulder_achievement_screen.png', function() {
 				boulder = new Sprite(this, this.width, 1000);
@@ -2375,14 +2526,17 @@ define({
 			
 			// Weight loss game image
 			loadImage('images/animation_RY_Slimmer_unlocked_all_together.png', function() {
-				weightLossGameImage = new Sprite(this, this.width / 12, 2000, {loop:true, loopstart: 9});
+				weightLossGameImage = new Sprite(this, this.width / 12, 2000, {loop: true, loopstart: 9});
 			});
 			
 			// Strength game image
 			loadImage('images/animation_RY_Faster_unlocked_all_together.png', function() {
-				strengthGameImage = new Sprite(this, this.width / 12, 2000, {loop:true, loopstart: 9});
+				strengthGameImage = new Sprite(this, this.width / 12, 2000, {loop: true, loopstart: 9});
 			});
 			
+			loadImage('images/animation_meteor_unlocked_all_together.png', function() {
+				meteorGameImage = new Sprite(this, this.width/12, 2000, {loop: true, loopstart: 9});
+			});
 			//boulder game image
 //			loadImage('images/image_boulder_achievement_screen.png', function() {
 //				boulderGameImage = new Sprite(this, this.width, 1000);
