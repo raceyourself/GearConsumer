@@ -1167,7 +1167,7 @@ define({
 
                 requestRender();
                 clearTimeout(bannerTimeout);
-                bannerTimeout = setTimeout(nextWave, 10000);
+                bannerTimeout = setTimeout(nextWave, 5000);
                 e.fire('died', {cause: game.getCurrentOpponentType()});
 				}
                 return;
