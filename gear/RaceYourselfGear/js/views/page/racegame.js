@@ -103,6 +103,7 @@ define({
             highscoreImage = null,
             weightLossGameImage = null,
             strengthGameImage = null,
+            meteorGameImage = null,
             dinoUnlockImageFS = null,
             finishedImage = null,
             numZombies = 0,
@@ -167,7 +168,7 @@ define({
             hrWarningPeriod = 3*1000,
             lightRed = '#731216',
 			flashingRed = 'flashingRed',
-			flashingRedParams = { colour: '#fff', period:400, phase: 0 },
+			flashingRedParams = { colour: '#fff', lightColour: '#fff', period:400, phase: 0 },
 			hrNotFound = false,
 			unlockNotification = null,
 			unlockNotificationTimer = null,
@@ -324,6 +325,10 @@ define({
 			showUnlockNotification('Strength', 5);
 		}
 
+		function onUnlockMeteor() {
+			showUnlockNotification('meteor', 5);
+		}
+		
 /// ---> /in common with zombie game
 
         function onPageShow() {
@@ -385,7 +390,7 @@ define({
 			e.listen('game.unlock.dino', onUnlockDino);
 			e.listen('game.unlock.WeightLoss', onUnlockWeightLoss);
             e.listen('game.unlock.Strength', onUnlockStrength);
-            
+            e.listen('game.unlock.meteor', onUnlockMeteor);
 			e.listen('achievement.awarded', onAchievementAwarded);
 			page.addEventListener('click', onTapHandler);
 ////            isDead = false;
@@ -543,7 +548,7 @@ define({
 //            e.die('game.unlock.boulder', onUnlockBoulder);
             e.die('game.unlock.WeightLoss', onUnlockWeightLoss);
             e.die('game.unlock.Strength', onUnlockStrength);
-            
+            e.die('game.unlock.meteor', onUnlockMeteor);
             e.die('achievement.awarded', onAchievementAwarded);
 			page.removeEventListener('click', onTapHandler);
         }        
@@ -553,7 +558,7 @@ define({
         }
         
         function onWristUp() {
-        	sectionChanger.setActiveSection(1, 1000);
+//        	sectionChanger.setActiveSection(1, 1000);
         }        
         
         function onAgain() {
@@ -1209,9 +1214,15 @@ define({
 			flashingRedParams.phase += dt;
 			flashingRedParams.phase = flashingRedParams.phase % flashingRedParams.period;
 			if(flashingRedParams.phase > flashingRedParams.period/2)
-			{ flashingRedParams.colour = red; }
+			{ 
+				flashingRedParams.colour = red; 
+				flashingRedParams.lightColour = '#fff';
+			}
 			else
-			{ flashingRedParams.colour = lightRed;}
+			{
+				flashingRedParams.colour = lightRed;
+				flashingRedParams.colour = red;
+			}
             
             context.clearRect(0, 0, canvas.width, canvas.height);            
             var trackWidth = canvas.width - 0 - runner.sprite.width;
@@ -1245,7 +1256,7 @@ define({
 				context.textBaseline = "middle";
 				context.textAlign = "left";
 				context.fillText('SP', xpos + sweat.width + 8, ypos + sweat.height/2);
-				context.fillStyle = ppm > 0 ? '#fff' : flashingRedParams.colour;
+				context.fillStyle = ppm > 0 ? '#fff' : flashingRedParams.lightColour;
 				context.fillText(~~settings.getPoints(), xpos + sweat.width + 8 + 36, ypos + sweat.height/2);
 				
 												
@@ -2054,8 +2065,8 @@ define({
             	switch(unlockNotification)
             	{
             		case 'dino':
-            			dinoGameImage.draw(context, 0, 0, 0);
-            			break;
+//            			dinoGameImage.draw(context, 0, 0, 0);
+//            			break;
 //					case 'boulder':
 //						boulderGameImage.draw(context, 0, 0, 0);
 //						break;
@@ -2064,6 +2075,9 @@ define({
 						break;
 					case 'Strength':
 						strengthGameImage.draw(context, 0, 0, dt);
+						break;
+					case 'meteor':
+						meteorGameImage.draw(context, 0, 0, dt);
 						break;
 					case 'finished':
 						finishedImage.draw(context, centreX - finishedImage.height/2, centreY - finishedImage.height/2, 0);
@@ -2285,9 +2299,9 @@ define({
 			});
 			
 			//dino game image
-			loadImage('images/race_dino_unlocked_ingame.png', function() {
-				dinoGameImage = new Sprite(this, this.width, 1000);
-			});
+//			loadImage('images/race_dino_unlocked_ingame.png', function() {
+//				dinoGameImage = new Sprite(this, this.width, 1000);
+//			});
 			
 			// Weight loss game image
 			loadImage('images/animation_RY_Slimmer_unlocked_all_together.png', function() {
@@ -2297,6 +2311,10 @@ define({
 			// Strength game image
 			loadImage('images/animation_RY_Faster_unlocked_all_together.png', function() {
 				strengthGameImage = new Sprite(this, this.width / 12, 2000, {loop: true, loopstart: 9});
+			});
+			
+			loadImage('images/animation_meteor_unlocked_all_together.png', function() {
+				meteorGameImage = new Sprite(this, this.width/12, 2000, {loop: true, loopstart: 9});
 			});
 			
 			//finished image

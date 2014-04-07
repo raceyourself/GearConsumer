@@ -48,9 +48,15 @@ define({
                 weightUnlockDist: 5,
                 strengthUnlockDist: 10,
                 demoMode: 0,
+                meteorUnlockPoints: 50000,
                 ppmGood: 5,
                 ppmBad: -1,
                 pointsPenaltyDeath: -100,
+                pointsBonusFinish: 50,
+            	thresholdOneStar: 0.1,
+            	thresholdTwoStar: 0.3,
+            	thresholdThreeStar: 0.6
+
             },
             config = {},
             STORAGE_KEY = 'config';
@@ -114,6 +120,11 @@ define({
 			return config.catchupTime;
 		}
 		
+		function getMeteorUnlockPoints() {
+			if(!isFinite(config.meteorUnlockPoints)) return defaults.meteorUnlockPoints;
+			return config.meteorUnlockPoints;
+		}
+		
 		function getLapLength() {
 			if(!isFinite(config.lapLength)) return defaults.lapLength;
 			return config.lapLength;
@@ -137,6 +148,11 @@ define({
 		function getPointsPenaltyDeath() {
 			if(!isFinite(config.pointsPenaltyDeath)) return defaults.pointsPenaltyDeath;
 			return config.pointsPenaltyDeath;
+		}
+		
+		function getPointsBonusFinish() {
+			if(!isFinite(config.pointsBonusFinish)) return defaults.pointsBonusFinish;
+			return config.pointsBonusFinish;
 		}
         
         function saveConfig(configuration) {
@@ -180,7 +196,9 @@ define({
             getIsDemoMode : getIsDemoMode,
             getPpmGood : getPpmGood,
             getPpmBad : getPpmBad,
-            getPointsPenaltyDeath : getPointsPenaltyDeath
+            getPointsPenaltyDeath : getPointsPenaltyDeath,
+            getPointsBonusFinish : getPointsBonusFinish,
+            getMeteorUnlockPoints: getMeteorUnlockPoints
         };
     }
 

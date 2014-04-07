@@ -46,6 +46,7 @@ define({
             settings = req.models.settings,
             units = req.helpers.units,
             _goal = "",
+            lastThousand = 0,
             ongoingRace = null,
             history = [],
             STORAGE_KEY = 'history';
@@ -269,6 +270,11 @@ define({
                 
                 // TODO: Clamp delta so you don't get below your pre-race points?
                 settings.addPoints(delta); 
+                if(settings.getPoints() > lastThousand) {
+                	lastThousand += 1000;
+                	var points = {points: settings.getPoints()};
+                	e.fire('race.progress', points);
+                }
             },
             
             getAchievements: function getAchievements() {

@@ -89,7 +89,7 @@ define({
                 	this.height = spritesheet.height;
                 	
                 	this.frames = spritesheet.width/this.width;
-                	console.log(this.width);
+                	//console.log(this.width);
                 	this.setPeriod(this.animationPeriod);
                     if (this.frames !== ~~this.frames) console.error("Sprite " + spritesheet.src + " has a non-integer frame count!");
                 },
@@ -120,7 +120,7 @@ define({
                         if (!!this.endCallback) this.endCallback(this.time);
                         this.endCallback = undefined;
                         if(this.loop) {
-                        	console.log(this.loopstart);
+                        	//console.log(this.loopstart);
                         	this.time += this.loopstart * this.frameDelay;
                         }
                     }

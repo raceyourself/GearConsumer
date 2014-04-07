@@ -213,7 +213,7 @@ define({
         	switch(this.id) {
         	case 'fitness-mode-btn':
         		if (game.isLocked('Endurance')) {
-        			e.fire('lockedgame.show', 'Endurance');
+        			//e.fire('lockedgame.show', 'Endurance');
         			return;
         		} 
         		race.setGoal('Endurance');
@@ -221,7 +221,7 @@ define({
         		
         	case 'weight-mode-btn':
         		if (game.isLocked('WeightLoss')) {
-        			e.fire('lockedgame.show', 'WeightLoss');
+        			//e.fire('lockedgame.show', 'WeightLoss');
         			return;
         		} 
         		race.setGoal('WeightLoss');
@@ -229,7 +229,7 @@ define({
         		
         	case 'strength-mode-btn':
         		if (game.isLocked('Strength')) {
-        			e.fire('lockedgame.show', 'Strength');
+        			//e.fire('lockedgame.show', 'Strength');
         			return;
         		}
         		race.setGoal('Strength');
