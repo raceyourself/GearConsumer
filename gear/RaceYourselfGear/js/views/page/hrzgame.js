@@ -199,16 +199,22 @@ define({
             started = false,
             stars = { 	icons: [ null, null, null ],
             			sounds: [ null, null, null ],
-            			delay: 0.6,
+            			position: [{x: 0, y: 0}, {x: 0, y: 0}, { x: 0, y: 0}],
+            			delay: 0.3,
             			currentlyAwardingIndex: 0,
             			numEarned: 0,
             			lastRenderTime: 0 },
+            awardBlackImage = null,
         bronzeStarImage = null,
         silverStarImage = null,
         goldStarImage = null,
         spinningGreyEffect = null,
+        spinningGoldEffect = null,
         flagImage = null,
-        blackBackground = null;
+        goldBackgroundImage = null,
+        awardedBlackImage = null,
+        blackSweatImage = null,
+        spinningSpeed = 0.0005;
 
 
         function show() {
@@ -2091,29 +2097,39 @@ define({
 						strengthGameImage.draw(context, 0, 0, dt);
 						break;
 					case 'finished':
-						finishedImage.draw(context, centreX - finishedImage.width/2, centreY - finishedImage.height/2, 0);
 						
 						//update star icon
 						var starDt = Date.now() - stars.lastRenderTime;
 						stars.lastRenderTime = Date.now();
 //						starGetting.time += starDt;
 						
-						context.save();
-						context.translate(centreX, centreY);
-						spinningGreyEffect.rotation = starDt * 0.01;
-						context.rotate(spinningGreyEffect.rotation);
-						spinningGreyEffect.draw(context, -spinningGreyEffect.width/2, -spinningGreyEffect.height/2, 0);
-						context.restore();
+						if(stars.currentlyAwardingIndex >= 2) {
+							goldBackgroundImage.draw(context, centreX - goldBackgroundImage.width / 2, centreY - goldBackgroundImage.height / 2, 0);
+							context.save();
+							context.translate(centreX, centreY);
+							spinningGoldEffect.rotation += starDt * spinningSpeed;
+							context.rotate(-spinningGoldEffect.rotation);
+							spinningGoldEffect.draw(context, -spinningGoldEffect.width/2, -spinningGoldEffect.height/2, 0);
+							context.restore();
+						} else {
+							context.save();
+							context.translate(centreX, centreY);
+							spinningGreyEffect.rotation += starDt * spinningSpeed;
+							context.rotate(-spinningGreyEffect.rotation);
+							spinningGreyEffect.draw(context, -spinningGreyEffect.width/2, -spinningGreyEffect.height/2, 0);
+							context.restore();
+						}	
 						
-						//also draw text for finished
-						context.font = '25px Samsung Sans';
-						context.textAlign = 'center';
-						context.textBaseline = 'middle';
-						context.fillStyle = '#fff';
-						context.fillText('Training Complete', centreX, 40);
+						finishedImage.draw(context, centreX - finishedImage.width/2, centreY - finishedImage.height/2 + 2.5, 0);
+//						
+//						//also draw text for finished
+//						context.font = '25px Samsung Sans';
+//						context.textAlign = 'center';
+//						context.textBaseline = 'middle';
+//						context.fillStyle = '#000';
 						var margin = 5;
 						context.textBaseline = 'bottom';
-						
+//						
 						// Stars
 						var starHeight = canvas.height * 0.27;
 						var starSpacing = stars.icons[0].width * 0.5;
@@ -2128,7 +2144,7 @@ define({
 						
 						for(var i=0; i<3; i++)
 						{
-							stars.icons[i].draw(context, canvas.width/2 + (i-1)*starSpacing - stars.icons[i].width/2, starHeight, dt);
+							stars.icons[i].draw(context, stars.position[i].x - stars.icons[i].width / 2, stars.position[i].y - stars.icons[i].height / 2, dt);
 						}
 						
 						//show points earned
@@ -2138,41 +2154,49 @@ define({
 						var sweatAmountString = '' + points;
 						var padding = 6;		//how much space between the icon and the number
 						
-						context.font = 'bold 36px Samsung Sans';
+						context.font = 'bold 24px Samsung Sans';
 						context.textAlign = 'left';
 						context.textBaseline = 'middle';
 						var stringWidth = context.measureText(sweatAmountString).width;
 						var totalWidth = sweat.width + padding + stringWidth;		//padding of 6
 						
-						var sweatHeight = canvas.height * 0.6;
+						var sweatHeight = canvas.height * 0.745;
 						var sweatXpos = canvas.width/2 - totalWidth/2 + sweat.width;
 						
-						//icon
-						sweat.draw(context, sweatXpos - sweat.width - padding/2, sweatHeight - sweat.height/2, dt);
-						//text
-						context.fillStyle = '#fff';
-						context.fillText(points, sweatXpos + padding/2, sweatHeight);
+						if(stars.currentlyAwardingIndex >= 2) {
+							blackSweatImage.draw(context, sweatXpos - blackSweatImage.width - padding/2, sweatHeight - blackSweatImage.height/2, dt);
+							context.fillStyle = '#000';
+						} else {
+							sweat.draw(context, sweatXpos - sweat.width - padding/2, sweatHeight - sweat.height/2, dt);
+							context.fillStyle = '#fff';
+							context.lineWidth = 2;
+							context.strokeStyle = '#000';
+							context.strokeText(points, sweatXpos + padding/2, sweatHeight);
+						}
 						
-						context.lineWidth = 2;
-						context.strokeStyle = '#000';
-						context.strokeText(points, sweatXpos + padding/2, sweatHeight);
+						context.fillText(points, sweatXpos + padding/2, sweatHeight + margin);
 						
 						// Awards
 						context.textAlign = 'center';
 						context.textBaseline = 'bottom';
 						if(numAwardsAtFinish == 1)
 						{
-							context.fillText('1 Award Unlocked', centreX, canvas.height - margin - margin*3 - awardImage.height);
+							context.fillText('1 Award Unlocked', centreX, canvas.height - margin*2 - awardImage.height);
 						}
 						else if(numAwardsAtFinish >1)
 						{
-							context.fillText(numAwardsAtFinish + ' Awards Unlocked', centreX, canvas.height - margin - margin*3 - awardImage.height);
+							context.fillText(numAwardsAtFinish + ' Awards Unlocked', centreX, canvas.height - margin*2 - awardImage.height);
 						}
 						if (numAwardsAtFinish > 0) {
 							var width = (awardImage.width+margin)*numAwardsAtFinish - margin;
 							var left = centreX - width/2;
 							for (var i=0; i < numAwardsAtFinish; i++) {
-								awardImage.draw(context, left + (awardImage.width+margin)*i, canvas.height - margin*3 - awardImage.height, 0);
+								if(stars.currentlyAwardingIndex >= 2) {
+									awardedBlackImage.draw(context, left + (awardedBlackImage.width+margin)*i, canvas.height - margin*2 - awardedBlackImage.height, 0);
+									
+								} else {
+									awardImage.draw(context, left + (awardImage.width+margin)*i, canvas.height - margin*2 - awardImage.height, 0);
+								}
 							}
 						}
 						
@@ -2424,6 +2448,10 @@ define({
 				sweat_red = new Sprite(this, this.width, 1000);
 				animatedSprites.push(sweat_red);
 			});
+			
+			loadImage('images/image_sweat_point_black.png', function() {
+				blackSweatImage = new Sprite(this, this.width, 1000);
+			});
 			            
             //dead image
 			loadImage('images/image_skull.png', function() {
@@ -2478,7 +2506,7 @@ define({
 //			});
 			
 			//finished image
-			loadImage('images/image_ending flag.png', function() {
+			loadImage('images/animation_end_of_run_flag_white.png', function() {
 				finishedImage = new Sprite(this, this.width, 1000);
 			});
 			
@@ -2494,6 +2522,10 @@ define({
 				awardImage = new Sprite(this, this.width, 1000);
 			});
 			
+			loadImage('images/awarded2.png', function() {
+				awardedBlackImage = new Sprite(this, this.width,1000);
+			});
+			
 			//dashed pattern
 			loadImage('images/dashedLine.png', function() {
 				dottedPattern = context.createPattern(this, "repeat");
@@ -2503,24 +2535,36 @@ define({
 				paceIcon = new Sprite(this, this.width, 1000);
 			});
 			
-			loadImage('images/animation_end_of_run_black_background.png', function() {
-				blackBackground = new Sprite(this, this.width, 1000);
+			loadImage('images/animation_end_of_run_gold_background.png', function() {
+				goldBackgroundImage = new Sprite(this, this.width, 1000);
 			});
 			
 			loadImage('images/animation_end_of_run_bronze_star_unlocked.png', function() {
 				stars.icons[0] = new Sprite(this, this.width/6, 500, {loop: false});
+				stars.position[0].x = 60;
+				stars.position[0].y = 182;
 			});
 			
 			loadImage('images/animation_end_of_run_silver_star_unlocked.png', function() {
 				stars.icons[1] = new Sprite(this, this.width/6, 500, {loop: false});
+				stars.position[1].x = 260;
+				stars.position[1].y = 182;
 			});
 			
 			loadImage('images/animation_end_of_run_gold_star_unlocked.png', function() {
 				stars.icons[2] = new Sprite(this, this.width/6, 500, {loop: false});
+				stars.position[2].x = 160;
+				stars.position[2].y = 120;
 			});
 			
 			loadImage('images/animation_end_of_run_spining_effect_grey.png', function() {
 				spinningGreyEffect = new Sprite(this, this.width, 1000);
+				spinningGreyEffect.rotation = 0;
+			});
+			
+			loadImage('images/animation_end_of_run_spinning_effect_gold.png', function() {
+				spinningGoldEffect = new Sprite(this, this.width, 1000);
+				spinningGoldEffect.rotation = 0;
 			});
 						
 //			loadImage('images/bg_good.jpg', function() {
