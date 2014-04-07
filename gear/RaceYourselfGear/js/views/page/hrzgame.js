@@ -423,7 +423,7 @@ define({
             
             //get opponent type from game
 			setOpponent(game.getCurrentOpponentType());
-			setOpponent('meteor');
+//			setOpponent('meteor');
 
             zombieCatchupSpeed = -zombieStartOffset/config.getCatchupTime();
             zombiesCatchingUp = false;
@@ -1776,7 +1776,7 @@ define({
             var playerXPos = 0 + distanceToTrackPos(playerDistance)
             
             var opponentType = game.getCurrentOpponentType()
-            opponentType = 'meteor';
+//            opponentType = 'meteor';
             switch(opponentType)
             {
 	            case 'zombie':
@@ -2127,8 +2127,8 @@ define({
                 	playerOffset += 20;
                 	playerXPos = canvas.width/2 - runner.sprite.width/2 * playerScale;
 				}
-//				else if(game.getCurrentOpponentType() == 'meteor')
-				else if(true)
+				else if(game.getCurrentOpponentType() == 'meteor')
+//				else if(true)
 				{
 					runner = runnerAnimations.meteorDead;
 					playerScale = canvas.width/runner.sprite.width;
