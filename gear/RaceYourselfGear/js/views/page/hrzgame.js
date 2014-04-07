@@ -2416,12 +2416,8 @@ define({
             zombieGrowl.onerror = function() {
                 throw "Could not load " + this.src;
             }
-            dinoRoar = new Audio('audio/T Rex Roar.wav');
-            dinoRoar.onerror = function() {
-            	throw "Could not load " + this.src;
-            }           
             
-			dinoRoar = new Audio('audio/T Rex Roar.wav');
+			dinoRoar = new Audio('audio/T_Rex_Roar.wav');
             dinoRoar.onerror = function() {
                 throw "Could not load " + this.src;
             }
