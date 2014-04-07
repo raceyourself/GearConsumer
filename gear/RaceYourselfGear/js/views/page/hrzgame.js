@@ -93,7 +93,7 @@ define({
             		text: 'Achievement Unlocked',
             		period: 600,
             		phase: 0,
-            		},
+            },
             notificationTimeout = false,            	
             animatedSprites = [],
             zombies = [],
@@ -200,7 +200,8 @@ define({
             sweatPointGraphics = [],
             sweatPointAwardsSinceLastGraphic = 0,
             started = false,
-            meteors = { 	mainMeteor : { 
+            meteors = { 	
+        		mainMeteor : { 
             					TravellingSprite: null, 
             					impactedSprite: null, 
             					impactTimer: 5, 
@@ -212,7 +213,7 @@ define({
 										canDie = false;
 										meteors.mainMeteor.shadowWidth = meteors.params.shadowMinSize;
 									}
-								},
+							},
             				sceneryMeteors : [],
             				lastUpdateTime : 0,
             				tickInterval : false,
@@ -222,10 +223,28 @@ define({
             							impactTime: 3, 
             							shadowMinSize: 50, 
             							shadowMaxSize: 25 
-            							},
-
-						 },
-            canDie = true;
+            						},
+           				},
+        canDie = true,
+        stars = { 	icons: [ null, null, null ],
+           			sounds: [ null, null, null ],
+           			position: [{x: 0, y: 0}, {x: 0, y: 0}, { x: 0, y: 0}],
+           			delay: 0.3,
+           			currentlyAwardingIndex: 0,
+           			numEarned: 0,
+           			lastRenderTime: 0 
+           		},
+        awardBlackImage = null,
+        bronzeStarImage = null,
+        silverStarImage = null,
+        goldStarImage = null,
+        spinningGreyEffect = null,
+        spinningGoldEffect = null,
+        flagImage = null,
+        goldBackgroundImage = null,
+        awardedBlackImage = null,
+        blackSweatImage = null,
+        spinningSpeed = 0.0005;
 
 
         function show() {
@@ -403,7 +422,10 @@ define({
 			targetTime = Infinity;
 			if (type == 'time') { targetTime = settings.getTime() * 60 * 1000; }
 			else if (type == 'distance') { TRACK_LENGTH = settings.getDistance(); }
-				
+			
+			// TEST STARS - uncomment this line to quickly finish a run and test the stars screen.
+			//TRACK_LENGTH = 100;
+			
             lastHRtime = Date.now();
             
             canvas.width = canvas.offsetWidth;
@@ -1169,14 +1191,21 @@ define({
 				}
                 return;
             }
-            if (r.getDistance() >= TRACK_LENGTH || r.getDuration() >= targetTime && !finished) {
+            if ( (r.getDistance() >= TRACK_LENGTH || r.getDuration() >= targetTime) && !finished) {
 //                zombieMoan.play();
                 r.addPoints(config.getPointsBonusFinish());
                 if(settings.getVibrateActive()) {
 					console.log('vibrate: run complete');
                 	navigator.vibrate(250, 50, 250, 50, 250);
                 }
+                
                 showUnlockNotification('finished', 5);
+				stars.numEarned = getNumStarsAchieved();
+                stars.currentlyAwardingIndex = -1;
+				stars.lastRenderTime = Date.now();
+                setTimeout(showNextStar, 500);
+                
+                
                 finished = true;
                 // Hide sectionchanger scrollbar. Optionally rewrite finish screen to be a html overlay with z-index > 1
                 if (sectionChanger && sectionChanger.scrollbar && sectionChanger.scrollbar.element) {
@@ -1193,7 +1222,7 @@ define({
                 return;
             }
             
-            if (lastDistanceAwarded < r.getMetricDistance()) {
+            if (lastDistanceAwarded < r.getMetricDistance() && !finished) {
                 var distance = r.getMetricDistance();
                 var points = ((distance - lastDistanceAwarded)*ppm);
 				r.addPoints(points);
@@ -2238,28 +2267,106 @@ define({
 						meteorGameImage.draw(context, 0, 0, dt);
 						break;
 					case 'finished':
-						finishedImage.draw(context, centreX - finishedImage.height/2, centreY - finishedImage.height/2, 0);
-						//also draw text for finished
-						context.font = '25px Samsung Sans';
-						context.textAlign = 'center';
-						context.textBaseline = 'middle';
-						context.fillStyle = '#fff';
-						context.fillText('Training Complete', centreX, 40);
+						
+						//update star icon
+						var starDt = Date.now() - stars.lastRenderTime;
+						stars.lastRenderTime = Date.now();
+//						starGetting.time += starDt;
+						
+						if(stars.currentlyAwardingIndex >= 2) {
+							goldBackgroundImage.draw(context, centreX - goldBackgroundImage.width / 2, centreY - goldBackgroundImage.height / 2, 0);
+							context.save();
+							context.translate(centreX, centreY);
+							spinningGoldEffect.rotation += starDt * spinningSpeed;
+							context.rotate(-spinningGoldEffect.rotation);
+							spinningGoldEffect.draw(context, -spinningGoldEffect.width/2, -spinningGoldEffect.height/2, 0);
+							context.restore();
+						} else {
+							context.save();
+							context.translate(centreX, centreY);
+							spinningGreyEffect.rotation += starDt * spinningSpeed;
+							context.rotate(-spinningGreyEffect.rotation);
+							spinningGreyEffect.draw(context, -spinningGreyEffect.width/2, -spinningGreyEffect.height/2, 0);
+							context.restore();
+						}	
+						
+						finishedImage.draw(context, centreX - finishedImage.width/2, centreY - finishedImage.height/2 + 2.5, 0);
+//						
+//						//also draw text for finished
+//						context.font = '25px Samsung Sans';
+//						context.textAlign = 'center';
+//						context.textBaseline = 'middle';
+//						context.fillStyle = '#000';
 						var margin = 5;
+						context.textBaseline = 'bottom';
+//						
+						// Stars
+						var starHeight = canvas.height * 0.27;
+						var starSpacing = stars.icons[0].width * 0.5;
+						
+						
+						//show stars
+						if(stars.currentlyAwardingIndex >= 0 && stars.currentlyAwardingIndex < stars.icons.length)
+						{
+							//progress animation on the one currently being awarded
+							stars.icons[stars.currentlyAwardingIndex].time += starDt;
+						}
+						
+						for(var i=0; i<3; i++)
+						{
+							stars.icons[i].draw(context, stars.position[i].x - stars.icons[i].width / 2, stars.position[i].y - stars.icons[i].height / 2, dt);
+						}
+						
+						//show points earned
+						
+						var r = race.getOngoingRace();
+						var points = Math.round(r.getPoints());
+						var sweatAmountString = '' + points;
+						var padding = 6;		//how much space between the icon and the number
+						
+						context.font = 'bold 24px Samsung Sans';
+						context.textAlign = 'left';
+						context.textBaseline = 'middle';
+						var stringWidth = context.measureText(sweatAmountString).width;
+						var totalWidth = sweat.width + padding + stringWidth;		//padding of 6
+						
+						var sweatHeight = canvas.height * 0.745;
+						var sweatXpos = canvas.width/2 - totalWidth/2 + sweat.width;
+						
+						if(stars.currentlyAwardingIndex >= 2) {
+							blackSweatImage.draw(context, sweatXpos - blackSweatImage.width - padding/2, sweatHeight - blackSweatImage.height/2, dt);
+							context.fillStyle = '#000';
+						} else {
+							sweat.draw(context, sweatXpos - sweat.width - padding/2, sweatHeight - sweat.height/2, dt);
+							context.fillStyle = '#fff';
+							context.lineWidth = 2;
+							context.strokeStyle = '#000';
+							context.strokeText(points, sweatXpos + padding/2, sweatHeight);
+						}
+						
+						context.fillText(points, sweatXpos + padding/2, sweatHeight + margin);
+						
+						// Awards
+						context.textAlign = 'center';
 						context.textBaseline = 'bottom';
 						if(numAwardsAtFinish == 1)
 						{
-							context.fillText('1 Award Unlocked', centreX, canvas.height - margin - margin*3 - awardImage.height);
+							context.fillText('1 Award Unlocked', centreX, canvas.height - margin*2 - awardImage.height);
 						}
 						else if(numAwardsAtFinish >1)
 						{
-							context.fillText(numAwardsAtFinish + ' Awards Unlocked', centreX, canvas.height - margin - margin*3 - awardImage.height);
+							context.fillText(numAwardsAtFinish + ' Awards Unlocked', centreX, canvas.height - margin*2 - awardImage.height);
 						}
 						if (numAwardsAtFinish > 0) {
 							var width = (awardImage.width+margin)*numAwardsAtFinish - margin;
 							var left = centreX - width/2;
 							for (var i=0; i < numAwardsAtFinish; i++) {
-								awardImage.draw(context, left + (awardImage.width+margin)*i, canvas.height - margin*3 - awardImage.height, 0);
+								if(stars.currentlyAwardingIndex >= 2) {
+									awardedBlackImage.draw(context, left + (awardedBlackImage.width+margin)*i, canvas.height - margin*2 - awardedBlackImage.height, 0);
+									
+								} else {
+									awardImage.draw(context, left + (awardImage.width+margin)*i, canvas.height - margin*2 - awardImage.height, 0);
+								}
 							}
 						}
 						
@@ -2274,6 +2381,27 @@ define({
             context.save();
             frames++;
         }
+        
+		function showNextStar()
+		{
+			if(stars.currentlyAwardingIndex+1 < stars.numEarned)
+			{
+				//move to showing the next star
+				stars.currentlyAwardingIndex++;
+				stars.icons[stars.currentlyAwardingIndex].reset();
+				stars.lastRenderTime = Date.now();
+				stars.icons[stars.currentlyAwardingIndex].onEnd( function(time) {
+					setTimeout(showNextStar, stars.delay*1000);
+					if(settings.getVibrateActive()) {					
+						navigator.vibrate([50]);
+						var sound = stars.sounds[stars.currentlyAwardingIndex];
+						if(sound != null) { sound.play(); }
+					}
+				});
+			}
+
+
+		}
         
         function drawPaceBG(ypos, radius, posR) 
         {
@@ -2450,12 +2578,16 @@ define({
             chime = new Audio('audio/Chime.mp3');
             chime.onerror = function() { throw "Could not load " + this.src; }
             
+            stars.sounds[0] = new Audio('audio/Chime.wav');
+            stars.sounds[1] = new Audio('audio/Chime.wav');
+            stars.sounds[2] = new Audio('audio/Chime.wav');
             
             //heart     
             loadImage('images/image_heart_green.png', function() {
         		heartGreen = new Sprite(this, this.width, 1000);
         		heartGreen.scale = 0.5;
         	});
+            
 
             loadImage('images/image_heart_red.png', function() {
         		heartRed = new Sprite(this, this.width, 1000);
@@ -2466,7 +2598,6 @@ define({
         		heartBlack = new Sprite(this, this.width, 1000);
         		heartBlack.scale = 0.5;
         	});
-            
                         
             //gps
 			loadImage('images/image_gps_target.png', function() {
@@ -2486,6 +2617,10 @@ define({
 			loadImage('images/image_sweat_point_red.png', function() {
 				sweat_red = new Sprite(this, this.width, 1000);
 				animatedSprites.push(sweat_red);
+			});
+			
+			loadImage('images/image_sweat_point_black.png', function() {
+				blackSweatImage = new Sprite(this, this.width, 1000);
 			});
 			            
             //dead image
@@ -2563,12 +2698,24 @@ define({
 //			});
 			
 			//finished image
-			loadImage('images/image_ending_flag_with_effect.png', function() {
+			loadImage('images/animation_end_of_run_flag_white.png', function() {
 				finishedImage = new Sprite(this, this.width, 1000);
 			});
 			
+//			loadImage('images/starGettingFull.png', function() {
+//				for(var i=0; i<3; i++)
+//				{
+//					stars.icons[i] = new Sprite(this, this.width/4, 200);
+//					stars.icons[i].loop = false;
+//				}
+//			});
+						
 			loadImage('images/awarded.png', function() {
 				awardImage = new Sprite(this, this.width, 1000);
+			});
+			
+			loadImage('images/awarded2.png', function() {
+				awardedBlackImage = new Sprite(this, this.width,1000);
 			});
 			
 			//dashed pattern
@@ -2581,6 +2728,38 @@ define({
 			});
 			loadImage('images/icon-speed.png', function() {
 				paceIcon = new Sprite(this, this.width, 1000);
+			});
+			
+			loadImage('images/animation_end_of_run_gold_background.png', function() {
+				goldBackgroundImage = new Sprite(this, this.width, 1000);
+			});
+			
+			loadImage('images/animation_end_of_run_bronze_star_unlocked.png', function() {
+				stars.icons[0] = new Sprite(this, this.width/6, 500, {loop: false});
+				stars.position[0].x = 60;
+				stars.position[0].y = 182;
+			});
+			
+			loadImage('images/animation_end_of_run_silver_star_unlocked.png', function() {
+				stars.icons[1] = new Sprite(this, this.width/6, 500, {loop: false});
+				stars.position[1].x = 260;
+				stars.position[1].y = 182;
+			});
+			
+			loadImage('images/animation_end_of_run_gold_star_unlocked.png', function() {
+				stars.icons[2] = new Sprite(this, this.width/6, 500, {loop: false});
+				stars.position[2].x = 160;
+				stars.position[2].y = 120;
+			});
+			
+			loadImage('images/animation_end_of_run_spining_effect_grey.png', function() {
+				spinningGreyEffect = new Sprite(this, this.width, 1000);
+				spinningGreyEffect.rotation = 0;
+			});
+			
+			loadImage('images/animation_end_of_run_spinning_effect_gold.png', function() {
+				spinningGoldEffect = new Sprite(this, this.width, 1000);
+				spinningGoldEffect.rotation = 0;
 			});
 						
 //			loadImage('images/bg_good.jpg', function() {
@@ -2623,6 +2802,29 @@ define({
         function onPreload() {
         	loadAssets();
         }
+
+		function getNumStarsAchieved() {
+		
+			var potentialPoints = TRACK_LENGTH * config.getPpmGood() + config.getPointsBonusFinish();
+            var r = race.getOngoingRace();
+            var netPoints = r.getPoints();
+            
+            var proportion = potentialPoints/netPoints;
+            
+            if(proportion > config.getThresholdThreeStar())
+            {
+            	return 3;
+            }
+            else if(proportion > config.getThresholdTwoStar())
+            {
+            	return 2;
+            }
+            else if(proportion > config.getThresholdThreeStar())
+            {
+            	return 1;
+            }
+            else { return 0; }
+		}
 
         e.listeners({
             'hrzgame.show': show,
