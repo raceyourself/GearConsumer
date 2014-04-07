@@ -267,7 +267,7 @@ define({
 			//vibrate
 			if(settings.getVibrateActive()) {
 				console.log('vibrate: unlock notification');
-				navigator.vibrate([10, 10, 10, 10, 10, 10, 10]);
+				navigator.vibrate([500, 100]);
 			}
 			unlockNotification = game;
 			//TODO - have this only disappear 5s after user raises wrist
@@ -446,7 +446,7 @@ define({
         	setNotification( green, '#fff', 'Award Unlocked!', null, 3*1000);
         	if(settings.getVibrateActive()) {
 				console.log('vibrate: award unlocked');
-        		navigator.vibrate([100, 50, 100, 50]);
+        		navigator.vibrate([500, 100]);
         	}
 			
 			if(finished)
@@ -549,7 +549,7 @@ define({
 			countDownParams.startTime = Date.now();
 			if(settings.getVibrateActive()) {
 				console.log('vibrate: countdown');
-				navigator.vibrate([500]);
+				navigator.vibrate([250, 10]);
 			}
         }
         
@@ -562,7 +562,7 @@ define({
 			countDownParams.startTime = Date.now();
 			if(settings.getVibrateActive()) {
 				console.log('vibrate: countdown');
-				navigator.vibrate([250]);
+				navigator.vibrate([250, 10]);
 			}        
 		}
 			
@@ -575,7 +575,7 @@ define({
 			countDownParams.startTime = Date.now();
 			if(settings.getVibrateActive()) {
 				console.log('vibrate: countdown');
-				navigator.vibrate([250]);
+				navigator.vibrate([250, 10]);
 			}
 		}
         function go() {
@@ -595,7 +595,7 @@ define({
 //			warmingUp = true;
 			if(settings.getVibrateActive()) {
 				console.log('vibrate: countdown');
-				navigator.vibrate([750]);
+				navigator.vibrate([750, 100]);
 			}
         }
         
@@ -713,6 +713,7 @@ define({
         		min75 = 0;
         		max75 = 90;
         		numZombies = 0;
+
         		break;
         	case "Light":
 	        	min20 = 120;
@@ -727,6 +728,11 @@ define({
         		min75 = 110;
         		max75 = 120;
         		numZombies = 2;
+				//vibrate
+				if(settings.getVibrateActive()) {
+					console.log('vibrate: set new hr zone');
+					navigator.vibrate([10, 10, 10, 10, 10, 10, 10]);
+				}
         		break;
         	case "Anaerobic":
         		min20 = 160;
@@ -734,6 +740,11 @@ define({
         		min75 = 120;
         		max75 = 135;
         		numZombies = 3;
+				//vibrate
+				if(settings.getVibrateActive()) {
+					console.log('vibrate: set new hr zone');
+					navigator.vibrate([1000, 10]);
+				}
         		break;
 			case "Performance":
 				min20 = 180;
@@ -770,11 +781,7 @@ define({
         	zoneInfo.minHeartRate = minHeartRate;
         	e.fire('hrzone.change', zoneInfo);
         	
-			//vibrate
-        	if(settings.getVibrateActive()) {
-				console.log('vibrate: set new hr zone');
-        		navigator.vibrate([10, 10, 10, 10, 10, 10, 10]);
-        	}
+
         }
         }
 
@@ -850,7 +857,8 @@ define({
         		}
         		if(settings.getVibrateActive())
         		{
-        			navigator.vibrate([10,10,10,10]);
+        			//meteor impact
+        			navigator.vibrate([10, 10]);
         		}
         		canDie = true;
         	}
@@ -931,7 +939,7 @@ define({
 					}
 					if(settings.getVibrateActive()) {
 						console.log('vibrate: hr low warning');
-						navigator.vibrate([1000, 500, 250, 100]);
+						navigator.vibrate([30, 500, 30, 500, 30, 500, 30, 10]);
 					}
 				}
 				if(!adaptingToRecentZoneShift)
@@ -968,7 +976,7 @@ define({
 					showWarningHigh = true;
 					if(settings.getVibrateActive()) { 
 						console.log('vibrate: hr high warning');
-						navigator.vibrate([1000, 500, 250, 100]);
+						navigator.vibrate([30, 10, 30, 10, 30, 10]);
 					}
 				}
 				if(!adaptingToRecentZoneShift)
@@ -1143,7 +1151,7 @@ define({
 					}
 					if(settings.getVibrateActive()) {
 						console.log('vibrate: killed');
-						navigator.vibrate([1000, 500, 250, 100]);
+						navigator.vibrate([500, 100]);
 					}
 //                r.stop();
 //                e.fire('race.end', r);
@@ -1166,7 +1174,7 @@ define({
                 r.addPoints(config.getPointsBonusFinish());
                 if(settings.getVibrateActive()) {
 					console.log('vibrate: run complete');
-                	navigator.vibrate(1000);
+                	navigator.vibrate(250, 50, 250, 50, 250);
                 }
                 showUnlockNotification('finished', 5);
                 finished = true;

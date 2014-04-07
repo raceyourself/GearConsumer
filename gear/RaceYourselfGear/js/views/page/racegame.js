@@ -263,7 +263,7 @@ define({
 			//vibrate
 			if(settings.getVibrateActive()) {
 				console.log('vibrate: unlock');
-				navigator.vibrate([10, 10, 10, 10, 10, 10, 10]);
+				navigator.vibrate([500, 100]);
 			}
 			unlockNotification = game;
 			//TODO - have this only disappear 5s after user raises wrist
@@ -495,7 +495,7 @@ define({
         	setNotification( green, '#fff', 'Award Unlocked!', null, 3*1000);
         	if(settings.getVibrateActive()) {
 				console.log('vibrate: award unlocked');
-        		navigator.vibrate([100, 50, 100, 50]);
+        		navigator.vibrate([500, 100]);
         	}
 			if(finished)
 			{
@@ -590,7 +590,7 @@ define({
 			countDownParams.startTime = Date.now();
 			if(settings.getVibrateActive()) {
 				console.log('vibrate: countdown');
-				navigator.vibrate([500]);
+				navigator.vibrate([250, 100]);
 			}
         }
         
@@ -603,7 +603,7 @@ define({
 			countDownParams.startTime = Date.now();
 			if(settings.getVibrateActive()) {
 				console.log('vibrate: countdown');
-				navigator.vibrate([250]);
+				navigator.vibrate([250, 100]);
 			}
         }
         function set() {
@@ -615,7 +615,7 @@ define({
 			countDownParams.startTime = Date.now();
 			if(settings.getVibrateActive()) {
 				console.log('vibrate: countdown');
-				navigator.vibrate([250]);
+				navigator.vibrate([250, 100]);
 			}
 		}
 		
@@ -638,7 +638,7 @@ define({
 
 			if(settings.getVibrateActive()) {
 				console.log('vibrate: countdown');
-				navigator.vibrate([750]);
+				navigator.vibrate([750, 100]);
 			}
 
         }
@@ -758,7 +758,7 @@ define({
 					{
 						if(settings.getVibrateActive()) {
 							console.log('vibrate: overtake warning');
-							navigator.vibrate([100]);	
+							navigator.vibrate([100, 50]);	
 						}
 						timeOfLastOvertakeWarning = Date.now();
 					}
@@ -824,7 +824,7 @@ define({
 				//eliminatedEndImage.draw(context, 0, 0, dt);
 				if(settings.getVibrateActive()) {
 					console.log('vibrate: eliminated');
-					navigator.vibrate([100, 100, 100, 100, 100, 100, 100]);
+					navigator.vibrate([100, 100, 100, 100, 100, 100, 100, 100]);
 				}
 				
 				setTimeout( function() {
@@ -952,7 +952,7 @@ define({
 
 					if(settings.getVibrateActive()) {
 						console.log('vibrate: lap complete');
-						navigator.vibrate([500]);
+						navigator.vibrate([500,100]);
 					}
 					lastLapTime = lapTime.toFixed(1);
 					showLapCompleteBox = true;
