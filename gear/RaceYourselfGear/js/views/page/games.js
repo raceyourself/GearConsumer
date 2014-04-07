@@ -77,8 +77,6 @@ define({
 
             page.addEventListener('pageshow', onPageShow);
             page.addEventListener('pagehide', onPageHide);
-            ryBtnEl.addEventListener('click', onRaceYourselfGameBtnClick);
-            zombieBtnEl.addEventListener('click', onHeartRateZombiesGameBtnClick);
         }
 
         function init() {
