@@ -920,11 +920,16 @@ define({
         
         function onHeartRateChange(hrmInfo) {
         	//set heartRate
-        	lastHRtime = Date.now();
-        	hrNotFound = false;
-            hr = hrmInfo.detail.heartRate;
-            rToRTime = hrmInfo.detail.rInterval;
-        	handleHRChanged();
+        	
+        	//device reports 0 or -3 if no hr detected. Ignore these values.
+        	if(hr > 30)
+        	{
+				lastHRtime = Date.now();
+				hrNotFound = false;
+				hr = hrmInfo.detail.heartRate;
+				rToRTime = hrmInfo.detail.rInterval;
+				handleHRChanged();
+        	}
         }
 
 		function setMinMaxHeartRate() {
