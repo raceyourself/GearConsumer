@@ -211,6 +211,7 @@ define({
 										meteors.mainMeteor.impactTimer = meteors.params.impactTime;
 										meteors.mainMeteor.impacted = false;
 										canDie = false;
+										meteors.mainMeteor.impactedSprite.reset();
 										meteors.mainMeteor.shadowWidth = meteors.params.shadowMinSize;
 									}
 							},
@@ -1901,7 +1902,7 @@ define({
 //						meteor.drawscaled(context, meteorPos - meteor.width*0.5*meteorScale, canvas.height - (meteor.Height) * meteorScale, dt, meteorScale);
 //						meteor.drawscaled(context, meteorPos - meteor.width * 0.3, canvas.height - trackHeight - (meteor.height + 3)*meteorScale, dt, meteorScale);
 						
-						var meteorBaseHeight = canvas.height - (meteors.mainMeteor.travelSprite.height) * meteorScale;
+						var meteorBaseHeight = canvas.height - (meteors.mainMeteor.travelSprite.height) * meteorScale + 26;
 
 						if(meteors.mainMeteor.impacted)
 						{	
@@ -2664,11 +2665,11 @@ define({
 			});
 				
 			
-			loadImage('images/animation_meteor_in_game_travel.png', function() {
-				meteors.mainMeteor.travelSprite = new Sprite(this, this.width/2, 200);
+			loadImage('images/animation_meteor_in_game_falling.png', function() {
+				meteors.mainMeteor.travelSprite = new Sprite(this, this.width/6, 600);
 			});
 			loadImage('images/animation_meteor_in_game_impact.png', function() {
-				meteors.mainMeteor.impactedSprite = new Sprite(this, this.width/2, 300);
+				meteors.mainMeteor.impactedSprite = new Sprite(this, this.width/5, 600);
 				meteors.mainMeteor.impactedSprite.loop = false;
 			});
 			
