@@ -45,7 +45,6 @@ define({
             	this.onLoad(spritesheet);
             }
             
-            
             this.loop = true;
             this.loopstart = 0;
             
@@ -56,7 +55,7 @@ define({
             this.lastUpdateTime = Date.now();
             this.moveTimer = 0;
             if(options) {
-            	for (var attrname in options) { this[attrname] = options[attrname]; console.error(options); console.log(spritesheet); }
+            	for (var attrname in options) { this[attrname] = options[attrname]; }
             }
             this.speed = { x: 0, y : 0 };
             this.moveInterval = null;
@@ -89,7 +88,7 @@ define({
                 	this.height = spritesheet.height;
                 	
                 	this.frames = spritesheet.width/this.width;
-                	console.log(this.width);
+                	//console.log(this.width);
                 	this.setPeriod(this.animationPeriod);
                     if (this.frames !== ~~this.frames) console.error("Sprite " + spritesheet.src + " has a non-integer frame count!");
                 },
@@ -111,16 +110,12 @@ define({
                 
                 draw: function draw(context, x, y, dt) {
                 	if(!this.spritesheet) return;
-                	//console.log(this.spritesheet.src);
-                	//console.log(this.frameDelay);
-                	//console.log(dt);
                     this.time += dt;
                     if (this.time >= this.animationPeriod) {
                         while (!!this.loop && this.time > this.animationPeriod) this.time -= this.animationPeriod;
                         if (!!this.endCallback) this.endCallback(this.time);
                         this.endCallback = undefined;
                         if(this.loop) {
-                        	console.log(this.loopstart);
                         	this.time += this.loopstart * this.frameDelay;
                         }
                     }

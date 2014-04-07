@@ -202,8 +202,13 @@ define({
             			delay: 0.6,
             			currentlyAwardingIndex: 0,
             			numEarned: 0,
-            			lastRenderTime: 0 };
-            
+            			lastRenderTime: 0 },
+        bronzeStarImage = null,
+        silverStarImage = null,
+        goldStarImage = null,
+        spinningGreyEffect = null,
+        flagImage = null,
+        blackBackground = null;
 
 
         function show() {
@@ -2086,12 +2091,19 @@ define({
 						strengthGameImage.draw(context, 0, 0, dt);
 						break;
 					case 'finished':
-						finishedImage.draw(context, centreX - finishedImage.height/2, centreY - finishedImage.height/2, 0);
+						finishedImage.draw(context, centreX - finishedImage.width/2, centreY - finishedImage.height/2, 0);
 						
 						//update star icon
 						var starDt = Date.now() - stars.lastRenderTime;
 						stars.lastRenderTime = Date.now();
 //						starGetting.time += starDt;
+						
+						context.save();
+						context.translate(centreX, centreY);
+						spinningGreyEffect.rotation = starDt * 0.01;
+						context.rotate(spinningGreyEffect.rotation);
+						spinningGreyEffect.draw(context, -spinningGreyEffect.width/2, -spinningGreyEffect.height/2, 0);
+						context.restore();
 						
 						//also draw text for finished
 						context.font = '25px Samsung Sans';
@@ -2104,7 +2116,7 @@ define({
 						
 						// Stars
 						var starHeight = canvas.height * 0.27;
-						var starSpacing = stars.icons[0].width * 1.2;
+						var starSpacing = stars.icons[0].width * 0.5;
 						
 						
 						//show stars
@@ -2392,7 +2404,6 @@ define({
         		heartBlack = new Sprite(this, this.width, 1000);
         		heartBlack.scale = 0.5;
         	});
-            
                         
             //gps
 			loadImage('images/image_gps target.png', function() {
@@ -2467,17 +2478,17 @@ define({
 //			});
 			
 			//finished image
-			loadImage('images/image_ending flag with effect.png', function() {
+			loadImage('images/image_ending flag.png', function() {
 				finishedImage = new Sprite(this, this.width, 1000);
 			});
 			
-			loadImage('images/starGettingFull.png', function() {
-				for(var i=0; i<3; i++)
-				{
-					stars.icons[i] = new Sprite(this, this.width/4, 200);
-					stars.icons[i].loop = false;
-				}
-			});
+//			loadImage('images/starGettingFull.png', function() {
+//				for(var i=0; i<3; i++)
+//				{
+//					stars.icons[i] = new Sprite(this, this.width/4, 200);
+//					stars.icons[i].loop = false;
+//				}
+//			});
 						
 			loadImage('images/awarded.png', function() {
 				awardImage = new Sprite(this, this.width, 1000);
@@ -2490,6 +2501,26 @@ define({
 			
 			loadImage('images/icon-speed_whiteBG.png', function() {
 				paceIcon = new Sprite(this, this.width, 1000);
+			});
+			
+			loadImage('images/animation_end_of_run_black_background.png', function() {
+				blackBackground = new Sprite(this, this.width, 1000);
+			});
+			
+			loadImage('images/animation_end_of_run_bronze_star_unlocked.png', function() {
+				stars.icons[0] = new Sprite(this, this.width/6, 500, {loop: false});
+			});
+			
+			loadImage('images/animation_end_of_run_silver_star_unlocked.png', function() {
+				stars.icons[1] = new Sprite(this, this.width/6, 500, {loop: false});
+			});
+			
+			loadImage('images/animation_end_of_run_gold_star_unlocked.png', function() {
+				stars.icons[2] = new Sprite(this, this.width/6, 500, {loop: false});
+			});
+			
+			loadImage('images/animation_end_of_run_spining_effect_grey.png', function() {
+				spinningGreyEffect = new Sprite(this, this.width, 1000);
 			});
 						
 //			loadImage('images/bg_good.jpg', function() {
