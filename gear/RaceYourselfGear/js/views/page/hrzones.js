@@ -191,9 +191,13 @@ define({
         }
         
         function onHeartRateChange(hrmInfo) {
-            hr = Math.floor(hrmInfo.detail.heartRate);
-            rToRTime = hrmInfo.detail.rInterval;
-			hrDrift.target = hr;
+        	//ignore non-sensible values
+        	if(hrmInfo.detail.heartRate > 30)
+        	{
+				hr = Math.floor(hrmInfo.detail.heartRate);
+				rToRTime = hrmInfo.detail.rInterval;
+				hrDrift.target = hr;
+			}
         }
         
 		function onZoneChange(zoneInfo) {
