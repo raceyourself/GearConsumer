@@ -562,7 +562,11 @@ define({
         }        
         
         function onQuit() {
-            e.fire('newmain.show');
+        	var r = race.getOngoingRace();
+			e.fire('race.end', r);
+			r.stop();
+
+		    e.fire('racesummary.show');
         }
         
         function startCountdown() {
