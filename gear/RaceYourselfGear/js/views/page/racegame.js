@@ -2054,8 +2054,8 @@ define({
             	switch(unlockNotification)
             	{
             		case 'dino':
-            			dinoGameImage.draw(context, 0, 0, 0);
-            			break;
+//            			dinoGameImage.draw(context, 0, 0, 0);
+//            			break;
 //					case 'boulder':
 //						boulderGameImage.draw(context, 0, 0, 0);
 //						break;
@@ -2285,9 +2285,9 @@ define({
 			});
 			
 			//dino game image
-			loadImage('images/race_dino_unlocked_ingame.png', function() {
-				dinoGameImage = new Sprite(this, this.width, 1000);
-			});
+//			loadImage('images/race_dino_unlocked_ingame.png', function() {
+//				dinoGameImage = new Sprite(this, this.width, 1000);
+//			});
 			
 			// Weight loss game image
 			loadImage('images/animation_RY_Slimmer_unlocked_all_together.png', function() {

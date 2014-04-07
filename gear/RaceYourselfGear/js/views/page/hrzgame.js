@@ -2054,8 +2054,8 @@ define({
             	switch(unlockNotification)
             	{
             		case 'dino':
-            			dinoGameImage.draw(context, 0, 0, 0);
-            			break;
+//            			dinoGameImage.draw(context, 0, 0, 0);
+//            			break;
 //            		case 'eliminator':
 //            			elimGameImage.draw(context, 0, 0, 0);
 //            			break;
@@ -2348,9 +2348,9 @@ define({
 			});
 			
 			//dino game image
-			loadImage('images/race_dino_unlocked_ingame.png', function() {
-				dinoGameImage = new Sprite(this, this.width, 1000);
-			});			
+//			loadImage('images/race_dino_unlocked_ingame.png', function() {
+//				dinoGameImage = new Sprite(this, this.width, 1000);
+//			});			
 			
 //			loadImage('images/Game_Eliminator/screen_menu_game_eliminator_unlocked.png', function() {
 //				elimGameImage = new Sprite(this, this.width, 1000);
