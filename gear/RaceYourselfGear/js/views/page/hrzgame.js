@@ -1183,6 +1183,9 @@ define({
 				spawnPointsGraphic(-100);
 				started = false;
 				ppm = 0;
+				
+				runnerAnimations.meteorDead.sprite.reset();
+
 
                 requestRender();
                 clearTimeout(bannerTimeout);
@@ -1212,7 +1215,7 @@ define({
                 	sectionChanger.scrollbar.element.classList.toggle('hidden', true);
                 }
                 
-                runnerAnimations.meteorDead.reset();
+                runnerAnimations.meteorDead.sprite.reset();
                 
                 numAwardsAtFinish = 0;
                 e.fire('race.end', r);
