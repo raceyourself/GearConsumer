@@ -177,7 +177,7 @@ define({
          		elimGameSprite = new Sprite(this, this.width/6, 400);
          	});
          	
-         	loadImage('images/New Games/ry_slimmer_locked.png', function() {
+         	loadImage('images/New_Games/ry_slimmer_locked.png', function() {
 				slimmerLockedSprite = new Sprite(this, this.width, 1000);
 			});
          	
@@ -185,7 +185,7 @@ define({
 				slimmerUnlockedSprite = new Sprite(this, this.width/6, 600);
 			});
          	
-         	loadImage('images/New Games/ry_fitter_locked.png', function() {
+         	loadImage('images/New_Games/ry_fitter_locked.png', function() {
 				fitterLockedSprite = new Sprite(this, this.width, 1000);
 			});
          	
@@ -193,7 +193,7 @@ define({
 				fitterUnlockedSprite = new Sprite(this, this.width/6, 600);
 			});
          	
-         	loadImage('images/New Games/ry_faster_locked.png', function() {
+         	loadImage('images/New_Games/ry_faster_locked.png', function() {
          		fasterLockedSprite = new Sprite(this, this.width, 1000);
          	});
          	

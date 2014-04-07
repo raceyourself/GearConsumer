@@ -93,6 +93,12 @@ define({
             getCurrentApplication().exit();
         }
 
+        function setScreenState(state) {
+            if (typeof tizen !== 'undefined' && typeof tizen.power !== 'undefined') {
+            	tizen.power.request("SCREEN", state);
+            }
+        }
+        
         function init() {}
 
         function noop() {}
@@ -105,7 +111,6 @@ define({
         if (typeof tizen !== 'undefined' &&
                 typeof tizen.application !== 'undefined') {
             app = tizen.application;
-//            tizen.power.request("SCREEN", "SCREEN_NORMAL");
         } else {
             console.warn(
                 'tizen or tizen.application not available, using a mock instead'
@@ -136,7 +141,8 @@ define({
             getCurrentApplication: getCurrentApplication,
             getAppControlUri: getAppControlUri,
             createApplicationControl: createApplicationControl,
-            closeApplication: closeApplication
+            closeApplication: closeApplication,
+            setScreenState: setScreenState
         };
     }
 

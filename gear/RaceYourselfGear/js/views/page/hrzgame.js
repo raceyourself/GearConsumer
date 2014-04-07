@@ -2427,7 +2427,7 @@ define({
             zombieGrowl.onerror = function() {
                 throw "Could not load " + this.src;
             }
-            dinoRoar = new Audio('audio/TRexRoar.mp3');
+            dinoRoar = new Audio('audio/TRexRoar.wav');
             dinoRoar.onerror = function() {
             	throw "Could not load " + this.src;
             }           
@@ -2461,11 +2461,11 @@ define({
             
                         
             //gps
-			loadImage('images/image_gps target.png', function() {
+			loadImage('images/image_gps_target.png', function() {
             	gpsRing = new Sprite(this, this.width, 10);
 			});
 
-			loadImage('images/image_gps green circle.png', function() {
+			loadImage('images/image_gps_green_circle.png', function() {
             	gpsDot = new Sprite(this, this.width, 10);
 			});
 
@@ -2555,7 +2555,7 @@ define({
 //			});
 			
 			//finished image
-			loadImage('images/image_ending flag with effect.png', function() {
+			loadImage('images/image_ending_flag_with_effect.png', function() {
 				finishedImage = new Sprite(this, this.width, 1000);
 			});
 			
