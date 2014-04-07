@@ -25,6 +25,7 @@ EDiBmt8lpzZgBsWg/LpiXPy43fMbe/ojvMhM97PftT1l8uDQIK2W&#xD;
     <TestDistributorInformation>
         <TestDevices>
             <TestDevice>SM-R380</TestDevice>
+            <TestDevice>SM-R381</TestDevice>
         </TestDevices>
         <Certificate>MIICqTCCAZECAQAwZDEJMAcGA1UEBhMAMQkwBwYDVQQIEwAxCTAHBgNVBAcTADEO&#xD;
 MAwGA1UEChMFVGl6ZW4xDjAMBgNVBAsTBVRpemVuMSEwHwYDVQQDExhSYWNlWW91&#xD;
