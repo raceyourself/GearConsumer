@@ -97,10 +97,6 @@ define({
         	return true;
         }
         
-        function onDim() {
-        	app.setScreenState('SCREEN_DIM');
-        }
-        
         function bindEvents() {
             window.addEventListener('tizenhwkey', onHardwareKeysTap);
             window.onkeydown = function(event) {

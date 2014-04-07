@@ -96,16 +96,16 @@ define({
         }
 
         function setScreenState(state) {
+        	if (state !== 'SCREEN_DIM') {
+        		clearTimeout(dimTimeout);
+        		dimTimeout = setTimeout(onDim, 15000);
+        	}
         	if (screenState === state) return;
         	console.log('Setting screen state to: ' + state);
             if (typeof tizen !== 'undefined' && typeof tizen.power !== 'undefined') {
             	if (screenState) tizen.power.release("SCREEN", screenState);
             	tizen.power.request("SCREEN", state);
             	screenState = state;
-            	if (state !== 'SCREEN_DIM') {
-            		clearTimeout(dimTimeout);
-            		dimTimeout = setTimeout(onDim, 15000);
-            	}
             }
         }
         
