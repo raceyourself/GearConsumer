@@ -83,7 +83,8 @@ define({
                     sprinting: { name: 'sprinting', sprite: null, speedThreshold: 4},
                     sprinting_red: { name: 'sprinting_red', sprite: null, speedThreshold: 4},
                     zombieDead: { name: 'zombieDead', sprite: null, speedThreshold: -1},
-                    dinoDead: { name: 'dinoDead', sprite: null, speedThreshold: -1}
+                    dinoDead: { name: 'dinoDead', sprite: null, speedThreshold: -1},
+                    meteorDead: { name: 'meteorDead', sprite: null, speedThreshold: -1},
             },
             notification = {
             		active: false,
@@ -422,7 +423,7 @@ define({
             
             //get opponent type from game
 			setOpponent(game.getCurrentOpponentType());
-//			setOpponent('meteor');
+			setOpponent('meteor');
 
             zombieCatchupSpeed = -zombieStartOffset/config.getCatchupTime();
             zombiesCatchingUp = false;
@@ -1173,6 +1174,9 @@ define({
                 if (sectionChanger && sectionChanger.scrollbar && sectionChanger.scrollbar.element) {
                 	sectionChanger.scrollbar.element.classList.toggle('hidden', true);
                 }
+                
+                runnerAnimations.meteorDead.reset();
+                
                 numAwardsAtFinish = 0;
                 e.fire('race.end', r);
                 r.stop();
@@ -1772,7 +1776,7 @@ define({
             var playerXPos = 0 + distanceToTrackPos(playerDistance)
             
             var opponentType = game.getCurrentOpponentType()
-//            opponentType = 'meteor';
+            opponentType = 'meteor';
             switch(opponentType)
             {
 	            case 'zombie':
@@ -2122,7 +2126,14 @@ define({
                 	playerScale = canvas.width / runner.sprite.width;
                 	playerOffset += 20;
                 	playerXPos = canvas.width/2 - runner.sprite.width/2 * playerScale;
-
+				}
+//				else if(game.getCurrentOpponentType() == 'meteor')
+				else if(true)
+				{
+					runner = runnerAnimations.meteorDead;
+					playerScale = canvas.width/runner.sprite.width;
+					playerOffset += 20;
+					playerXPos = canvas.width/2 - runner.sprite.width/2 * playerScale;
 				}
                 else
                 {
@@ -2408,23 +2419,18 @@ define({
             });
             
             
-            zombieMoan = new Audio('audio/zombie_moan.wav');
+            zombieMoan = new Audio('audio/zombie_moan.mp3');
             zombieMoan.onerror = function() {
                 throw "Could not load " + this.src;
             }
-            zombieGrowl = new Audio('audio/zombie_growl.wav');
+            zombieGrowl = new Audio('audio/zombie_growl.mp3');
             zombieGrowl.onerror = function() {
                 throw "Could not load " + this.src;
             }
-            dinoRoar = new Audio('audio/T Rex Roar.wav');
+            dinoRoar = new Audio('audio/TRexRoar.mp3');
             dinoRoar.onerror = function() {
             	throw "Could not load " + this.src;
             }           
-            
-			dinoRoar = new Audio('audio/T Rex Roar.wav');
-            dinoRoar.onerror = function() {
-                throw "Could not load " + this.src;
-            }
             dinoKill = dinoRoar;
                        
             meteors.meteorSound = new Audio('audio/meteor_impact.mp3')
@@ -2433,7 +2439,7 @@ define({
             }
             
             //chime
-            chime = new Audio('audio/Chime.wav');
+            chime = new Audio('audio/Chime.mp3');
             chime.onerror = function() { throw "Could not load " + this.src; }
             
             
@@ -2500,6 +2506,11 @@ define({
 				meteor = new Sprite(this, this.width/5, 500);
 			});
 			
+			loadImage('images/animation_meteor_in_game_catching_runner.png', function() {
+				runnerAnimations.meteorDead.sprite = new Sprite(this, this.width/4, 500, {loop: true, loopstart:2});
+			});
+				
+			
 			loadImage('images/animation_meteor_in_game_travel.png', function() {
 				meteors.mainMeteor.travelSprite = new Sprite(this, this.width/2, 200);
 			});
@@ -2537,6 +2548,7 @@ define({
 			loadImage('images/animation_meteor_unlocked_all_together.png', function() {
 				meteorGameImage = new Sprite(this, this.width/12, 2000, {loop: true, loopstart: 9});
 			});
+			
 			//boulder game image
 //			loadImage('images/image_boulder_achievement_screen.png', function() {
 //				boulderGameImage = new Sprite(this, this.width, 1000);

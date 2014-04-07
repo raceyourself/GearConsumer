@@ -56,7 +56,7 @@ define({
             this.lastUpdateTime = Date.now();
             this.moveTimer = 0;
             if(options) {
-            	for (var attrname in options) { this[attrname] = options[attrname]; console.error(options); console.log(spritesheet); }
+            	for (var attrname in options) { this[attrname] = options[attrname]; }
             }
             this.speed = { x: 0, y : 0 };
             this.moveInterval = null;

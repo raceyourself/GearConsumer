@@ -18,10 +18,10 @@ define({
         	hrm = req.models.hrm,
         	hrChangePeriod = 5000,
             interval,
-            cannedRates = [ { rate:65, duration:1 },		//warmup
-            				{ rate:145, duration:1 },		//good
-            				{ rate:175, duration:1 },		//too high
-            				{ rate: 145, duration:1 },		//good
+            cannedRates = [ { rate:65, duration:5 },		//warmup
+            				{ rate:145, duration:10 },		//good
+            				{ rate:175, duration:10 },		//too high
+            				{ rate: 145, duration:5 },		//good
             				{ rate: 80, duration:0 } ],		//too low - 0 means indefinite
         	currentCannedHRIndex = 0,
         	hr = 50,
