@@ -56,7 +56,6 @@ define({
             	thresholdOneStar: 0.1,
             	thresholdTwoStar: 0.3,
             	thresholdThreeStar: 0.6
-
             },
             config = {},
             STORAGE_KEY = 'config';
@@ -155,6 +154,21 @@ define({
 			return config.pointsBonusFinish;
 		}
         
+        function getThresholdOneStar() {
+        	if(!isFinite(config.thresholdOneStar)) return defaults.thresholdOneStar;
+        	return config.thresholdOneStar;
+		}
+		
+		function getThresholdTwoStar() {
+			if(!isFinite(config.thresholdTwoStar)) return defaults.thresholdTwoStar;
+			return config.thresholdTwoStar;
+		}
+		
+		function getThresholdThreeStar() {
+			if(!isFinite(config.thresholdThreeStar)) return defaults.thresholdThreeStar;
+			return config.thresholdThreeStar;
+		}
+		        
         function saveConfig(configuration) {
             if (s.add(STORAGE_KEY, configuration)) {
                 return true;
@@ -198,7 +212,10 @@ define({
             getPpmBad : getPpmBad,
             getPointsPenaltyDeath : getPointsPenaltyDeath,
             getPointsBonusFinish : getPointsBonusFinish,
-            getMeteorUnlockPoints: getMeteorUnlockPoints
+            getMeteorUnlockPoints: getMeteorUnlockPoints,
+			getThresholdOneStar : getThresholdOneStar,
+            getThresholdTwoStar : getThresholdTwoStar,
+            getThresholdThreeStar : getThresholdThreeStar
         };
     }
 

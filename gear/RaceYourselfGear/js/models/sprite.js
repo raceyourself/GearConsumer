@@ -45,7 +45,6 @@ define({
             	this.onLoad(spritesheet);
             }
             
-            
             this.loop = true;
             this.loopstart = 0;
             
@@ -111,16 +110,12 @@ define({
                 
                 draw: function draw(context, x, y, dt) {
                 	if(!this.spritesheet) return;
-                	//console.log(this.spritesheet.src);
-                	//console.log(this.frameDelay);
-                	//console.log(dt);
                     this.time += dt;
                     if (this.time >= this.animationPeriod) {
                         while (!!this.loop && this.time > this.animationPeriod) this.time -= this.animationPeriod;
                         if (!!this.endCallback) this.endCallback(this.time);
                         this.endCallback = undefined;
                         if(this.loop) {
-                        	//console.log(this.loopstart);
                         	this.time += this.loopstart * this.frameDelay;
                         }
                     }
