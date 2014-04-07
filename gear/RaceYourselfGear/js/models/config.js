@@ -52,6 +52,10 @@ define({
                 ppmBad: -1,
                 pointsPenaltyDeath: -100,
                 pointsBonusFinish: 50,
+            	thresholdOneStar: 0.1,
+            	thresholdTwoStar: 0.3,
+            	thresholdThreeStar: 0.6
+
             },
             config = {},
             STORAGE_KEY = 'config';
