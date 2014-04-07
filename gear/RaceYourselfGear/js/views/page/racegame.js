@@ -2269,7 +2269,7 @@ define({
             });
             
             //chime
-            chime = new Audio('audio/Chime.wav');
+            chime = new Audio('audio/Chime.mp3');
             chime.onerror = function() { throw "Could not load " + this.src; }
                                     
             //gps

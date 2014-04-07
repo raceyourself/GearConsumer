@@ -327,7 +327,6 @@ define({
         function saveAchievements() {
             clearTimeout(flushTimeout);
             flushTimeout = false;
-            console.log(progress.total.points);
             if (s.add(STORAGE_KEY, {achieved: achieved, progress: progress, version: 1})) {
                 return true;
             }
