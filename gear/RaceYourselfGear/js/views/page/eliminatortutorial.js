@@ -23,6 +23,7 @@ define({
     name: 'views/page/eliminatortutorial',
     requires: [
         'core/event',
+        'models/config',
         'models/race',
         'models/game',
         'models/sap',
@@ -39,6 +40,7 @@ define({
          	sap = req.models.sap,
          	game = req.models.game,
          	settings = req.models.settings,
+         	config = req.models.config,
             changer,
             currentLap = 0,
             lapInterval = null,
@@ -93,6 +95,7 @@ define({
              
              
              document.getElementById('start-elim-race-btn').addEventListener('click', onEliminatorEndClick);
+             document.getElementById('tutorialDistanceText').innerHTML = '<br> Run ' + config.getLapLength() + 'm';
         }
 
         function onClick() {
