@@ -169,7 +169,7 @@ define({
             hrWarningPeriod = 3*1000,
             lightRed = '#731216',
 			flashingRed = 'flashingRed',
-			flashingRedParams = { colour: '#fff', period:400, phase: 0 },
+			flashingRedParams = { colour: '#fff', lightColour: '#fff', period:400, phase: 0 },
 			hrNotFound = false,
 			unlockNotification = null,
 			unlockNotificationTimer = null,
@@ -391,7 +391,7 @@ define({
 //			setOpponent('dinosaur');
 
             zombieCatchupSpeed = -zombieStartOffset/config.getCatchupTime();
-            
+            zombiesCatchingUp = false;
 			startRun();
         }
         
@@ -486,7 +486,7 @@ define({
         }
         
         function onWristUp() {
-        	sectionChanger.setActiveSection(1, 1000);
+//        	sectionChanger.setActiveSection(1, 1000);
         }        
         
         function onQuit() {
@@ -1279,9 +1279,15 @@ define({
 			flashingRedParams.phase += dt;
 			flashingRedParams.phase = flashingRedParams.phase % flashingRedParams.period;
 			if(flashingRedParams.phase > flashingRedParams.period/2)
-			{ flashingRedParams.colour = red; }
+			{ 
+				flashingRedParams.colour = red; 
+				flashingRedParams.lightColour = '#faa';
+			}
 			else
-			{ flashingRedParams.colour = lightRed;}
+			{
+				flashingRedParams.colour = lightRed;
+				flashingRedParams.lightColour = red;
+			}
             
             context.clearRect(0, 0, canvas.width, canvas.height);            
             var trackWidth = canvas.width - 0 - runner.sprite.width;
@@ -1289,7 +1295,7 @@ define({
 			var radius = 115/2;
 			var hrXPos = canvas.width - radius - 10;
 			var hrYPos = 37 + radius;
-			var PaceXPosR = 2*radius;
+			var PaceXPosR = 2*radius + 12;
 
 			//draw good bg
 /*			context.drawImage(goodBG, 0, 0, canvas.width, canvas.height - trackHeight);
@@ -1302,7 +1308,7 @@ define({
 			if(!countingdown)
 			{
 				context.globalAlpha = 1;
-				drawPaceBG(hrYPos, radius, PaceXPosR);
+//				drawPaceBG(hrYPos, radius, PaceXPosR);
 				drawHRBG(hrXPos, hrYPos);
 			}			
 
@@ -1316,11 +1322,12 @@ define({
 				var img = ppm > 0 ? sweat : sweat_red;
 				img.draw(context, xpos,ypos,0);
 				context.font = '24px Samsung Sans';
-				context.fillStyle = ppm > 0 ? '#fff' : red;
+//				context.fillStyle = ppm > 0 ? '#fff' : red;
+				context.fillStyle = '#fff';
 				context.textBaseline = "middle";
 				context.textAlign = "left";
 				context.fillText('SP', xpos + sweat.width + 8, ypos + sweat.height/2);
-				context.fillStyle = ppm > 0 ? '#fff' : flashingRedParams.colour;
+				context.fillStyle = ppm > 0 ? '#fff' : flashingRedParams.lightColour;
 				context.fillText(~~settings.getPoints(), xpos + sweat.width + 8 + 36, ypos + sweat.height/2);
 
 								
@@ -1892,7 +1899,7 @@ define({
 				}
 				//Pace
 				context.globalAlpha = 0.7;
-				drawPaceBG(hrYPos, radius, PaceXPosR);
+//				drawPaceBG(hrYPos, radius, PaceXPosR);
 				context.globalAlpha = 1;
 				
 				//text
@@ -1908,11 +1915,16 @@ define({
 				context.font = '56px Samsung Sans';
 				context.textAlign = 'center';
 				context.textBaseline = 'middle';
-				context.fillStyle = '#000';
+				context.fillStyle = '#fff';
+				context.strokeStyle = '#000';
+				context.lineWidth = 1;
+				context.strokeText(paceString, paceXPos, hrYPos +4);
 				context.fillText(paceString, paceXPos, hrYPos + 4);
 				//units
 				context.font = '24px Samsung Sans';
+				context.strokeText(paceUnits, paceXPos, hrYPos +38);
 				context.fillText(paceUnits, paceXPos, hrYPos + 38);
+
 				//icon
 				paceIcon.draw(context, paceXPos - paceIcon.width/2, hrYPos - paceIcon.height/2 - 38, 0);
 								
@@ -2391,6 +2403,9 @@ define({
 			});
 			
 			loadImage('images/icon-speed_whiteBG.png', function() {
+//				paceIcon = new Sprite(this, this.width, 1000);
+			});
+			loadImage('images/icon-speed.png', function() {
 				paceIcon = new Sprite(this, this.width, 1000);
 			});
 						

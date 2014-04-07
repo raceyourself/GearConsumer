@@ -167,7 +167,7 @@ define({
             hrWarningPeriod = 3*1000,
             lightRed = '#731216',
 			flashingRed = 'flashingRed',
-			flashingRedParams = { colour: '#fff', period:400, phase: 0 },
+			flashingRedParams = { colour: '#fff', lightColour: '#fff', period:400, phase: 0 },
 			hrNotFound = false,
 			unlockNotification = null,
 			unlockNotificationTimer = null,
@@ -553,7 +553,7 @@ define({
         }
         
         function onWristUp() {
-        	sectionChanger.setActiveSection(1, 1000);
+//        	sectionChanger.setActiveSection(1, 1000);
         }        
         
         function onAgain() {
@@ -1209,9 +1209,15 @@ define({
 			flashingRedParams.phase += dt;
 			flashingRedParams.phase = flashingRedParams.phase % flashingRedParams.period;
 			if(flashingRedParams.phase > flashingRedParams.period/2)
-			{ flashingRedParams.colour = red; }
+			{ 
+				flashingRedParams.colour = red; 
+				flashingRedParams.lightColour = '#fff';
+			}
 			else
-			{ flashingRedParams.colour = lightRed;}
+			{
+				flashingRedParams.colour = lightRed;
+				flashingRedParams.colour = red;
+			}
             
             context.clearRect(0, 0, canvas.width, canvas.height);            
             var trackWidth = canvas.width - 0 - runner.sprite.width;
@@ -1245,7 +1251,7 @@ define({
 				context.textBaseline = "middle";
 				context.textAlign = "left";
 				context.fillText('SP', xpos + sweat.width + 8, ypos + sweat.height/2);
-				context.fillStyle = ppm > 0 ? '#fff' : flashingRedParams.colour;
+				context.fillStyle = ppm > 0 ? '#fff' : flashingRedParams.lightColour;
 				context.fillText(~~settings.getPoints(), xpos + sweat.width + 8 + 36, ypos + sweat.height/2);
 				
 												
