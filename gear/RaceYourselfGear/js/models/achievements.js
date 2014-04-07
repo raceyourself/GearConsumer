@@ -247,6 +247,57 @@ define({
                         return '0%';
                     }
                 },
+                '5_laps' : {
+                	title: '5 Laps',
+                	description: 'Complete 5 laps in Eliminator mode',
+                	points: 0,
+                	uses: 1,
+                	init: function() {
+                		e.listen('racegame.lapcomplete', function(event) {
+                			var numLaps = event.detail;
+                			if(numLaps == 5) 
+                				achieve('5_laps');
+                		});
+                	},
+                	progress: function() {
+                		if(!!achieved['5_laps']) return '100%';
+                		return '0%';
+                	}
+                },
+                '10_laps': {
+                	title: '10 Laps',
+                	description: 'Complete 10 laps in Eliminator mode',
+                	points: 0,
+                	uses: 1,
+                	init: function() {
+                		e.listen('racegame.lapcomplete', function(event) {
+                			var numLaps = event.detail;
+                			if(numLaps == 10) 
+                				achieve('10_laps');
+                		});
+                	},
+                	progress: function() {
+                		if(!!achieved['10_laps']) return '100%';
+                		return '0%';
+                	}
+        		},
+        		'15_laps': {
+        			title: '15 Laps',
+                	description: 'Complete 15 laps in Eliminator mode',
+                	points: 0,
+                	uses: 1,
+                	init: function() {
+                		e.listen('racegame.lapcomplete', function(event) {
+                			var numLaps = event.detail;
+                			if(numLaps == 15) 
+                				achieve('15_laps');
+                		});
+                	},
+                	progress: function() {
+                		if(!!achieved['15_laps']) return '100%';
+                		return '0%';
+                	}
+        		},
                 'WeightLoss' : {
                     title: 'Race Yourself Slimmer',
                     description: 'Unlock <b>Race Yourself Slimmer</b> by running 5km',
