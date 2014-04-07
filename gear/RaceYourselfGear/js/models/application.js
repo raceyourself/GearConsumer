@@ -29,7 +29,9 @@ define({
         'use strict';
 
         var app = null,
-            APP_CONTROL_URL = 'http://tizen.org/appcontrol/';
+            APP_CONTROL_URL = 'http://tizen.org/appcontrol/',
+            dimTimeout = false,
+            screenState = false;
 
         function getCurrentApplication() {
             return app.getCurrentApplication();
@@ -94,9 +96,21 @@ define({
         }
 
         function setScreenState(state) {
+        	if (screenState === state) return;
+        	console.log('Setting screen state to: ' + state);
             if (typeof tizen !== 'undefined' && typeof tizen.power !== 'undefined') {
+            	if (screenState) tizen.power.release("SCREEN", screenState);
             	tizen.power.request("SCREEN", state);
+            	screenState = state;
+            	if (state !== 'SCREEN_DIM') {
+            		clearTimeout(dimTimeout);
+            		dimTimeout = setTimeout(onDim, 15000);
+            	}
             }
+        }
+        
+        function onDim() {
+        	setScreenState('SCREEN_DIM');
         }
         
         function init() {}

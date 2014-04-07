@@ -37,7 +37,7 @@ define({
             app = req.models.application,
             motion = req.models.motion,
             achievements = req.models.achievements,
-            touch_start = null, 
+            touch_start = null,            
             fling_limit = {};
 
         function onHardwareKeysTap(ev) {
@@ -92,12 +92,23 @@ define({
             });
         }
 
+        function onUserEvent() {
+        	app.setScreenState('SCREEN_NORMAL');
+        	return true;
+        }
+        
+        function onDim() {
+        	app.setScreenState('SCREEN_DIM');
+        }
+        
         function bindEvents() {
             window.addEventListener('tizenhwkey', onHardwareKeysTap);
             window.onkeydown = function(event) {
                 if (event.keyCode == 40) e.fire('tizen.back'); // down arrow
             };
             window.onerror = onError;
+            window.addEventListener('mousedown', onUserEvent);
+            window.addEventListener('touchstart', onUserEvent);
         }
 
         function init() {
@@ -107,6 +118,7 @@ define({
             fling_limit.y = document.querySelector('.ui-page-active').offsetHeight/3;
             e.addSingleton('tizen.back');
             if (motion.isAvailable()) motion.start();
+            onUserEvent();
         }
 
         return {

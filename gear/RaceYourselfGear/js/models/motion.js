@@ -23,20 +23,23 @@
 define({
     name: 'models/motion',
     requires: [
-        'core/event'
+        'core/event',
+        'models/application'
     ],
     def: function modelsMotion(req) {
         'use strict';
 
-        var e = req,
+        var e = req.core.event,
+        	app = req.models.application,
             motion = null,
             available = true,
 
             CONTEXT_TYPE = 'WRIST_UP';
 
         function handleMotionInfo(ev) {
-            eventName = 'motion.wristup';
+            eventName = 'motion.wristup';            
             e.fire(eventName, ev);
+            app.setScreenState('SCREEN_NORMAL');
         }
 
         /**
