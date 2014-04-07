@@ -1174,7 +1174,7 @@ define({
                 r.addPoints(config.getPointsBonusFinish());
                 if(settings.getVibrateActive()) {
 					console.log('vibrate: run complete');
-                	navigator.vibrate(250, 50, 250, 50, 250);
+                	navigator.vibrate([250, 50, 250, 50, 250]);
                 }
                 showUnlockNotification('finished', 5);
                 finished = true;
