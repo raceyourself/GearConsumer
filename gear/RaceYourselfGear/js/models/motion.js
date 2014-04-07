@@ -30,6 +30,7 @@ define({
 
         var e = req,
             motion = null,
+            available = true,
 
             CONTEXT_TYPE = 'WRIST_UP';
 
@@ -43,10 +44,15 @@ define({
          * @public
          */
         function start() {
-        	motion.start(
-                CONTEXT_TYPE,
-                handleMotionInfo
-            );
+        	try {
+	        	motion.start(
+	                CONTEXT_TYPE,
+	                handleMotionInfo
+	            ); 
+	    	} catch(e) {
+	    		available = false;
+	    		console.error(e);
+	    	}
         }
 
         /**
@@ -58,7 +64,7 @@ define({
         }
 
         function isAvailable() {
-            return !!motion;
+            return !!motion && available;
         }
         
         /**

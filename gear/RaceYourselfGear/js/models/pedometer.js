@@ -15,6 +15,7 @@ define({
 
         var e = req,
             pedometer = null,
+            available = true,
             lastData = {},
 
             CONTEXT_TYPE = 'PEDOMETER';
@@ -64,12 +65,17 @@ define({
          * @public
          */
         function start() {
-            pedometer.start(
-                CONTEXT_TYPE,
-                function onSuccess(pedometerInfo) {
-                    handlePedometerInfo(pedometerInfo, 'pedometer.change');
-                }
-            );
+        	try {
+	            pedometer.start(
+	                CONTEXT_TYPE,
+	                function onSuccess(pedometerInfo) {
+	                    handlePedometerInfo(pedometerInfo, 'pedometer.change');
+	                }
+	            );
+	    	} catch(e) {
+	    		available = false;
+	    		console.error(e);
+	    	}
         }
 
         /**
@@ -81,7 +87,7 @@ define({
         }
 
         function isAvailable() {
-            return !!pedometer;
+            return !!pedometer && available;
         }
         
         /**
