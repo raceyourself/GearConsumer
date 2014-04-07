@@ -2409,6 +2409,11 @@ define({
                 throw "Could not load " + this.src;
             }
             dinoKill = dinoRoar;
+                       
+            meteors.meteorSound = new Audio('audio/meteor_impact.mp3')
+            meteors.meteorSound.onerror = function() {
+            	throw "Could not load " + this.src;
+            }
             
             //chime
             chime = new Audio('audio/Chime.wav');
