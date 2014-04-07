@@ -475,8 +475,11 @@ define({
 			{
 				numAwardsAtFinish++;
 			}
-			if(settings.getAudioActive()) {
-				chime.play();
+			else
+			{
+				if(settings.getAudioActive()) {
+					chime.play();
+				}
 			}
         }
         
@@ -2581,9 +2584,9 @@ define({
             chime = new Audio('audio/Chime.mp3');
             chime.onerror = function() { throw "Could not load " + this.src; }
             
-            stars.sounds[0] = new Audio('audio/Chime.wav');
-            stars.sounds[1] = new Audio('audio/Chime.wav');
-            stars.sounds[2] = new Audio('audio/Chime.wav');
+            stars.sounds[0] = new Audio('audio/Chime.mp3');
+            stars.sounds[1] = new Audio('audio/Chime.mp3');
+            stars.sounds[2] = new Audio('audio/ChimeHigh.mp3');
             
             //heart     
             loadImage('images/image_heart_green.png', function() {
