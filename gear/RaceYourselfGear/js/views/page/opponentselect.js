@@ -127,7 +127,7 @@ define({
         }   
         
         function onBack() {
-            e.fire('newmain.show');
+            e.fire('runselect.show');
         }
         
         function bindEvents() {
