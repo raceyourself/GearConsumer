@@ -88,15 +88,15 @@ define({
         
         function render() {
         	dinoContext.clearRect(0, 0, dinoCanvas.width, dinoCanvas.height);
+        	zombieContext.clearRect(0, 0, zombieCanvas.width, zombieCanvas.height);
+        	
         	var dt = Date.now() - lastRenderTime;
         	lastRenderTime = Date.now();
         	
         	dinoSprite.drawscaled(dinoContext, dinoCanvas.width / 2 - dinoSprite.width * 1.5/2, (dinoCanvas.height /2 - 50) - dinoSprite.height * 1.5/2, dt, 1.5);
         	
-        	zombieContext.clearRect(0, 0, zombieCanvas.width, zombieCanvas.height);
         	zombieSprite.drawscaled(zombieContext, zombieCanvas.width/2 - zombieSprite.width * 1.5 / 2, (zombieCanvas.height / 2 - 25) - zombieSprite.height * 1.5/2, dt, 1.5);
         
-        	//meteorContext.clearRect(0, 0, meteorCanvas.width, meteorCanvas.height);
         	if(game.isLocked('meteor')) {
         		meteorLockedSprite.drawscaled(meteorContext, meteorCanvas.width/2 - meteorLockedSprite.width / 2, (meteorCanvas.height / 2 - 50) - meteorLockedSprite.height / 2, dt, 1);
         	} else {

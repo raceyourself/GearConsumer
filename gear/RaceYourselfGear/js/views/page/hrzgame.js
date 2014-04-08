@@ -976,7 +976,7 @@ define({
 					//colouring and 'speed up' text will still be present
 					timeTurnedBad = Date.now();
 					clearNotification();
-					setNotification(flashingRed, '#fff', 'Heart Rate too low!', null, 0);
+					setNotification(flashingRed, '#fff', 'Heart rate too low!', null, 0);
 					showWarningLow = true;
 					if(settings.getAudioActive() && regularSound != null) {
 						regularSound.play();
