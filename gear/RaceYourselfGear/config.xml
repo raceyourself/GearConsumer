@@ -5,7 +5,7 @@
     <feature name="http://tizen.org/feature/screen.size.normal.320.320"/>
     <icon src="icon.png"/>
     <tizen:metadata key="AccessoryServicesLocation" value="res/xml/serviceprofile.xml"/>
-    <name>RaceYourself</name>
+    <name>Race Yourself</name>
     <tizen:privilege name="http://tizen.org/privilege/application.launch"/>
     <tizen:privilege name="http://tizen.org/privilege/context"/>
     <tizen:privilege name="http://tizen.org/privilege/power"/>
