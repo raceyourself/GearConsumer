@@ -108,7 +108,7 @@ define({
             var data = {
             		'award': achievement.key,
                     'time_since_launch': Date.now()-launchTime,
-                    'tvent_type': 'Achievement awarded'
+                    'event_type': 'Achievement awarded'
                     
             };
             log(data);
