@@ -234,6 +234,7 @@ define({
         
         function onMeteorBtnClick(event) {
         	if(isScrolling()) return;
+        	if(game.isLocked('meteor')) return;
         	game.setCurrentGame('hrzgame');
         	game.setCurrentOpponentType('meteor');
         	if(settings.getZombieTutorial()) {
