@@ -80,7 +80,8 @@ define({
         }
         
         function onBack() {
-            history.back();
+        	e.fire('runselect.show');
+           // history.back();
         }
         
         function onGpsStatus(ev) {

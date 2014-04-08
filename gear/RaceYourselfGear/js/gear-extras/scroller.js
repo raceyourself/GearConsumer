@@ -47,7 +47,11 @@ Scroller.prototype = {
 		this.options = {};
 
 		if ( this.element.children.length !== 1 ) {
-			throw "scroller has only one child.";
+			console.error("scroller may only have one child; attempting to recover");
+			while (this.element.children.length !== 1) {
+				this.element.removeChild(this.element.children[1]);
+			}
+			
 		}
 
 		this.scroller = this.element.children[0];
@@ -181,12 +185,16 @@ Scroller.prototype = {
 
 	_unbindEvents: function() {
 		if ('ontouchstart' in window) {
-			this.scroller.removeEventListener( "touchstart", this);
-			this.scroller.removeEventListener( "touchmove", this);
-			this.scroller.removeEventListener( "touchend", this);
-			this.scroller.removeEventListener( "touchcancel", this);
+			if (this.scroller) {
+				this.scroller.removeEventListener( "touchstart", this);
+				this.scroller.removeEventListener( "touchmove", this);
+				this.scroller.removeEventListener( "touchend", this);
+				this.scroller.removeEventListener( "touchcancel", this);
+			}
 		} else {
-			this.scroller.removeEventListener( "mousedown", this);
+			if (this.scroller) {
+				this.scroller.removeEventListener( "mousedown", this);
+			}
 			document.removeEventListener( "mousemove", this);
 			document.removeEventListener( "mouseup", this);
 			document.removeEventListener( "mousecancel", this);

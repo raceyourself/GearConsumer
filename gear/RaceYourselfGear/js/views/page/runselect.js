@@ -106,27 +106,39 @@ define({
         	lastRenderTime = Date.now();
         	
         	if(game.isLocked('Endurance')) {
-        		fitterLockedSprite.draw(fitterContext, fitterCanvas.width / 2 - fitterLockedSprite.width /2, fitterCanvas.height /2 - fitterLockedSprite.height /2, 0);
+        		if(fitterLockedSprite !== undefined) {
+        			fitterLockedSprite.draw(fitterContext, fitterCanvas.width / 2 - fitterLockedSprite.width /2, fitterCanvas.height /2 - fitterLockedSprite.height /2, 0);
+        		}
         	} else {
-        		//fitterContext.clearRect(0, 0, fitterCanvas.width, fitterCanvas.height);
-        		fitterUnlockedSprite.draw(fitterContext, fitterCanvas.width / 2 - fitterUnlockedSprite.width /2, fitterCanvas.height /2 - fitterUnlockedSprite.height /2, dt);
+        		if(fitterUnlockedSprite !== undefined) {
+        			fitterUnlockedSprite.draw(fitterContext, fitterCanvas.width / 2 - fitterUnlockedSprite.width /2, fitterCanvas.height /2 - fitterUnlockedSprite.height /2, dt);
+        		}
         	}
         	
         	if(game.isLocked('WeightLoss')) {
-        		slimmerLockedSprite.draw(slimmerContext, slimmerCanvas.width / 2 - slimmerLockedSprite.width /2, slimmerCanvas.height /2 - slimmerLockedSprite.height /2, 0);
+        		if(slimmerLockedSprite !== undefined) {
+        			slimmerLockedSprite.draw(slimmerContext, slimmerCanvas.width / 2 - slimmerLockedSprite.width /2, slimmerCanvas.height /2 - slimmerLockedSprite.height /2, 0);
+        		}
         	} else {
-        		//slimmerContext.clearRect(0, 0, slimmerCanvas.width, slimmerCanvas.height);
-        		slimmerUnlockedSprite.draw(slimmerContext, slimmerCanvas.width / 2 - slimmerUnlockedSprite.width /2, slimmerCanvas.height /2 - slimmerUnlockedSprite.height /2, dt);
+        		if(slimmerUnlockedSprite !== undefined) {
+        			slimmerUnlockedSprite.draw(slimmerContext, slimmerCanvas.width / 2 - slimmerUnlockedSprite.width /2, slimmerCanvas.height /2 - slimmerUnlockedSprite.height /2, dt);
+        		}
         	}
 
         	if(game.isLocked('Strength')) {
-        		fasterLockedSprite.draw(fasterContext, fasterCanvas.width / 2 - fasterLockedSprite.width / 2, fasterCanvas.height / 2 - fasterLockedSprite.height / 2, 0);
+        		if(fasterLockedSprite !== undefined) {
+        			fasterLockedSprite.draw(fasterContext, fasterCanvas.width / 2 - fasterLockedSprite.width / 2, fasterCanvas.height / 2 - fasterLockedSprite.height / 2, 0);
+                }
         	} else {
-        		//fasterContext.clearRect(0, 0, fasterCanvas.width, fasterCanvas.height);
-        		fasterUnlockedSprite.draw(fasterContext, fasterCanvas.width / 2 - fasterUnlockedSprite.width / 2, fasterCanvas.height / 2 - fasterUnlockedSprite.height / 2, dt);
+        		if(fasterUnlockedSprite !== undefined) {
+        			fasterUnlockedSprite.draw(fasterContext, fasterCanvas.width / 2 - fasterUnlockedSprite.width / 2, fasterCanvas.height / 2 - fasterUnlockedSprite.height / 2, dt);
+        		}
         	}
         	
-        	elimGameSprite.draw(elimContext, elimCanvas.width / 2 - elimGameSprite.width / 2, elimCanvas.height / 2 - elimGameSprite.height / 2, dt);
+        	if(elimGameSprite !== undefined) {
+        		elimGameSprite.draw(elimContext, elimCanvas.width / 2 - elimGameSprite.width / 2, elimCanvas.height / 2 - elimGameSprite.height / 2, dt);
+        	}
+        	
 
         }
         

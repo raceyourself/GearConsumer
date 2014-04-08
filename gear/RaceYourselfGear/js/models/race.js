@@ -338,8 +338,9 @@ define({
             var step = false;
             if (pedometerInfo.totalStep !== ongoingRace.steps) step = true;
             
-            ongoingRace.steps = pedometerInfo.totalStep - ongoingRace.initialSteps;
-            ongoingRace.calories = pedometerInfo.calorie - ongoingRace.initialCalories;
+            
+            ongoingRace.steps = Math.max(0, pedometerInfo.totalStep - ongoingRace.initialSteps);
+            ongoingRace.calories = Math.max(0, pedometerInfo.calorie - ongoingRace.initialCalories);
             
             // only update speed and distance if we've not had a GPS fix for at least 2000ms
             if (ongoingRace.lastGpsTimestamp == null || (new Date().getTime() - ongoingRace.lastGpsTimestamp) > 2000) {
