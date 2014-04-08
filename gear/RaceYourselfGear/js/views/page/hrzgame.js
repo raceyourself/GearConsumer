@@ -958,7 +958,11 @@ define({
 			}
 	
 			//Update Heart Rate related mechanics
-			if(hr < minHeartRate)
+			if(hrNotFound)
+			{
+				ppm = 0;
+			}
+			else if(hr < minHeartRate)
 			{	
 				showWarningHigh = false;
 				if(!isDead && started)
@@ -1077,13 +1081,15 @@ define({
 				hr = hrmInfo.detail.heartRate;
 //				rToRTime = hrmInfo.detail.rRInterval;
 				rToRTime = (60/hr) * 1000;
-				handleHRChanged();
 				if(hrNotFound)
 				{
+					//hr has come back after an absence
 					hrNotFound = false;
 					heartBeatTimeout = setTimeout(heartBeatBeatOn,rToRTime);
+					clearNotification();
 				}
         	}
+			handleHRChanged();
         }
 
 		function setMinMaxHeartRate() {
@@ -1101,7 +1107,10 @@ define({
 				clearTimeout(warningTimeoutLow);
 				warningTimeoutLow = false;
 				zombiesCatchingUp = false;
-				clearNotification();
+				if(notification.text != 'No heart rate')
+				{
+					clearNotification();
+				}
 				setNotification( '#fff', '#000', 'No heart rate', null, 0);
 //				clearInterval(heartBeatInterval);
         	}
@@ -2083,7 +2092,7 @@ define({
 					{
 						heartScale = 1.2;
 						heartBeatOnFrameCount++;
-						if(heartBeatOnFrameCount > 3) 
+						if(heartBeatOnFrameCount > 8) 
 						{ 
 							heartBeatOn = false; 
 							heartBeatOnFrameCount = 0;	
