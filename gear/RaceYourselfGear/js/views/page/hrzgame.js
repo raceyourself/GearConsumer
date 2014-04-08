@@ -1312,7 +1312,7 @@ define({
 			var r = race.getOngoingRace();
 //			var startPos = { x:distanceToTrackPos(r.getDistance()) + 20, y:canvas.height/2 +20};
 //			var destPos = { x:canvas.width/2, y:20 };
-			var startPos = { x:distanceToTrackPos(r.getDistance()) + 40, y:canvas.height - 55 - runner.sprite.height * scale};
+			var startPos = { x:distanceToTrackPos(r.getMetricDistance()) + 40, y:canvas.height - 55 - runner.sprite.height * scale};
 			var destPos = { x:sweat.width/2, y:sweat.height };
 			var pointsPenaltyGraphic = new SweatPoint(points, colour, startPos, destPos);
 			sweatPointGraphics.push(pointsPenaltyGraphic);
