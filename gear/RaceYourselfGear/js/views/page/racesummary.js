@@ -106,6 +106,8 @@ define({
                 scrollbar: "bar"
             });
 
+        	sectionChanger.setActiveSection(0, 0);
+        	
             e.listen('tizen.back', onBack);
         }
         
@@ -130,30 +132,6 @@ define({
             lastRenderTime = Date.now();
             animate();
         }
-        
-//        function render(r) {
-//            if (!r) {
-//                onBack();
-//                return;
-//            }
-//            document.getElementById('duration-final').innerHTML = hmm(r.getDuration()/1000);
-//            distance(r.getDistance(), r.getDistanceUnits());
-//            document.getElementById('kcal-final').innerHTML = ~~(r.getCalories());
-//            document.getElementById('current-sweat-final').innerHTML = ~~(r.getPointsEarned());
-//            document.getElementById('sweat-lost-final').innerHTML = ~~(r.getPointsLost());
-//            document.getElementById('total-sweat-final').innerHTML = ~~(r.getPoints());
-//            document.getElementById('steps-final').innerHTML = r.getSteps();
-//            var ideal = 'N/A';
-//            if (isFinite(r.data.time_in_zone)) ideal = ~~(r.data.time_in_zone*100/r.getDuration()) + '%';
-//            document.getElementById('ideal-hr-final').innerHTML = ideal;
-//            
-//            
-//            
-//            generateAwards(r.getAchievements());
-//            
-//            lastRenderTime = Date.now();
-//            animate();
-//        }
         
         function animate(time) {
         	raf = requestAnimationFrame(animate);
