@@ -101,7 +101,7 @@ define({
             //r = race.getOngoingRace();
         	sectionChanger = new SectionChanger(changer, {
             	items: 'section:not(.hidden)',
-                circular: false,
+                circular: true,
                 orientation: "horizontal",
                 scrollbar: "bar"
             });
@@ -158,9 +158,7 @@ define({
             var clazz = '';
             //achievementList = achievements.getAchievements();
             for (var key in as) {
-            	console.log(as);
                 var a = achievements.getAchievements()[as[key]];
-                console.log(a);
                 items.push(t.get('achievementRow', {
                             key: a.key,
                             title: a.title,
@@ -169,7 +167,12 @@ define({
                 }));
                 clazz = '';
             }
-            list.innerHTML = items.join('');
+        	list.innerHTML = items.join('');
+            if (items.length > 0) {
+            	document.getElementById('rs_awards_title').innerHTML = 'Awards';
+            } else {
+            	document.getElementById('rs_awards_title').innerHTML = 'No awards';
+            }
         }
         
         function onBack() {
@@ -199,8 +202,7 @@ define({
 
         function onSummaryEndClick() {
             if (isScrolling()) return;
-            if(sectionChanger.getActiveSectionIndex() < sectionChanger.getNumberOfSections() - 1)
-            	sectionChanger.nextSection(500);
+            sectionChanger.nextSection(500);
         }        
         
         function onItemTap(event) {
