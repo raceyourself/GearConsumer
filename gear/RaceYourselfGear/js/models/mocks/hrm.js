@@ -17,19 +17,22 @@ define({
         var e = req.core.event,
         	hrm = req.models.hrm,
         	hrChangePeriod = 5000,
-            interval,
             cannedRates = [ { rate:65, duration:5 },		//warmup
             				{ rate:145, duration:10 },		//good
             				{ rate:175, duration:10 },		//too high
             				{ rate: 145, duration:5 },		//good
             				{ rate: 80, duration:0 } ],		//too low - 0 means indefinite
+        	hrUpdatePeriod = 5,
+            randomInterval = null,
+            interval = null,
         	currentCannedHRIndex = 0,
         	hr = 50,
         	cannedTimeout = false;
         
         function start() {
         	if (interval) clearInterval(interval);
-            interval = setInterval(randomHR, hrChangePeriod);        	
+            randomInterval = setInterval(randomHR, hrChangePeriod);
+            interval = setInterval(sendHRupdate, hrUpdatePeriod);
         }
         
         function startCanned() {
@@ -40,7 +43,7 @@ define({
 			}
 			nextCannedHR();
 
-        	interval = setInterval(sendHRupdate, 1000);
+        	interval = setInterval(sendHRupdate, hrUpdatePeriod);
         }
         
         function nextCannedHR() {
@@ -55,7 +58,7 @@ define({
         }
         
         function sendHRupdate() {
-			var rToRTime = (60/hr) * 1e-3;
+			var rToRTime = (60/hr) * 1e3;
         	hrm._handleHrmInfo({heartRate: hr, rRInterval: rToRTime});
         }
         
@@ -69,10 +72,7 @@ define({
 //			hr = Math.floor(Math.min(hr, maxPossibleHeartRate));
 //			hr = Math.floor(Math.max(hr, minPossibleHeartRate));
 			
-			var rToRTime = (60/hr) * 1e-3;
-			
-        	hrm._handleHrmInfo({heartRate: hr, rRInterval: rToRTime});
-        	
+			var rToRTime = (60/hr) * 1e-3;      	
         }
 
         return {
