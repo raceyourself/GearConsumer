@@ -637,7 +637,10 @@ define({
         	bannerTimeout = setTimeout(clearbanner, countDownParams.stageDuration * 1000);
 			countDownParams.startTime = Date.now();
 			zombiePosWeight = 0;
-			meteors.mainMeteor.reset();
+			if(game.getCurrentOpponentType() == 'meteor')
+			{
+				meteors.mainMeteor.reset();
+			}
         }
         
         function endWarmup() 
