@@ -87,8 +87,8 @@ define({
         }
         
         function render() {
-        	dinoContext.clearRect(0, 0, dinoCanvas.width, dinoCanvas.height);
-        	zombieContext.clearRect(0, 0, zombieCanvas.width, zombieCanvas.height);
+        	dinoContext.fillRect(0, 0, dinoCanvas.width, dinoCanvas.height);
+        	zombieContext.fillRect(0, 0, zombieCanvas.width, zombieCanvas.height);
         	
         	var dt = Date.now() - lastRenderTime;
         	lastRenderTime = Date.now();
