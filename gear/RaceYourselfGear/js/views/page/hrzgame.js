@@ -1077,7 +1077,7 @@ define({
         	{
 				showWarningLow = false;
 				showWarningHigh = false;
-				clearTimeOut(warningTimeoutHigh);
+				clearTimeout(warningTimeoutHigh);
 				warningTimeoutHigh = false;
 				clearTimeout(warningTimeoutLow);
 				warningTimeoutLow = false;
