@@ -113,6 +113,7 @@ define({
 		function onHeartBeat() {
 			heartBeatOn = true;
 			heartBeatOnFrames = false;
+			heartRateNotFound = false;
 		}
 
 		function onHeartRateLost() {

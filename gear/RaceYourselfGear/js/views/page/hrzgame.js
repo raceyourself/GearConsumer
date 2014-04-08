@@ -173,7 +173,7 @@ define({
             lightRed = '#731216',
 			flashingRed = 'flashingRed',
 			flashingRedParams = { colour: '#fff', lightColour: '#fff', period:400, phase: 0 },
-			hrNotFound = false,
+			hrNotFound = true,
 			unlockNotification = null,
 			unlockNotificationTimer = null,
 			dottedPattern = null,
@@ -187,6 +187,7 @@ define({
 			badFraction = 0,
             hasGPSUpdate = false,
             heartBeatInterval = null,
+            heartBeatTimeout = null,
             heartBeatOn = false,
             heartBeatOnFrameCount = 0,
             numAwardsAtFinish = 0,
@@ -367,6 +368,10 @@ define({
         	canDie = true;
             visible = true;
             finished = false;
+            
+            //start with no heart rate found. This will be quickly corrected if it's present
+            hrNotFound = true;
+            
             sectionChanger = new SectionChanger(changer, {
                 circular: true,
                 orientation: "horizontal",
@@ -527,7 +532,8 @@ define({
             clearTimeout(adaptingTimeout);
             clearTimeout(warningTimeoutLow);
 			clearTimeout(warningTimeoutHigh);
-			clearInterval(heartBeatInterval);
+//			clearInterval(heartBeatInterval);
+			clearTimeout(heartBeatTimeout);
 			if(meteors.tickInterval != false) { clearInterval(meteors.tickInterval); }
 			
             if (!!sectionChanger) {
@@ -934,9 +940,14 @@ define({
             step();
             			
 			//check how long since heartrate
-			if( Date.now() - lastHRtime > 10*1000 )
+			if( Date.now() - lastHRtime > 3*1000 )
 			{
-				hrNotFound = true;			
+				hrNotFound = true;		
+				heartBeatOn = false;	
+//				clearInterval(heartBeatInterval);
+				heartBeatInterval = null;
+				clearTimeout(heartBeatTimeout);
+				heartBeatTimeout = null;
 				e.fire('heartrate.lost');
 			}
 	
@@ -1063,10 +1074,15 @@ define({
         	if(hrmInfo.detail.heartRate > 30)
         	{
 				lastHRtime = Date.now();
-				hrNotFound = false;
 				hr = hrmInfo.detail.heartRate;
-				rToRTime = hrmInfo.detail.rInterval;
+//				rToRTime = hrmInfo.detail.rRInterval;
+				rToRTime = (60/hr) * 1000;
 				handleHRChanged();
+				if(hrNotFound)
+				{
+					hrNotFound = false;
+					heartBeatTimeout = setTimeout(heartBeatBeatOn,rToRTime);
+				}
         	}
         }
 
@@ -1087,14 +1103,14 @@ define({
 				zombiesCatchingUp = false;
 				clearNotification();
 				setNotification( '#fff', '#000', 'No Heart Rate', null, 0);
-				clearInterval(heartBeatInterval);
+//				clearInterval(heartBeatInterval);
         	}
         	else
         	{
         		//check if we've the zone for the first time
-        		clearInterval(heartBeatInterval);
-        		heartBeatInterval = null;
-        		heartBeatInterval = setInterval(heartBeatBeatOn, 1000);
+//        		clearInterval(heartBeatInterval);
+//        		heartBeatInterval = null;
+//        		heartBeatInterval = setInterval(heartBeatBeatOn, rToRTime);
 				if(hr > maxHeartRate && !hrNotFound)
 				{
 					hrColour = '#ff0000';
@@ -1149,7 +1165,12 @@ define({
 		{
 //			setTimeout(heartBeatBeatOff, 250);
 			heartBeatOn = true;
-			e.fire('heart.beat');
+			if(!hrNotFound)
+			{
+				e.fire('heart.beat');
+				heartBeatTimeout = setTimeout(heartBeatBeatOn, rToRTime);
+			}
+
 		}
 		
 //		function heartBeatBeatOff()
