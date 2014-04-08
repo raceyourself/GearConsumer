@@ -122,7 +122,11 @@ define({
             document.getElementById('current-sweat-final').innerHTML = ~~(r.pointsgained);
             document.getElementById('sweat-lost-final').innerHTML = ~~(r.pointslost);
             document.getElementById('total-sweat-final').innerHTML = ~~(r.totalpoints);
-            document.getElementById('steps-final').innerHTML = r.steps;
+            var steps = r.steps;
+            if(steps === undefined) {
+            	steps = 0;
+            }
+            document.getElementById('steps-final').innerHTML = steps;
             var ideal = 'N/A';
             if (isFinite(r.hrtime)) ideal = ~~(r.hrtime_in_zone*100/r.duration) + '%';
             document.getElementById('ideal-hr-final').innerHTML = ideal;
@@ -245,6 +249,18 @@ define({
             var decimals = 0;
             //var u = settings.getDistanceUnits();
             
+            if(!isFinite(value)) {
+            	value = 0;
+            }
+            
+            if(u === undefined) {
+            	if(settings.getDistanceUnits() == 'Km') {
+            		u = 'meters';
+            	} else if(settings.getDistanceUnits() == 'Miles') {
+            		u = 'miles';
+            	}
+            }
+             
             if (value > 1000 && u == 'meters') {
                 value = value / 1000;
                 u = 'kilometers';

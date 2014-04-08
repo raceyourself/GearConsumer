@@ -338,6 +338,7 @@ define({
             var step = false;
             if (pedometerInfo.totalStep !== ongoingRace.steps) step = true;
             
+            
             ongoingRace.steps = pedometerInfo.totalStep - ongoingRace.initialSteps;
             ongoingRace.calories = pedometerInfo.calorie - ongoingRace.initialCalories;
             
