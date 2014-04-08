@@ -311,6 +311,7 @@ img {
 	bottom: 0px;
 	padding: 20px;
 	font-size: 38px;
+	font-weight: bold;
 }
 
 .enemy-select {
@@ -328,6 +329,7 @@ img {
 	bottom: 0px;
 	padding: 15px;
 	font-size: 38px;
+	font-weight: bold;
 }
 
 .elim-tutorial-img5 {
