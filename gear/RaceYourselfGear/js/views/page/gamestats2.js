@@ -68,6 +68,10 @@ define({
         
         function hrmChange(hrmInfo) {
             bpm = hrmInfo.detail.heartRate;
+            if(bpm < 30)
+            {
+            	bpm = '--';
+            }
             tick();
         }
         

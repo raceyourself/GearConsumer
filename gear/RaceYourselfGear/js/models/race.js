@@ -171,11 +171,11 @@ define({
             },
 
             getMetricDistance: function getMetricDistance() {
-                return this.distance; // meters
+                return Math.max(0, this.distance); // meters
             },
             
             getImperialDistance: function getImperialDistance() {
-                return units.getMiles(this.distance)/1000; // miles
+                return Math.max(0, units.getMiles(this.distance)/1000); // miles
             },
                         
             getDuration: function getDuration() {
