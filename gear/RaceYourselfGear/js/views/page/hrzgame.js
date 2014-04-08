@@ -1057,7 +1057,7 @@ define({
         	//set heartRate
         	
         	//device reports 0 or -3 if no hr detected. Ignore these values.
-        	if(hr > 30)
+        	if(hrmInfo.detail.heartRate > 30)
         	{
 				lastHRtime = Date.now();
 				hrNotFound = false;
