@@ -74,7 +74,7 @@ define({
         
         function onPageShow() {
             sectionChanger = new SectionChanger(changer, {
-                circular: true,
+                circular: false,
                 orientation: "horizontal",
                 scrollbar: "bar"
             });
