@@ -976,7 +976,7 @@ define({
 					//colouring and 'speed up' text will still be present
 					timeTurnedBad = Date.now();
 					clearNotification();
-					setNotification(flashingRed, '#fff', 'Heart Rate too low!', null, 0);
+					setNotification(flashingRed, '#fff', 'Heart rate too low!', null, 0);
 					showWarningLow = true;
 					if(settings.getAudioActive() && regularSound != null) {
 						regularSound.play();
@@ -1016,7 +1016,7 @@ define({
 					//colouring and 'speed up' text will still be present
 					timeTurnedBad = Date.now();
 					clearNotification();
-					setNotification(flashingRed, '#fff', 'Heart Rate too high!', null, 0);
+					setNotification(flashingRed, '#fff', 'Heart rate too high!', null, 0);
 					showWarningHigh = true;
 					if(settings.getVibrateActive()) { 
 						console.log('vibrate: hr high warning');
@@ -1102,7 +1102,7 @@ define({
 				warningTimeoutLow = false;
 				zombiesCatchingUp = false;
 				clearNotification();
-				setNotification( '#fff', '#000', 'No Heart Rate', null, 0);
+				setNotification( '#fff', '#000', 'No heart rate', null, 0);
 //				clearInterval(heartBeatInterval);
         	}
         	else
