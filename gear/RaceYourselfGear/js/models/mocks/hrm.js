@@ -64,15 +64,13 @@ define({
         
         //test function to provide random heart rate
         function randomHR() {
-        	var hr = Math.floor( 50 + 150 * (Math.random()) );			//random
+        	hr = Math.floor( 50 + 150 * (Math.random()) );			//random
 //        	hr = Math.floor(minHeartRate + 2);   					//warning
 //			hr = Math.floor( (minHeartRate + maxHeartRate)/2);   	//always good
 			
 //			hr = hr + 10 * Math.floor( Math.random() ) - 5;			//random walk
 //			hr = Math.floor(Math.min(hr, maxPossibleHeartRate));
 //			hr = Math.floor(Math.max(hr, minPossibleHeartRate));
-			
-			var rToRTime = (60/hr) * 1e-3;      	
         }
 
         return {
