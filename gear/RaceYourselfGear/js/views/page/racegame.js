@@ -964,7 +964,7 @@ define({
 					//Rig pedometer speed if this is demo mode
 					if(config.getIsDemoMode())
 					{
-						if(numLaps < 15) {
+						if(numLaps < 5) {
 							
 							mockPedometer.setRunSpeed(mockPedometer.getRunSpeed() + 0.3);
 						} else {
@@ -1045,7 +1045,7 @@ define({
 			if(points == 0) return;
 			var colour = points > 0 ? green : red;
 			var r = race.getOngoingRace();
-			var playerLapDist = r.getDistance() - lapStartDist;
+			var playerLapDist = r.getMetricDistance() - lapStartDist;
 			var startPos = { x:distanceToTrackPos(playerLapDist) + 40, y:canvas.height - 55 - runner.sprite.height * scale};
 			var destPos = { x:sweat.width/2, y:sweat.height };
 			var pointsPenaltyGraphic = new SweatPoint(points, colour, startPos, destPos);

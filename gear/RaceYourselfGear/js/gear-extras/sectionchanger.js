@@ -245,7 +245,9 @@ extend(SectionChanger, Scroller, {
 
 	_unbindEvents: function() {
 		this._super();
-		this.scroller.removeEventListener( "webkitTransitionEnd", this);
+		if (this.scroller) {
+			this.scroller.removeEventListener( "webkitTransitionEnd", this);
+		}
 	},
 
 	handleEvent: function( event ) {
