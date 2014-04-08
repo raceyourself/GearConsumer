@@ -81,12 +81,17 @@ define({
         }
         
         function onError(msg, url, line, column, error) {
+            console.error(msg + " at " + url + ":" + line);
+            if (error) console.error(error);
             var html = '<p><b>' + msg + '</b></p>' + url.substr(url.lastIndexOf('/')+1) + ':' + line;
             if (error !== undefined && error.stack !== undefined) html = '<p>' + error.stack + '</p>';
             document.getElementById('error-message').innerHTML = html;
             window.addEventListener('pageshow', function(ev) { ev.stopPropagation(); ev.preventDefault(); }, true);
             window.addEventListener('pagehide', function(ev) { ev.stopPropagation(); ev.preventDefault(); }, true);
             gear.ui.changePage('#error-page');
+            window.addEventListener('tizenhwkey', function() {
+            	app.closeApplication();
+            });
             document.getElementById('error-page').addEventListener('click', function() {
             	app.closeApplication();
             });

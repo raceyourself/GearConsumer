@@ -75,7 +75,10 @@ define({
             if (singletons[eventName] === true) {
 //            	console.error('Adding singleton ' + eventName);
             }
-            if (singletons[eventName] === true && listeners[eventName].length !== 0) throw new Error('Singleton event ' + eventName + ' already has a listener!');
+            if (singletons[eventName] === true && listeners[eventName].length !== 0) {
+            	console.error('Singleton event ' + eventName + ' already has a listener; attempting to recover');
+            	while (listeners[eventName].length !== 0) removeEventListener(eventName, listeners[eventName][0])
+            }
             listeners[eventName].push(handler);
             window.addEventListener(eventName, handler);
         }
