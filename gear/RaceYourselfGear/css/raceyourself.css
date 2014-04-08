@@ -238,6 +238,9 @@ img {
 	font-size: 20px;
 }
 
+#summary-achievements .ui-content {
+	height: 268px;
+}
 
 #error-page {
 	background-color: black;
