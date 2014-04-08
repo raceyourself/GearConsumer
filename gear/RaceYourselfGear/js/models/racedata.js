@@ -139,7 +139,7 @@ define({
             
             var distanceunits = r.getDistanceUnits();
             
-            var date = months_list[month] + '/' + day + '/' + year;
+            var date = months_list[month] + ' ' + day + ' ' + year;
             
             var timeofrace = hour + ':' +  mins + suffix;
             

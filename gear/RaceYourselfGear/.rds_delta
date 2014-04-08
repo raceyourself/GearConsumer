@@ -2,5 +2,6 @@
 #add
 #modify
 res/wgt/author-signature.xml
-res/wgt/js/views/page/opponentselect.js
+res/wgt/index.html
+res/wgt/js/views/page/hrzgame.js
 res/wgt/signature1.xml
