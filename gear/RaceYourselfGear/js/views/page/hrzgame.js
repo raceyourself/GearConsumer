@@ -1268,13 +1268,18 @@ define({
             
             if (lastDistanceAwarded < r.getMetricDistance() && !finished) {
                 var distance = r.getMetricDistance();
-                var points = ((distance - lastDistanceAwarded)*ppm);
-				r.addPoints(points);
-				if(!(points == 0))
-				{
-					spawnPointsGraphic(points);
+                var deltaDistance = distance - lastDistanceAwarded
+
+                if(deltaDistance > 1)
+                {
+					var points = deltaDistance*ppm;
+					r.addPoints(points);
+					if(!(points == 0))
+					{
+						spawnPointsGraphic(points);
+					}
+					lastDistanceAwarded = distance;
 				}
-                lastDistanceAwarded = distance;
             }
             
             //clear up old sweat point graphics

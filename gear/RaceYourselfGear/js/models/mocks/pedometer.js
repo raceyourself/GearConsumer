@@ -10,6 +10,7 @@ define({
             changeListeners = [],
             config = req,
             runSpeed = 1,
+            stepMultiplier = 1,
 
         /**
          * 1. Type Definitions
@@ -158,6 +159,7 @@ define({
              */
             function step() {
                 var stepLength = getStepLength();
+                stepLength *= stepMultiplier;
 
                 switch (pedometerInfo.stepStatus) {
                 case PedometerStepStatus.RUNNING:
@@ -189,7 +191,7 @@ define({
                 pedometerInfo.cumulativeTotalStepCount++;
 
                 pedometerInfo.cumulativeDistance += stepLength;
-                pedometerInfo.speed = stepLength / 0.43; // length / 0.43s
+                pedometerInfo.speed = stepLength / (0.43 * stepMultiplier); // length / (0.43s * multiplier)
 
                 pedometerInfo.cumulativeCalorie +=
                         getStepCalories(pedometerInfo.speed);
@@ -239,9 +241,13 @@ define({
 
             function init() {
             	//in demo mode, always run, else randomise state
+            	var stepInterval = 430;
+            	
 				if(config.getIsDemoMode())
 				{
 					pedometerInfo.stepStatus = PedometerStepStatus.RUNNING;
+					stepMultiplier = 0.1;
+					stepInterval *= stepMultiplier;
 				}
 				else
 				{
@@ -250,7 +256,8 @@ define({
 					setInterval(randomizeStatus, 10000);
 					// assume a step always lasts the same amount of time...
                 }
-                setInterval(step, 430);
+
+                setInterval(step, stepInterval);
 
             }
 

@@ -964,7 +964,7 @@ define({
 					//Rig pedometer speed if this is demo mode
 					if(config.getIsDemoMode())
 					{
-						if(numLaps < 5) {
+						if(numLaps < 3) {
 							
 							mockPedometer.setRunSpeed(mockPedometer.getRunSpeed() + 0.3);
 						} else {
@@ -995,12 +995,18 @@ define({
             
             if (lastDistanceAwarded < r.getMetricDistance()) {
                 var distance = r.getMetricDistance();
-                var points = (distance - lastDistanceAwarded)*ppm;
-				r.addPoints(points);
-				lastDistanceAwarded = distance;
-				if(!(points==0))
+                var deltaDist = distance - lastDistanceAwarded;
+				
+				//award points if we travelled at least a metre
+				if(deltaDist > 1)
 				{
-					spawnPointsGraphic(points);
+					var points = deltaDist*ppm;
+					r.addPoints(points);
+					lastDistanceAwarded = distance;
+					if(!(points==0))
+					{
+						spawnPointsGraphic(points);
+					}
 				}
             }
             
