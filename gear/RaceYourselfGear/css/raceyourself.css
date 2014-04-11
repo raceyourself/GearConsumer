@@ -314,6 +314,31 @@ img {
 	font-weight: bold;
 }
 
+.endgame-ok {
+	background-image:url('../images/New_Games/icon_exit_white.png');
+	height: 102px;
+	width: 102px;
+	position: absolute;
+	left: 109px;
+	bottom: 102px;
+}
+
+.endgame-ok:active {
+	background-image:url('../images/New_Games/icon_exit_green.png');	
+}
+
+.endgame-text {
+	width: 240px;
+	height: 90px;
+	color: white;
+	position: absolute;
+	left: 40px;
+	bottom: 0px;
+	padding: 10px;
+	font-size: 38px;
+	font-weight: bold;
+}
+
 .enemy-select {
 	bottom: 50px;
 	position: relative;
