@@ -181,7 +181,6 @@ define({
         	} else {
         		e.fire('newmain.show');
         	}
-            
         }
         
         function onPageHide() {
@@ -198,6 +197,7 @@ define({
              page.addEventListener('click', onSummaryEndClick);
              
              list.addEventListener('click', onItemTap);
+             document.getElementById('end-game-btn').addEventListener('click', onBack);
         }
 
         function onSummaryEndClick() {
@@ -279,6 +279,8 @@ define({
             document.getElementById('s-distance-units').innerHTML = u;
         }
 
+        
+        
         return {
             init: init
         };
