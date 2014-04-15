@@ -351,6 +351,7 @@ define({
 			//start the canned hrm sequence if in demo mode
 			if (config.getIsDemoMode()) {
 				hrmMock.startCanned();
+				console.log('RaceGame: starting mock HRM in Demo Mode');
 				//set an initial run speed of 1.5 m per stride
 				mockPedometer.setRunSpeed(1.6);
             }  
@@ -2227,10 +2228,12 @@ define({
 				//leave hrm in for race game, still want it for side screen
 				if (hrm.isAvailable()) {
 					  hrm.start();
+					  console.log('RaceGame: starting HRM normally');
 					  // Availability will change if start fails
 				  } 
 				  if (!hrm.isAvailable()) {
 					hrmMock.start();
+					console.log('RaceGame: starting mock HRM in normal mode');
 	//              	hrmMock.startCanned();
 						//start this in onpageshow
 				  }                       

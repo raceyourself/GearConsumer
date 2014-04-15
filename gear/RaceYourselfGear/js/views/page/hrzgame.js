@@ -381,7 +381,8 @@ define({
 			//start the canned hrm sequence if in demo mode
 			if (config.getIsDemoMode()) {
 				hrmMock.startCanned();
-            }                       
+				console.log('HRZGame: mock HRM started in Demo mode');
+            }
             
             sectionChanger.setActiveSection(0, 0);
             
@@ -2544,9 +2545,11 @@ define({
 				if (hrm.isAvailable()) {
 					hrm.start();
 					// Availability will change if start fails
+					console.log('HRZGame: Starting HRM in Normal Mode');
 				} 
 				if (!hrm.isAvailable()) {
 	            	hrmMock.start();
+					console.log('HRZGame: HRM not available. Starting mock HRM in Random Mode');
 				}
             }                       
             
