@@ -59,7 +59,7 @@ define({
         
         function sendHRupdate() {
 			var rToRTime = (60/hr) * 1e3;
-        	hrm._handleHrmInfo({heartRate: hr, rRInterval: rToRTime});
+        	hrm._handleHrmInfo({heartRate: hr, rRInterval: rToRTime, mock: true});
         }
         
         //test function to provide random heart rate

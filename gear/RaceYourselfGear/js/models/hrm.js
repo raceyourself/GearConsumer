@@ -32,7 +32,10 @@ define({
         var e = req.core.event,
         	config = req.models.config,
             hrm = null,
+            started = false,
+            functioning = false,
             available = true,
+            error,
             lastData = {
         		heartRate: 60,
         		rRInterval: 0
@@ -60,6 +63,7 @@ define({
             };
             lastData = hrmInfo;
             e.fire(eventName, info);
+        	if (hrmInfo.heartRate > 50 && hrmInfo.heartRate < 180 && !hrmInfo.mock) functioning = true;
         }
 
         /**
@@ -67,14 +71,19 @@ define({
          * @public
          */
         function start() {
+        	if (started === true) return;
         	try {
 	            hrm.start(
 	                CONTEXT_TYPE,
 	                handleHrmInfo
 	            );
+	            started = true;
         	} catch(e) {
         		available = false;
+        		started = false;
+        		functioning = false;
         		console.error(e);
+        		error = e;
         	}
         }
 
@@ -84,10 +93,23 @@ define({
          */
         function stop() {
             hrm.stop(CONTEXT_TYPE);
+            started = false;
         }
 
         function isAvailable() {
             return !!hrm && available;
+        }
+        
+        function isStarted() {
+        	return started;
+        }
+        
+        function isFunctioning() {
+        	return functioning;
+        }
+        
+        function getError() {
+        	return error;
         }
         
         /**
@@ -105,6 +127,9 @@ define({
             stop: stop,
             getLastData: getLastData,
             isAvailable: isAvailable,
+            isStarted: isStarted,
+            isFunctioning: isFunctioning,
+            getError: getError,
             _handleHrmInfo: handleHrmInfo // private, used by mock
         };
     }
