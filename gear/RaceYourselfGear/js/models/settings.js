@@ -50,7 +50,8 @@ define({
                 currentTarget: "",
                 audioActive: true,
                 vibrateActive: true,
-                firstTimeSelect: true
+                firstTimeSelect: true,
+                cycling: true,
             },
             settings = {},
             STORAGE_KEY = 'settings';
@@ -133,6 +134,11 @@ define({
         function getCurrentHistoryCount() {
         	if(!isFinite(settings.historyCount)) return defaults.historyCount;
         	return settings.historyCount;
+        }
+        
+        function getCycling() {
+        	if(!isFinite(settings.cycling)) return defaults.cycling;
+        	return settings.cycling;
         }
         
         function saveSettings() {
@@ -230,6 +236,11 @@ define({
         	return saveSettings();
         }
         
+        function setCycling(cycling) {
+        	settings.cycling = cycling;
+        	return saveSettings();
+        }
+        
         /**
          * Initializes module.
          */
@@ -274,7 +285,10 @@ define({
             getEliminatorHighScore: getEliminatorHighScore,
             setEliminatorHighScore: setEliminatorHighScore,
             getCurrentHistoryCount: getCurrentHistoryCount,
-            increaseCurrentHistoryCount: increaseCurrentHistoryCount
+            increaseCurrentHistoryCount: increaseCurrentHistoryCount,
+            getCycling : getCycling,
+            setCycling : setCycling,
+            
         };
     }
 
