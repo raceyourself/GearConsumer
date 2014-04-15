@@ -576,6 +576,10 @@ img {
 	font-size: 24px;
 }
 
+#no-hrm-skip-btn {
+	text-align: center;
+}
+
 .bluetoothcenter {
 	text-align: center;
 	margin-top: 20px;

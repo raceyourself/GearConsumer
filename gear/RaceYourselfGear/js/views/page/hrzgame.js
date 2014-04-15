@@ -2196,14 +2196,16 @@ define({
             /// DEBUG
             
             /// DEMO MODE
-            if(config.getIsDemoMode())
+            if(config.getIsDemoMode() || hrmMock.isStarted())
             {
+            	var msg = 'MOCK MODE';
+            	if (config.getIsDemoMode()) msg = 'DEMO MODE';
             	context.font = '8px Samsung Sans';
             	context.fillStyle = '#fff';
             	context.textBaseline = 'bottom';
             	context.textAlign = 'right';
             	context.globalAlpha = 0.5;
-            	context.fillText('DEMO MODE', canvas.width, canvas.height);
+            	context.fillText(msg, canvas.width, canvas.height);
             	context.globalAlpha = 1;
             }
             
@@ -2559,10 +2561,6 @@ define({
 					// Availability will change if start fails
 					console.log('HRZGame: Starting HRM in Normal Mode');
 				} 
-				if (!hrm.isAvailable()) {
-	            	hrmMock.start();
-					console.log('HRZGame: HRM not available. Starting mock HRM in Random Mode');
-				}
             }                       
             
             bindEvents();

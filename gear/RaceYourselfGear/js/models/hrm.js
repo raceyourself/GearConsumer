@@ -92,8 +92,13 @@ define({
          * @public
          */
         function stop() {
-            hrm.stop(CONTEXT_TYPE);
-            started = false;
+        	try {
+        		hrm.stop(CONTEXT_TYPE);
+                started = false;
+        	} catch(e) {
+        		console.error(e);
+        		error = e;
+        	}
         }
 
         function isAvailable() {

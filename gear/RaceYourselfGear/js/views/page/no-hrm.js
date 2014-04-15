@@ -20,37 +20,37 @@
  */
 
 define({
-    name: 'views/page/no-bluetooth',
+    name: 'views/page/no-hrm',
     requires: [
         'core/event',
-        'models/sapRaceYourself',
-        'models/game',
-        'models/sap',
         'models/hrm',
-        'views/page/pregame',
-        'views/page/hrzgame'
+        'models/mocks/hrm',
+        'models/game',
+        'models/config'
     ],
-    def: function viewsPageNoBluetooth(req) {
+    def: function viewsPageNoHeartRateMonitor(req) {
         'use strict';
 
         var e = req.core.event,
-            provider = req.models.sapRaceYourself,
-            game = req.models.game,
             hrm = req.models.hrm,
-            sap = req.models.sap,
+            hrmMock = req.models.mocks.hrm,
+            config = req.models.config,
+            game = req.models.game,
             pregameCheckInterval = false,
-            sapConnectInterval = false,
             buttonToggleTimeout = false,
+            hrmStatusImg,
             page = null;
 
         function show() {
-            gear.ui.changePage('#no-bluetooth');            
+            gear.ui.changePage('#no-hrm');            
         }
         
         function onPageShow() {
             e.listen('tizen.back', onBack);
             
-            var skipButtonEl = document.getElementById('no-bluetooth-skip-btn');
+            hrmStatusImg.src = 'images/hrm_measuring.png';
+            
+            var skipButtonEl = document.getElementById('no-hrm-skip-btn');
             
             skipButtonEl.classList.toggle('hidden', true);
             skipButtonEl.addEventListener('click', onSkipClick);
@@ -62,26 +62,61 @@ define({
             	skipButtonEl.classList.toggle('hidden', false);
             }, 3000);
             
-            sap.connect();
-            
             if(pregameCheckInterval) {
             	clearInterval(pregameCheckInterval);
             }
             pregameCheckInterval = setInterval(function() {
-            	if(sap.isConnected() || !sap.isAvailable()) {
-                	e.fire('pregame.show');
+            	if(hrm.isFunctioning()) {
+                    e.fire(game.getCurrentGame()+'.show');
                 }
+            	if (hrm.isStarted() && !hrm.isFunctioning()) {
+                    hrmStatusImg.src = 'images/hrm_none.png';
+            	}
+            	if (!hrm.isStarted() || hrm.getError()) {
+                    hrmStatusImg.src = 'images/hrm_error.png';
+            	}
             }, 1000);
                         
             e.fire(game.getCurrentGame()+'.preload');
+            
+            if (hrm.isStarted() && !hrm.isFunctioning()) {
+            	console.warning("No-HRM: Restarting HRM!");
+            	hrm.stop();
+            }
+            
+            if(!config.getIsDemoMode())
+            {
+				if (hrm.isAvailable()) {
+					hrm.start();
+					// Availability will change if start fails
+					console.log('No-HRM: Starting HRM in Normal Mode');
+				} 
+				// Don't attempt to use mock
+            } else {
+                e.fire(game.getCurrentGame()+'.show');
+            }
         }
 
         function onSkipClick(ev) {
-            if (game.getCurrentGame() == 'hrzgame' && !hrm.isFunctioning()) {
-            	e.fire('no-hrm.show');
-            } else {
-            	e.fire(game.getCurrentGame()+'.show');
+            if (hrm.isStarted() && !hrm.isFunctioning()) {
+            	hrm.stop();
             }
+            
+            if(!config.getIsDemoMode())
+            {
+				if (hrm.isAvailable()) {
+					hrm.start();
+					// Availability will change if start fails
+					console.log('No-HRM: Starting HRM in Normal Mode');
+				} 
+				// Allow mock fallback when skipping
+				if (!hrm.isAvailable()) {
+	            	hrmMock.start();
+					console.log('No-HRM: HRM not available. Starting mock HRM in Random Mode');
+				}
+            }                       
+        	
+            e.fire(game.getCurrentGame()+'.show');
             ev.preventDefault();
         }
         
@@ -90,8 +125,7 @@ define({
             
             if(pregameCheckInterval) {
             	clearInterval(pregameCheckInterval);
-            }
-            
+            }            
             
             if(buttonToggleTimeout) {
             	clearTimeout(buttonToggleTimeout);
@@ -108,12 +142,13 @@ define({
         }
 
         function init() {
-            page = document.getElementById('no-bluetooth');
+            page = document.getElementById('no-hrm');
+            hrmStatusImg = document.getElementById('hrm-status-img');            
             bindEvents();
         }
         
         e.listeners({
-            'no-bluetooth.show': show
+            'no-hrm.show': show
         });
         
         return {

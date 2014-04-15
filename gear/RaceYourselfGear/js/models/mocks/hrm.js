@@ -27,15 +27,18 @@ define({
             interval = null,
         	currentCannedHRIndex = 0,
         	hr = 50,
+        	started = false,
         	cannedTimeout = false;
         
         function start() {
+        	started = true;
         	if (interval) clearInterval(interval);
             randomInterval = setInterval(randomHR, hrChangePeriod);
             interval = setInterval(sendHRupdate, hrUpdatePeriod);
         }
         
         function startCanned() {
+        	started = true;
         	currentCannedHRIndex = 0;
 			if(cannedTimeout != false)
 			{
@@ -44,6 +47,13 @@ define({
 			nextCannedHR();
 
         	interval = setInterval(sendHRupdate, hrUpdatePeriod);
+        }
+        
+        function stop() {
+        	clearInterval(interval);
+        	clearInterval(randomInterval);
+        	clearTimeout(cannedTimeout);
+        	started = false;
         }
         
         function nextCannedHR() {
@@ -62,6 +72,10 @@ define({
         	hrm._handleHrmInfo({heartRate: hr, rRInterval: rToRTime, mock: true});
         }
         
+        function isStarted() {
+        	return started;
+        }
+        
         //test function to provide random heart rate
         function randomHR() {
         	hr = Math.floor( 50 + 150 * (Math.random()) );			//random
@@ -75,7 +89,9 @@ define({
 
         return {
             start: start,
-            startCanned : startCanned
+            stop: stop,            
+            startCanned : startCanned,
+            isStarted: isStarted
         };
     }
 
