@@ -52,6 +52,7 @@ define({
                 vibrateActive: true,
                 firstTimeSelect: true,
                 cycling: true,
+                gameType: 'cadence',		// 'cadence' | 'hr' | 'pace'
             },
             settings = {},
             STORAGE_KEY = 'settings';
@@ -139,6 +140,11 @@ define({
         function getCycling() {
         	if(!isFinite(settings.cycling)) return defaults.cycling;
         	return settings.cycling;
+        }
+        
+        function getGameType() {
+        	if(!isFinite(settings.gameType)) return defaults.gameType;
+        	return settings.gameType;
         }
         
         function saveSettings() {
@@ -241,6 +247,11 @@ define({
         	return saveSettings();
         }
         
+        function setGameType(gameType) {
+        	settings.gameType = gameType;
+        	return saveSettings();
+        }
+        
         /**
          * Initializes module.
          */
@@ -288,7 +299,8 @@ define({
             increaseCurrentHistoryCount: increaseCurrentHistoryCount,
             getCycling : getCycling,
             setCycling : setCycling,
-            
+			getGameType : getGameType,
+			setGameType : setGameType            
         };
     }
 

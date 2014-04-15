@@ -41,7 +41,7 @@ define({
             canvas,
             context,
             raf = false,
-            heart = { red: null, green: null, black: null},
+//            heart = { red: null, green: null, black: null},
             hr = 50,
             rToRTime = 1,
             zones = { 
@@ -71,16 +71,75 @@ define({
             heartRateNotFound = false,
             textRotation = { phase: 0, period: 2 , lastUpdateTime: 0},
             hrDrift = { target: 50, current: 50 },
+			infoOnly = false,
 			
-			infoOnly = false;
+			currentDisplayType = null,
+			displayTypeHR = {
+				register : function() {
+						e.listen('hrm.change', onHeartRateChange);
+						e.listen('heart.beat', onHeartBeat);
+						e.listen('heartrate.lost', onHeartRateLost);
+						e.listen('hrzone.change', onZoneChange);
+					},	
+				unregister : function() {
+						e.die('hrm.change', onHeartRateChange);
+						e.die('heart.beat', onHeartBeat);
+						e.die('heartrate.lost', onHeartRateLost);
+						e.die('hrzone.change', onZoneChange);
+					},
+				units : 'bpm',
+				goodSprite : null,
+				badSprite : null,
+				notFoundSprite : null,
+				headingString: 'Heart rate zones',
+				notFoundString: 'Heart rate not found'
+								
+			},
+			displayTypeCadence = {
+				register : function () {
+						e.listen('cadence.change', onCadenceChange);
+						e.listen('cadence.found', onCadenceFound);
+						e.listen('cadence.lost', onCadenceLost);				
+						e.listen('cadencezone.change', onZoneChange);
+					},
+				unregister : function () {
+						e.die('cadence.change', onCadenceChange);
+						e.die('cadence.found', onCadenceFound);
+						e.die('cadence.lost', onCadenceLost);
+						e.die('cadencezone.change', onZoneChange);
+					},
+				units : 'rpm',
+				goodSprite : null,
+				badSprite : null,
+				notFoundSprite : null,
+				headingString : 'Cadence zones',
+				notFoundString : 'No cadence data'
+			};
 
         function show() {
         }
         
         function onPageShow() {
-            e.listen('hrm.change', onHeartRateChange);
-            e.listen('heart.beat', onHeartBeat);
-            e.listen('heartrate.lost', onHeartRateLost);
+        
+        	//decide if we are hr or cadence
+        	switch( settings.getGameType() )
+        	{
+        		case 'hr':
+        			currentDisplayType = displayTypeHR;
+					initHRZones();
+        			break;
+        		case 'cadence':
+        			currentDisplayType = displayTypeCadence;
+        			initCadenceZones();
+        			break;
+        		default:
+        			currentDisaplayType = displayTypeHR;
+        			console.error('unknown game type. Using hr');
+        			break;
+        	}
+        
+        	currentDisplayType.register();
+        
 			canvas.width = canvas.offsetWidth;
             canvas.height = canvas.offsetHeight;
             //above assignment gives bad values. hard-coding screen dimensions
@@ -90,10 +149,6 @@ define({
             zones.recovery.zoneAbove = zones.weightLoss;
             zones.weightLoss.zoneAbove = zones.fitness;
             zones.fitness.zoneAbove = zones.speed;
-               
-		    e.listen('hrzone.change', onZoneChange);
-		   
-		   	initHRZones();
 		   	
             animate();
             
@@ -121,8 +176,56 @@ define({
 			hrDrift.target = false;
 		}
 		
-		function initHRZones() {
+		function onCadenceLost() {
+			heartRateNotFound = true;
+			hrDrift.target = false;
+		}
 		
+		function onCadenceFound() {
+			heartRateNotFound = false;
+			hrDrift.target = 0;
+		}
+		
+		function initCadenceZones() {
+		
+			var min, max;
+			for(var zone in zones)
+			{
+				switch(zone)
+				{
+				case "recovery":
+					min = 0;
+					max = 30;
+					break;
+				case "weightLoss":
+					min = 30;
+					max = 60;
+					break;
+				case "fitness":
+					min = 60;
+					max = 100;
+					break;
+				case "speed":
+					min = 100;
+					max = 130;
+					break;
+				case "performance":
+					min = 130;
+					max = 160;
+					break;
+				default:
+					console.log("Unknown cadence zone");
+					min = 60;
+					max = 100;
+				}
+
+				zones[zone].max = max;
+				zones[zone].min = min;
+			}
+		}
+	
+		function initHRZones() {
+				
 			var min20, max20, min75, max75;
 			for(var zone in zones)
 			{
@@ -176,10 +279,7 @@ define({
 		}
 	
         function onPageHide() {
-            e.die('hrm.change', onHeartRateChange);
-            e.die('hrzone.change', onZoneChange);
-			e.die('hrzone.change', onZoneChange);
-			e.die('heartrate.lost', onHeartRateLost);
+			currentDisplayType.unregister();
         }
         
         function onBack() {
@@ -199,6 +299,14 @@ define({
 				rToRTime = hrmInfo.detail.rInterval;
 				hrDrift.target = hr;
 			}
+        }
+        
+        function onCadenceChange(cadenceInfo) {
+        	if(cadenceInfo.detail.cadence >= 0)
+        	{
+        		hr = Math.floor(cadenceInfo.detail.cadence);
+        		hrDrift.target = hr;
+        	}
         }
         
 		function onZoneChange(zoneInfo) {
@@ -263,7 +371,7 @@ define({
 			{
 				headerBGStyle = red;
 				headerStyle = white;
-				headerString = 'Heart rate not found';
+				headerString = currentDisplayType.notFoundString;
 			}
 			else if(hr < currentZone.min || hr > currentZone.max && !infoOnly)
 			{
@@ -275,7 +383,7 @@ define({
 			{
 				headerBGStyle = greyBG;
 				headerStyle = grey;
-				headerString = 'Heart rate zones';
+				headerString = currentDisplayType.headingString;
 			}
 			context.fillStyle = headerBGStyle;
 			context.fillRect(0,0, canvas.width, headerHeight);
@@ -491,22 +599,25 @@ define({
         	
         	//icon
         	//pick appropriate icon
-        	var heartIcon = heart.green;
+        	var heartIcon = currentDisplayType.goodSprite;
         	if(hrDrift.current < currentZone.min || hrDrift.current > currentZone.max)
         	{
-        		heartIcon = heart.red;
+        		heartIcon = currentDisplayType.badSprite;
         	}
         	
-        	if(infoOnly) { heartIcon = heart.red; }
+        	if(infoOnly) { heartIcon = currentDisplayType.notFoundSprite; }
         	
         	if(heartRateNotFound)
         	{
-        		heartIcon = heart.black;
+        		heartIcon = currentDisplayType.notFoundSprite;
         		heartScale = 0.9;
 			}
         	
         	//draw icon
-        	heartIcon.drawscaled(context, hrXPos - heartScale*heartIcon.width/2, hrYPos - heartScale*heartIcon.height/2 - 32, 0, heartScale);
+        	if(heartIcon != null)
+        	{
+				heartIcon.drawscaled(context, hrXPos - heartScale*heartIcon.width/2, hrYPos - heartScale*heartIcon.height/2 - 32, 0, heartScale);
+        	}
         	
         	//text
 			context.font = '56px Samsung Sans';
@@ -518,7 +629,7 @@ define({
 			context.fillText(hrText, hrXPos, hrYPos + 8);
 			//bpm
 			context.font = '24px Samsung Sans';
-			context.fillText('bpm', hrXPos, hrYPos + 38);
+			context.fillText(currentDisplayType.units, hrXPos, hrYPos + 38);
         }
         
         e.listeners({
@@ -535,27 +646,49 @@ define({
             canvas = document.getElementById('hr-canvas');
             context = canvas.getContext('2d');
             
-            //load images
+            //load images - hr
             var image = new Image();
 			image.onload = function() {
-				heart.green = new Sprite(this, this.width, 1000);
+				displayTypeHR.goodSprite = new Sprite(this, this.width, 1000);
 			}
 			image.onerror = function() {throw "could not load" + this.src; }
 			image.src = 'images/image_heart_green.png';
 			
-			var image = new Image();
+			image = new Image();
 			image.onload = function() {
-				heart.red = new Sprite(this, this.width, 1000);
+				displayTypeHR.badSprite = new Sprite(this, this.width, 1000);
 			}
 			image.onerror = function() {throw "could not load" + this.src; }
 			image.src = 'images/image_heart_red.png';
 
-			var image = new Image();			
+			image = new Image();			
 			image.onload = function() {
-				heart.black = new Sprite(this, this.width, 1000);
+				displayTypeHR.notFoundSprite = new Sprite(this, this.width, 1000);
 			}
 			image.onerror = function() {throw "could not load" + this.src; }
 			image.src = 'images/image_heart_black.png';
+			
+			// cadence
+			image = new Image();
+			image.onload = function() {
+				displayTypeCadence.goodSprite = new Sprite(this, this.width, 1000);
+			}
+			image.onerror = function() {throw "could not load" + this.src;}
+			image.src = 'images/icon_cadence_green.png';
+			
+			image = new Image();
+			image.onload = function() {
+				displayTypeCadence.badSprite = new Sprite(this, this.width, 1000);
+			}
+			image.onerror = function() {throw "could not load" + this.src; }
+			image.src = 'images/icon_cadence_red.png';
+			
+			image = new Image();
+			image.onload = function() {
+				displayTypeCadence.notFoundSprite = new Sprite(this, this.width, 1000);
+			}
+			image.onerror = function() { throw "could not load" + this.src; }
+			image.src = 'images/icon_cadence_black.png';
 			
             bindEvents();
         }

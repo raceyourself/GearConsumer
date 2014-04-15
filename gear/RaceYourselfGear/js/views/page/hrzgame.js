@@ -33,6 +33,8 @@ define({
         'models/race',
         'models/hrm',
         'models/mocks/hrm',
+        'models/cadenceMeter',
+        'models/mocks/cadenceMeter',
         'models/sprite',
         'models/settings',
         'models/config',
@@ -46,6 +48,8 @@ define({
             race = req.models.race,
             hrm = req.models.hrm,
             hrmMock = req.models.mocks.hrm,
+            cm = req.models.cadenceMeter,
+            cmMock = req.models.mocks.cadenceMeter,
             game = req.models.game,
             settings = req.models.settings,
             config = req.models.config,
@@ -64,9 +68,6 @@ define({
             finished = false,
             countingdown = false,
             runner = null,
-            heartGreen = null,
-            heartRed = null,
-            heartBlack = null,
             deadImage = null,
             deadRunnerImage = null,
             gpsDot = null,
@@ -246,8 +247,42 @@ define({
         goldBackgroundImage = null,
         awardedBlackImage = null,
         blackSweatImage = null,
-        spinningSpeed = 0.0005;
-
+        spinningSpeed = 0.0005,
+        currentGameType = null,
+        gameTypeHR = { 
+        	units : "bpm", 
+        	spriteGood : null, 
+        	spriteBad : null,
+        	spriteNone : null,
+        	setIntensityZoneFn : setCurrentHRZone,
+        	tooLowString : 'Heart rate too low!',
+        	tooHighString : 'Heart rate too high!',
+        	notFoundString : 'No heart rate!',
+        	intensityMeter : hrm,
+			register : function () {
+					e.listen('hrm.change', onHeartRateChange);
+        		},
+        	unregister : function () {
+    	    		e.die('hrm.change', onHeartRateChange);
+	        	}
+        	},
+        gameTypeCadence = { 
+        	units : "rpm", 
+        	spriteGood : null, 
+        	spriteBad : null,
+        	spriteNone : null,
+        	setIntensityZoneFn : setCurrentCadenceZone,
+        	tooLowString : 'Cadence too low',
+        	tooHighString : 'Cadence too high',
+        	notFoundString : 'No cadence info!',
+        	intensityMeter : cm,
+			register : function () {
+					e.listen('cadence.change', onCadenceChange);
+        		},
+        	unregister : function () {
+					e.die('cadence.change', onCadenceChange);
+				}
+			}
 
         function show() {
             gear.ui.changePage('#race-game');
@@ -369,6 +404,25 @@ define({
             visible = true;
             finished = false;
             
+            //decide if we're doing cadence-based or HR-based
+            switch(settings.getGameType())
+            {
+            	case 'hr':
+            		currentGameType = gameTypeHR;
+            		break;
+            	case 'cadence':
+            		currentGameType = gameTypeCadence;
+            		if(!settings.getCycling())
+            		{
+            			console.error('Playing a cadence game in non-cycling mode!');
+            		}
+            		break;
+            	default:
+            		currentGameType = gameTypeHR;
+            		console.error('Unknown intensity zones game type. Using hr.');
+            		break;
+            }
+            
             //start with no heart rate found. This will be quickly corrected if it's present
             hrNotFound = true;
             
@@ -382,6 +436,8 @@ define({
 			if (config.getIsDemoMode()) {
 				hrmMock.startCanned();
 				console.log('HRZGame: mock HRM started in Demo mode');
+				cmMock.startCanned();
+				console.log('HRZGame: mock cadence meter started in Demo mode');
             }
             
             sectionChanger.setActiveSection(0, 0);
@@ -400,7 +456,8 @@ define({
                 r.data.hr_zones = true;
                 r.data.time_in_zone = 0;
                 e.listen('pedometer.step', step);
-                e.listen('hrm.change', onHeartRateChange);
+//                e.listen('hrm.change', onHeartRateChange);
+				currentGameType.register();
 
 //                startCountdown();
             }
@@ -547,7 +604,8 @@ define({
                 r.stop();
                 lastRender = null;                
                 e.die('pedometer.step', step);
-                e.die('hrm.change', onHeartRateChange);
+//                e.die('hrm.change', onHeartRateChange);
+				currentGameType.unregister();
             }
             if (!!raf) cancelAnimationFrame(raf);
             clearInterval(zombieInterval);
@@ -662,19 +720,19 @@ define({
         	
         		case "WeightLoss":
         		//set new zone and stay there
-        			setCurrentHRZone("Light");
+					currentGameType.setIntensityZoneFn("Light");
         			break;
         		case "Endurance":
         		//set light zone, then step up to aerobic later
-        			setCurrentHRZone("Aerobic");
+					currentGameType.setIntensityZoneFn("Aerobic");
         			break;
 				case "Strength":
-					setCurrentHRZone("Aerobic");
+					currentGameType.setIntensityZoneFn("Aerobic");
 				//set light zone then step up later
 					intervalTimeout = setTimeout(nextHRZone, 30*1000 * timeMultiplier);
 					break;
 				default:
-					setCurrentHRZone("Aerobic");
+					currentGameType.setIntensityZoneFn("Aerobic");
 					console.error("Unknown goal type: " + r.getGoal());
 					break;
         	}
@@ -700,7 +758,7 @@ define({
 						case "Light":
 						case "Anaerobic":
 							//transition to Aerobic for next interval
-							setCurrentHRZone("Aerobic");
+							currentGameType.setIntensityZoneFn("Aerobic");
 							intervalTimeout = setTimeout(nextHRZone, config.getRecoverDuration()*1000 * timeMultiplier);
 							//vibrate
 //							if(settings.getVibrateActive()) {
@@ -712,7 +770,7 @@ define({
 							break;
 						case "Aerobic":
 							//transition up to Anaerobic
-							setCurrentHRZone("Anaerobic");
+							currentGameType.setIntensityZoneFn("Anaerobic");
 							intervalTimeout = setTimeout(nextHRZone, config.getSprintDuration()*1000 * timeMultiplier);
 							//vibrate
 //							if(settings.getVibrateActive()) {
@@ -729,100 +787,166 @@ define({
 				console.log("Interval Complete. Now in zone: " + currentHRZone);
         }
 
+        function setCurrentCadenceZone(zone)
+        {
+        	handleIntensityChanged();
+        	if(zone == currentHRZone)
+        	{
+        	}
+        	else
+        	{
+        		currentHRZone = zone;
+        		var min, max;
+				switch(zone)
+				{
+				case "Recovery":
+					min = 0;
+					max = 30;
+					break;
+				case "Light":
+					min = 30;
+					max = 60;
+					numZombies = 1;
+					break;
+				case "Aerobic":
+					min = 60;
+					max = 100;
+					numZombies = 2;
+					//vibrate
+					if(settings.getVibrateActive()) {
+						console.log('vibrate: set new hr zone');
+						navigator.vibrate([10, 10, 10, 10, 10, 10, 10]);
+					}
+					break;
+				case "Anaerobic":
+					min = 100;
+					max = 130;
+					numZombies = 3;
+					//vibrate
+					if(settings.getVibrateActive()) {
+						console.log('vibrate: set new hr zone');
+						navigator.vibrate([1000, 10]);
+					}
+					break;
+				case "Performance":
+					min = 130;
+					max = 160;
+					numZombies = 4;
+					break;
+				default:
+					console.log("Unknown cadence zone");
+					min = 60;
+					max = 100;
+					numZombies = 1;
+				}
+				maxHeartRate = max;
+				minHeartRate = min;
+				//set that we are currently adapting
+				adaptingToRecentZoneShift = true;
+				//15 seconds to adapt
+				var adaptPeriod = config.getIsDemoMode? 5 : config.getAdaptPeriod();
+				adaptingTimeout	= setTimeout(adaptComplete, adaptPeriod * 1000 * timeMultiplier);
+			
+				var zoneInfo = new Object();
+				zoneInfo.name = zone;
+				zoneInfo.maxHeartRate = maxHeartRate;
+				zoneInfo.minHeartRate = minHeartRate;
+				e.fire('cadencezone.change', zoneInfo);
+			}	
+        }
+        	
         
         function setCurrentHRZone(zone)
         {
         	//update heart-rate based logic
-        	handleHRChanged();
+        	handleIntensityChanged();
 
-        if(zone == currentHRZone)
-        {
+			if(zone == currentHRZone)
+			{
 
-        }
-        else
-        {
-        	currentHRZone = zone;
-
-        	var hrMinMax = new Object();
-        	var min20, max20, min75, max75;
-        	switch(zone)
-        	{
-        	case "Recovery":
-        		min20 = 0;
-        		max20 = 120;
-        		min75 = 0;
-        		max75 = 90;
-        		numZombies = 0;
-
-        		break;
-        	case "Light":
-	        	min20 = 120;
-	        	max20 = 140;
-	        	min75 = 90;
-	        	max75 = 110;
-	        	numZombies = 1;
-	        	break;
-			case "Aerobic":
-        		min20 = 140;
-        		max20 = 160;
-        		min75 = 110;
-        		max75 = 120;
-        		numZombies = 2;
-				//vibrate
-				if(settings.getVibrateActive()) {
-					console.log('vibrate: set new hr zone');
-					navigator.vibrate([10, 10, 10, 10, 10, 10, 10]);
-				}
-        		break;
-        	case "Anaerobic":
-        		min20 = 160;
-        		max20 = 180;
-        		min75 = 120;
-        		max75 = 135;
-        		numZombies = 3;
-				//vibrate
-				if(settings.getVibrateActive()) {
-					console.log('vibrate: set new hr zone');
-					navigator.vibrate([1000, 10]);
-				}
-        		break;
-			case "Performance":
-				min20 = 180;
-				max20 = 200;
-				min75 = 135;
-				max75 = 150;
-				numZombies = 4;
-				break;
-			default:
-				console.log("Unknown heart rate zone");
-        		min20 = 140;
-        		max20 = 160;
-        		min75 = 110;
-        		max75 = 120;
-        		numZombies = 1;
 			}
-			var age = settings.getAgeRange();
-			//clamp to range 20-75
-			age = Math.min( age, 75);
-			age = Math.max( age, 20);
-			var p = 1-(75 - age)/(75-20);
-			maxHeartRate = max20 - p * (max20 - max75);
-			minHeartRate = min20 - p * (min20 - min75);
-			console.log("age = " + age + " " + minHeartRate + " " + maxHeartRate);
-			//set that we are currently adapting
-			adaptingToRecentZoneShift = true;
-			//15 seconds to adapt
-			var adaptPeriod = config.getIsDemoMode? 5 : config.getAdaptPeriod();
-			adaptingTimeout	= setTimeout(adaptComplete, adaptPeriod * 1000 * timeMultiplier);
-			
-			var zoneInfo = new Object();
-        	zoneInfo.name = zone;
-        	zoneInfo.maxHeartRate = maxHeartRate;
-        	zoneInfo.minHeartRate = minHeartRate;
-        	e.fire('hrzone.change', zoneInfo);
-        	
+			else
+			{
+				currentHRZone = zone;
+				var min20, max20, min75, max75;
+				switch(zone)
+				{
+				case "Recovery":
+					min20 = 0;
+					max20 = 120;
+					min75 = 0;
+					max75 = 90;
+					numZombies = 0;
 
-        }
+					break;
+				case "Light":
+					min20 = 120;
+					max20 = 140;
+					min75 = 90;
+					max75 = 110;
+					numZombies = 1;
+					break;
+				case "Aerobic":
+					min20 = 140;
+					max20 = 160;
+					min75 = 110;
+					max75 = 120;
+					numZombies = 2;
+					//vibrate
+					if(settings.getVibrateActive()) {
+						console.log('vibrate: set new hr zone');
+						navigator.vibrate([10, 10, 10, 10, 10, 10, 10]);
+					}
+					break;
+				case "Anaerobic":
+					min20 = 160;
+					max20 = 180;
+					min75 = 120;
+					max75 = 135;
+					numZombies = 3;
+					//vibrate
+					if(settings.getVibrateActive()) {
+						console.log('vibrate: set new hr zone');
+						navigator.vibrate([1000, 10]);
+					}
+					break;
+				case "Performance":
+					min20 = 180;
+					max20 = 200;
+					min75 = 135;
+					max75 = 150;
+					numZombies = 4;
+					break;
+				default:
+					console.log("Unknown heart rate zone");
+					min20 = 140;
+					max20 = 160;
+					min75 = 110;
+					max75 = 120;
+					numZombies = 1;
+				}
+				var age = settings.getAgeRange();
+				//clamp to range 20-75
+				age = Math.min( age, 75);
+				age = Math.max( age, 20);
+				var p = 1-(75 - age)/(75-20);
+				maxHeartRate = max20 - p * (max20 - max75);
+				minHeartRate = min20 - p * (min20 - min75);
+				console.log("age = " + age + " " + minHeartRate + " " + maxHeartRate);
+				//set that we are currently adapting
+				adaptingToRecentZoneShift = true;
+				//15 seconds to adapt
+				var adaptPeriod = config.getIsDemoMode? 5 : config.getAdaptPeriod();
+				adaptingTimeout	= setTimeout(adaptComplete, adaptPeriod * 1000 * timeMultiplier);
+			
+				var zoneInfo = new Object();
+				zoneInfo.name = zone;
+				zoneInfo.maxHeartRate = maxHeartRate;
+				zoneInfo.minHeartRate = minHeartRate;
+				e.fire('hrzone.change', zoneInfo);
+			
+
+			}
         }
 
         function adaptComplete()
@@ -950,6 +1074,7 @@ define({
 				clearTimeout(heartBeatTimeout);
 				heartBeatTimeout = null;
 				e.fire('heartrate.lost');
+				e.fire('cadence.lost');
 			}
 	
 			//update sweat point graphics
@@ -981,7 +1106,7 @@ define({
 					//colouring and 'speed up' text will still be present
 					timeTurnedBad = Date.now();
 					clearNotification();
-					setNotification(flashingRed, '#fff', 'Heart rate too low!', null, 0);
+					setNotification(flashingRed, '#fff', currentGameType.tooLowString, null, 0);
 					showWarningLow = true;
 					if(settings.getAudioActive() && regularSound != null) {
 						regularSound.play();
@@ -1021,7 +1146,7 @@ define({
 					//colouring and 'speed up' text will still be present
 					timeTurnedBad = Date.now();
 					clearNotification();
-					setNotification(flashingRed, '#fff', 'Heart rate too high!', null, 0);
+					setNotification(flashingRed, '#fff', currentGameType.tooHighString, null, 0);
 					showWarningHigh = true;
 					if(settings.getVibrateActive()) { 
 						console.log('vibrate: hr high warning');
@@ -1087,17 +1212,33 @@ define({
 					//hr has come back after an absence
 					hrNotFound = false;
 					heartBeatTimeout = setTimeout(heartBeatBeatOn,rToRTime);
+					e.fire('cadence.found');
 					clearNotification();
 				}
         	}
-			handleHRChanged();
+			handleIntensityChanged();
         }
+
+		function onCadenceChange(cadenceInfo) {
+			if(cadenceInfo.detail.cadence >= 0)
+			{
+				lastHRtime = Date.now();
+				hr = cadenceInfo.detail.cadence;
+				rToRTime = 0;
+				if(hrNotFound)
+				{
+					hrNotFound = false;
+					clearNotification();
+				}
+			}
+			handleIntensityChanged();
+		}
 
 		function setMinMaxHeartRate() {
 			//to be eventually based on age and user-defined goals. Just use values for 30yo aerobic exercise for now.
 		}
-                
-        function handleHRChanged() 
+        
+        function handleIntensityChanged() 
         {
         	if(hrNotFound)
         	{
@@ -1108,11 +1249,11 @@ define({
 				clearTimeout(warningTimeoutLow);
 				warningTimeoutLow = false;
 				zombiesCatchingUp = false;
-				if(notification.text != 'No heart rate')
+				if(notification.text != currentGameType.notFoundString)
 				{
 					clearNotification();
 				}
-				setNotification( '#fff', '#000', 'No heart rate', null, 0);
+				setNotification( '#fff', '#000', currentGameType.notFoundString, null, 0);
 //				clearInterval(heartBeatInterval);
         	}
         	else
@@ -1975,43 +2116,43 @@ define({
 			if(!countingdown)
             {
 				// Heart Rate
-				var heartIcon = null;
+				var intensityIcon = null;
 				var hrFillColour = green;
 				var hrWarningText = false;
 				hrWarningPhase += dt;
 				hrWarningPhase = hrWarningPhase % hrWarningPeriod;
-								
+
 				if(hrNotFound)
 				{
-					heartIcon = heartBlack;
+					intensityIcon = currentGameType.spriteNone;
 					hrFillColour = '#555';
 				}
 				else if(hr > maxHeartRate)
 				{
-					heartIcon = heartBlack; 
+					intensityIcon = currentGameType.spriteBad; 
 					hrFillColour = flashingRedParams.colour;             	
 					hrWarningText = 'slow down';
 				}
 				else if(hr > maxHeartRate - 3)
 				{
 					//close to high warning
-					heartIcon = heartBlack;
+					intensityIcon = currentGameType.spriteBad;
 					hrFillColour = amber;
 					hrWarningText = 'slow down';
 				}
 				else if(hr < minHeartRate) 
 				{
-					heartIcon = heartRed; 
+					intensityIcon = currentGameType.spriteBad; 
 					hrFillColour = flashingRedParams.colour;
 					hrWarningText = 'speed up';
 				}
 				else if(hr < minHeartRate + 3)
 				{
-					heartIcon = heartRed;
+					intensityIcon = currentGameType.spriteBad;
 					hrFillColour = amber;
 					hrWarningText = 'speed up';
 				}
-				else { heartIcon = heartGreen; }
+				else { intensityIcon = currentGameType.spriteGood; }
 			
 
 				//fill
@@ -2101,7 +2242,7 @@ define({
 					}
 						
 					
-					heartIcon.drawscaled(context, hrXPos-heartScale*heartIcon.width/2, hrYPos-heartScale*heartIcon.height/2 - 32, 0, heartScale);
+					intensityIcon.drawscaled(context, hrXPos-heartScale*intensityIcon.width/2, hrYPos-heartScale*intensityIcon.height/2 - 32, 0, heartScale);
 					//number
 					context.font = '56px Samsung Sans';
 					context.textAlign = 'center';
@@ -2112,7 +2253,7 @@ define({
 					context.fillText(hrText, hrXPos, hrYPos + 8);
 					//bpm
 					context.font = '24px Samsung Sans';
-					context.fillText('bpm', hrXPos, hrYPos + 38);
+					context.fillText(currentGameType.units, hrXPos, hrYPos + 38);
 				}
 				//Pace
 				context.globalAlpha = 0.7;
@@ -2554,6 +2695,7 @@ define({
             
             if(!config.getIsDemoMode())
             {
+            	//start hrm
 				if (hrm.isAvailable()) {
 					hrm.start();
 					// Availability will change if start fails
@@ -2562,6 +2704,16 @@ define({
 				if (!hrm.isAvailable()) {
 	            	hrmMock.start();
 					console.log('HRZGame: HRM not available. Starting mock HRM in Random Mode');
+				}
+				
+				//start cadence meter
+				if (cm.isAvailable()) {
+					cm.start();
+					console.log('HRZGame: Starting cadence meter in Normal mode');
+				}
+				if (!cm.isAvailable()) {
+					cmMock.start();
+					console.log('HRZGame: Cadence meter not available. Starting mock cadence meter in Random Mode');
 				}
             }                       
             
@@ -2577,24 +2729,43 @@ define({
             runnerAnimations.sprinting.previous = runnerAnimations.running;
             runnerAnimations.sprinting.next = null;
             
-            loadImage('images/animation_runner_green_still.png', function() {
-                runnerAnimations.idle.sprite = new Sprite(this, this.width, 1000);
-                runner = runnerAnimations.running;
-            });
+            if(settings.getCycling())
+            {
+            	loadImage('images/cyclist_green.png', function() {
+            		runnerAnimations.idle.sprite = new Sprite(this, this.width, 1000);
+            		runnerAnimations.running.sprite = new Sprite(this, this.width, 1000);
+            		runnerAnimations.sprinting.sprite = new Sprite(this, this.width, 1000);
+            		runner = runnerAnimations.running;
+            	});
+            		
+            	loadImage('images/cyclist_red.png', function() {
+            		runnerAnimations.idle_red.sprite = new Sprite(this, this.width, 1000);
+            		runnerAnimations.running_red.sprite = new Sprite(this, this.width, 1000);
+            		runnerAnimations.sprinting_red.sprite = new Sprite(this, this.width, 1000);
+            	});
+            }
+            else
+            {
+				loadImage('images/animation_runner_green_still.png', function() {
+					runnerAnimations.idle.sprite = new Sprite(this, this.width, 1000);
+					runner = runnerAnimations.running;
+				});
 
-            loadImage('images/animation_runner_green.png', function() {
-                runnerAnimations.running.sprite = new Sprite(this, this.width / 6, 500);
-                runnerAnimations.sprinting.sprite = new Sprite(this, this.width / 6, 500);
-            });
+				loadImage('images/animation_runner_green.png', function() {
+					runnerAnimations.running.sprite = new Sprite(this, this.width / 6, 500);
+					runnerAnimations.sprinting.sprite = new Sprite(this, this.width / 6, 500);
+				});
 
-            loadImage('images/animation_runner_red.png', function() {
-                runnerAnimations.running_red.sprite = new Sprite(this, this.width / 6, 500);
-                runnerAnimations.sprinting_red.sprite = new Sprite(this, this.width / 6, 500);
-            });
+				loadImage('images/animation_runner_red.png', function() {
+					runnerAnimations.running_red.sprite = new Sprite(this, this.width / 6, 500);
+					runnerAnimations.sprinting_red.sprite = new Sprite(this, this.width / 6, 500);
+				});
 
-            loadImage('images/animation_runner_red_stationary.png', function() {
-                runnerAnimations.idle_red.sprite = new Sprite(this, this.width, 500);
-            });
+				loadImage('images/animation_runner_red_stationary.png', function() {
+					runnerAnimations.idle_red.sprite = new Sprite(this, this.width, 500);
+				});
+            }
+            
             
             loadImage('images/animation_cloud.png', function() {
                 runnerAnimations.zombieDead.sprite = new Sprite(this, this.width / 2, 1000);
@@ -2643,19 +2814,33 @@ define({
             
             //heart     
             loadImage('images/image_heart_green.png', function() {
-        		heartGreen = new Sprite(this, this.width, 1000);
-        		heartGreen.scale = 0.5;
+        		gameTypeHR.spriteGood = new Sprite(this, this.width, 1000);
+        		gameTypeHR.spriteGood.scale = 0.5;
         	});
             
 
             loadImage('images/image_heart_red.png', function() {
-        		heartRed = new Sprite(this, this.width, 1000);
-        		heartRed.scale = 0.5;
+        		gameTypeHR.spriteBad = new Sprite(this, this.width, 1000);
+        		gameTypeHR.spriteBad.scale = 0.5;
         	});
             
             loadImage('images/image_heart_black.png', function() {
-        		heartBlack = new Sprite(this, this.width, 1000);
-        		heartBlack.scale = 0.5;
+        		gameTypeHR.spriteNone = new Sprite(this, this.width, 1000);
+        		gameTypeHR.spriteNone.scale = 0.5;
+        	});
+        	
+        	//cadence cog
+        	loadImage('images/icon_cadence_green.png', function() {
+        		gameTypeCadence.spriteGood = new Sprite(this, this.width, 1000);
+        		gameTypeCadence.spriteGood.scale = 0.4;
+        	});
+        	loadImage('images/icon_cadence_red.png', function() {
+        		gameTypeCadence.spriteBad = new Sprite(this, this.width, 1000);
+				gameTypeCadence.spriteBad.scale = 0.4;
+        	});
+        	loadImage('images/icon_cadence_black.png', function() {
+        		gameTypeCadence.spriteNone = new Sprite(this, this.width, 1000);
+        		gameTypeCadence.spriteNone.scale = 0.4;
         	});
                         
             //gps

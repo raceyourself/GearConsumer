@@ -461,7 +461,7 @@ define({
         function addGhost(time)
         {
         	//TODO set anim speed based on time
-        	var newRunner = new Sprite(ghostImage, ghostImage.width/6, 500);
+        	var newRunner = new Sprite(ghostImage, ghostImage.width/ghostImage.repeats, 500);
         	newRunner.lapTime = time;
         	newRunner.lapDistance = 0;
         	ghostRunners.push(newRunner);
@@ -2269,30 +2269,56 @@ define({
             	
             })
             
-            loadImage('images/animation_runner_green_still.png', function() {
-                runnerAnimations.idle.sprite = new Sprite(this, this.width, 1000);
-                runner = runnerAnimations.running;
-            });
+            if(settings.getCycling())
+            {
+            	loadImage('images/cyclist_green.png', function() {
+            		runnerAnimations.idle.sprite = new Sprite(this, this.width, 1000);
+            		runnerAnimations.running.sprite = new Sprite(this, this.width, 1000);
+            		runnerAnimations.sprinting.sprite = new Sprite(this, this.width, 1000);
+            		runner = runnerAnimations.running;
+            	});
+            	
+            	loadImage('images/cyclist_red.png', function() {
+            		runnerAnimations.idle_red.sprite = new Sprite(this, this.width, 1000);
+            		runnerAnimations.running_red.sprite = new Sprite(this, this.width, 1000);
+            		runnerAnimations.sprinting_red.sprite = new Sprite(this, this.width, 1000);
+            		redGhost = new Sprite(this, this.width, 1000);
+            	});
+            	
+            	loadImage('images/cyclist_white.png', function() {
+            		ghostImage = this;
+            		ghostImage.repeats = 1;
+            	});
+            		
+            }
+            else
+            {
+				loadImage('images/animation_runner_green_still.png', function() {
+					runnerAnimations.idle.sprite = new Sprite(this, this.width, 1000);
+					runner = runnerAnimations.running;
+				});
 
 
-            loadImage('images/animation_runner_green.png', function() {
-                runnerAnimations.running.sprite = new Sprite(this, this.width / 6, 500);
-                runnerAnimations.sprinting.sprite = new Sprite(this, this.width / 6, 500);
-            });
+				loadImage('images/animation_runner_green.png', function() {
+					runnerAnimations.running.sprite = new Sprite(this, this.width / 6, 500);
+					runnerAnimations.sprinting.sprite = new Sprite(this, this.width / 6, 500);
+				});
 
-            loadImage('images/animation_runner_red.png', function() {
-                runnerAnimations.running_red.sprite = new Sprite(this, this.width / 6, 500);
-                runnerAnimations.sprinting_red.sprite = new Sprite(this, this.width / 6, 500);
-                redGhost = new Sprite(this, this.width/6, 500);
-            });
-            
-            loadImage('images/animation_runner_white.png', function() {
-				ghostImage = this;
-			});
+				loadImage('images/animation_runner_red.png', function() {
+					runnerAnimations.running_red.sprite = new Sprite(this, this.width / 6, 500);
+					runnerAnimations.sprinting_red.sprite = new Sprite(this, this.width / 6, 500);
+					redGhost = new Sprite(this, this.width/6, 500);
+				});
+			
+				loadImage('images/animation_runner_white.png', function() {
+					ghostImage = this;
+					ghostImage.repeats = 6;
+				});
 
-            loadImage('images/animation_runner_red_stationary.png', function() {
-                runnerAnimations.idle_red.sprite = new Sprite(this, this.width, 500);
-            });
+				loadImage('images/animation_runner_red_stationary.png', function() {
+					runnerAnimations.idle_red.sprite = new Sprite(this, this.width, 500);
+				});
+            }
             
             //chime
             chime = new Audio('audio/Chime.mp3');
