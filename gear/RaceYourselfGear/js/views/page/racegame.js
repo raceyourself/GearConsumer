@@ -2013,6 +2013,20 @@ define({
             }
             /// DEBUG
             
+            
+            /// DEMO MODE
+            if(config.getIsDemoMode())
+            {
+            	context.font = '8px Samsung Sans';
+            	context.fillStyle = '#fff';
+            	context.textBaseline = 'bottom';
+            	context.textAlign = 'right';
+            	context.globalAlpha = 0.5;
+            	context.fillText('DEMO MODE', canvas.width, canvas.height);
+            	context.globalAlpha = 1;
+            }
+            
+            
             //countdown        
             if(countingdown && banner!=false)
             {
