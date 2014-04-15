@@ -80,7 +80,7 @@ define({
             e.fire(game.getCurrentGame()+'.preload');
             
             if (hrm.isStarted() && !hrm.isFunctioning()) {
-            	console.warning("No-HRM: Restarting HRM!");
+            	console.warn("No-HRM: Restarting HRM!");
             	hrm.stop();
             }
             
@@ -133,7 +133,7 @@ define({
         }
         
         function onBack() {
-            history.back();
+            e.fire('newmain.show');
         }
 
         function bindEvents() {

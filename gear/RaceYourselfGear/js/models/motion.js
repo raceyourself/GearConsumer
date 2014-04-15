@@ -63,7 +63,11 @@ define({
          * @public
          */
         function stop() {
-            motion.stop(CONTEXT_TYPE);
+        	try {
+        		motion.stop(CONTEXT_TYPE);
+	    	} catch(e) {
+	    		console.error(e);
+	    	}
         }
 
         function isAvailable() {
@@ -79,6 +83,10 @@ define({
             }
         }
 
+        e.listeners({
+            'application.exit': stop
+        });
+        
         return {
             init: init,
             start: start,

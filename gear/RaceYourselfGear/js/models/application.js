@@ -92,7 +92,10 @@ define({
          * Close application
          */
         function closeApplication() {
-            getCurrentApplication().exit();
+        	e.fire('application.exit');
+        	setTimeout(function() {
+        		getCurrentApplication().exit();
+        	}, 1);
         }
 
         function setScreenState(state) {
