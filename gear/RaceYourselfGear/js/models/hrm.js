@@ -124,6 +124,11 @@ define({
             if (window.webapis && window.webapis.motion !== undefined) {
                 hrm = window.webapis.motion;
             }
+            if (isAvailable()) {
+            	// Attempt to reset bad state
+            	start();
+            	stop();
+            }
         }
 
         e.listeners({
