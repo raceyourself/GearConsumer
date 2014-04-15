@@ -49,7 +49,8 @@ define({
             lastThousand = 0,
             ongoingRace = null,
             history = [],
-            STORAGE_KEY = 'history';
+            STORAGE_KEY = 'history',
+            isCyclingMode = false;
         
        
         
@@ -100,21 +101,28 @@ define({
         }
         Race.prototype = {
             start: function start() {
-                e.listen('pedometer.change', onPedometerInfoChange);
-                e.listen('gps.location', onGpsLocation);
-                if (pedometer.isAvailable()) {
-                    pedometer.start();
-                } else {
-                    // Mock
-                    console.log('Using mock pedometer');
-                    window.webapis.pedometer.setChangeListener(pedometer._handlePedometerInfo);
-                }
-                if (provider.isAvailable()) provider.sendStartTrackingReq();
-                var ld = pedometer.getLastData();
-                if (ld != null && ld.length > 0) {
-                    this.initiaDistance = ld.distance;
-                    this.initialStesp = ld.totalStep();
-                }
+				this.isCyclingMode = settings.getCycling();
+				e.listen('gps.location', onGpsLocation);
+
+				//only start up the pedometer if we're running
+				if(!this.isCyclingMode)
+				{
+					e.listen('pedometer.change', onPedometerInfoChange);
+					if (pedometer.isAvailable()) {
+						pedometer.start();
+					} else {
+						// Mock
+						console.log('Using mock pedometer');
+						window.webapis.pedometer.setChangeListener(pedometer._handlePedometerInfo);
+					}
+					if (provider.isAvailable()) provider.sendStartTrackingReq();
+					var ld = pedometer.getLastData();
+					if (ld != null && ld.length > 0) {
+						this.initiaDistance = ld.distance;
+						this.initialSteps = ld.totalStep();
+					}
+				}
+             
                 this.startDate = Date.now();
                 this.running = true;
                 e.fire('race.start');
@@ -122,14 +130,19 @@ define({
             
             stop: function stop() {
                 if (!this.running) return;
-                e.die('pedometer.change', onPedometerInfoChange);
                 e.die('gps.location', onGpsLocation);
-                if (provider.isAvailable()) provider.sendStopTrackingReq();
-                if (pedometer.isAvailable()) {
-                    pedometer.stop();
-                } else {
-                    window.webapis.pedometer.unsetChangeListener(pedometer._handlePedometerInfo);
+                
+                if(this.isCyclingMode)
+                {
+                	e.die('pedometer.change', onPedometerInfoChange);
+					if (pedometer.isAvailable()) {
+						pedometer.stop();
+					} else {
+						window.webapis.pedometer.unsetChangeListener(pedometer._handlePedometerInfo);
+					}
                 }
+                
+                if (provider.isAvailable()) provider.sendStopTrackingReq();
                 this.duration = this.getDuration();
                 this.running = false;
                 

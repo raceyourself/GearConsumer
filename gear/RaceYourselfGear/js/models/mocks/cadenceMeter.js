@@ -63,7 +63,7 @@ define({
         
         //test function to provide random heart rate
         function randomCadence() {
-        	cadence = Math.floor( 0 + 50 * (Math.random()) );			//random
+        	cadence = Math.floor( 0 + 100 * (Math.random()) );			//random
         }
 
         return {
