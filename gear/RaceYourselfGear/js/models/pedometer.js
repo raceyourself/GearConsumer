@@ -83,7 +83,11 @@ define({
          * @public
          */
         function stop() {
-            pedometer.stop(CONTEXT_TYPE);
+        	try {
+        		pedometer.stop(CONTEXT_TYPE);
+	    	} catch(e) {
+	    		console.error(e);
+	    	}
         }
 
         function isAvailable() {
@@ -99,6 +103,10 @@ define({
             }
         }
 
+        e.listeners({
+            'application.exit': stop
+        });
+        
         return {
             init: init,
             start: start,

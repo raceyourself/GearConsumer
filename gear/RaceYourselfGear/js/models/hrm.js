@@ -63,7 +63,7 @@ define({
             };
             lastData = hrmInfo;
             e.fire(eventName, info);
-        	if (hrmInfo.heartRate > 50 && hrmInfo.heartRate < 180 && !hrmInfo.mock) functioning = true;
+        	if (hrmInfo.heartRate > 40 && hrmInfo.heartRate < 210 && !hrmInfo.mock) functioning = true;
         }
 
         /**
@@ -126,6 +126,10 @@ define({
             }
         }
 
+        e.listeners({
+            'application.exit': stop
+        });
+        
         return {
             init: init,
             start: start,
