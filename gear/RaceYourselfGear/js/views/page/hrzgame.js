@@ -1253,7 +1253,7 @@ define({
 				{
 					clearNotification();
 				}
-				setNotification( '#fff', '#000', currentGameType.notFoundString, null, 0);
+				//setNotification( '#fff', '#000', currentGameType.notFoundString, null, 0);
 //				clearInterval(heartBeatInterval);
         	}
         	else
