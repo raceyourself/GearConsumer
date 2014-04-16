@@ -240,6 +240,28 @@
         </div>
     </div>
     
+    <div class="ui-page" id="intensityType">
+    	<header class="ui-header">
+    		<h2 class="ui-title">Training Type</h2>
+    	</header>
+    	<div class="ui-content">
+    		<ul class="ui-listview">
+    			<li class="li-has-radio">
+    				<label>
+    					Heart Rate
+    					<input type="radio" name="radio-intensity-type" value="hr"/>
+    				</label>
+    			</li>
+    			<li class="li-has-radio">
+    				<label>
+    					Cadence
+    					<input type="radio" name="radio-intensity-type" value="cadence"/>
+    				</label>
+    			</li>
+    		</ul>
+    	</div>
+    </div>
+    
     <div class="ui-page" id="zombietutorial">
     	<header class="ui-header">
     		<h2 class="ui-title">
@@ -455,6 +477,12 @@
     					<span class="li-text-sub" id="age-text">No age set</span>
     				</a>
     			</li>
+    			<li class="li-has-multilines">
+    				<a href="#" id="intensity-type-btn">
+    					Training type
+    					<span class="li-text-sub" id="intensity-type-text">Heart Rate</span>
+    				</a>
+    			</li>    			
     			<li class="li-has-multiline">
     				<a href="#" id="about-btn">
     					About

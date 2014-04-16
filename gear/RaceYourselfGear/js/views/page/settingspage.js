@@ -31,7 +31,8 @@ define({
         'views/page/distanceunits',
         'views/page/paceunits',
         'views/page/about',
-        'views/page/vibratesetting'
+        'views/page/vibratesetting',
+        'views/page/intensityType'
     ],
     def: function viewsPageSettingsPage(req) {
         'use strict';
@@ -116,6 +117,20 @@ define({
             	ageTextEl.innerHTML = 'No age chosen';
             	break;
             }
+            
+            var intensityTypeTextEl = document.getElementById('intensity-type-text');
+            switch(settings.getGameType())
+            {
+            case 'hr':
+            	intensityTypeTextEl.innerHTML = 'Heart Rate';
+            	break;
+            case 'cadence':
+            	intensityTypeTextEl.innerHTML = 'Cadence';
+            	break;
+            default:
+            	intensityTypeTextEl.innerHTML = 'None';
+            	break;
+            }
         }
 
         function onPageHide() {
@@ -136,6 +151,7 @@ define({
             document.getElementById('age-btn').addEventListener('click', onAgeBtnClick);
             document.getElementById('vibrate-btn').addEventListener('click', onVibrateBtnClick);
             document.getElementById('about-btn').addEventListener('click', onAboutBtnClick);
+            document.getElementById('intensity-type-btn').addEventListener('click', onIntensityTypeBtnClick);
             
         }
         
@@ -157,6 +173,10 @@ define({
         
         function onAgeBtnClick() {
         	e.fire('ageselect.show', "settingspage");
+        }
+        
+        function onIntensityTypeBtnClick() {
+        	e.fire('intensityTypeSelect.show');
         }
         
         function onAboutBtnClick() {
