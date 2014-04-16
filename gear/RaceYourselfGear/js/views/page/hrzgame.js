@@ -1133,7 +1133,7 @@ define({
 				{
 					clearNotification();
 				}
-				setNotification( '#fff', '#000', 'No heart rate', null, 0);
+//				setNotification( '#fff', '#000', 'No heart rate', null, 0);
 //				clearInterval(heartBeatInterval);
         	}
         	else
