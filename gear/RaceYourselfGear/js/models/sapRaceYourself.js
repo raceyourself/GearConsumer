@@ -38,6 +38,7 @@ define({
 	    	STOP_TRACKING_REQ = "stop-tracking-req",
 	    	AUTHENTICATION_REQ = "authentication-req",
 	    	LOG_ANALYTICS = "log-analytics",
+	    	LOG_TO_ADB = "log-to-adb",
 	    	WEB_LINK_REQ = "web-link-req",
 	    	REMOTE_CONFIGURATION_REQ = "remote-configuration-req",
 	    	REMOTE_CONFIGURATION_RESP = "remote-configuration-resp";
@@ -146,6 +147,28 @@ define({
         }
         
         /**
+         * Send message to be logged to ADB
+         * level is one of "VERBOSE", "DEBUG", "INFO", "WARNING", "ERROR"
+         * message is a string
+         */
+        function logToAdb(level, message) {
+        	if (!sap.isAvailable()) {
+                return false;
+            }
+        	return sap.sendData(
+                SAP_CHANNEL,
+                {
+                    messageType: LOG_TO_ADB,
+                    logLevel: level,
+                    logMessage: "RaceYourselfGearConsumer: " + message
+                },
+                {
+                    silent: true
+                }
+            );
+        }
+        
+        /**
          * Send web link to be displayed on the phone
          * Parameter is a string URI 
          */
@@ -168,6 +191,7 @@ define({
         function connect() {
             sap.connect();
             console.log('Connecting to provider..');
+            logToAdb("DEBUG","Conecting to SAP now!");
         }
 
         /**
@@ -175,6 +199,7 @@ define({
          */
         function init() {
             setTimeout(connect, 100); // start connecting to SAP
+            logToAdb("DEBUG","Conecting to SAP in 100ms");
         }
 
         /************** LISTENERS *************/
@@ -237,6 +262,7 @@ define({
             sendAuthenticationReq: sendAuthenticationReq,
             sendWebLinkReq: sendWebLinkReq,
             sendAnalytics: sendAnalytics,
+            logToAdb: logToAdb,
             isAvailable: isAvailable,
             connect: connect
         };
