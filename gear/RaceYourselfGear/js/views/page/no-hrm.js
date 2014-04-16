@@ -26,7 +26,8 @@ define({
         'models/hrm',
         'models/mocks/hrm',
         'models/game',
-        'models/config'
+        'models/config',
+        'models/application'
     ],
     def: function viewsPageNoHeartRateMonitor(req) {
         'use strict';
@@ -36,9 +37,11 @@ define({
             hrmMock = req.models.mocks.hrm,
             config = req.models.config,
             game = req.models.game,
+            app = req.models.application,
             pregameCheckInterval = false,
             buttonToggleTimeout = false,
             hrmStatusImg,
+            MIN_MEASURE_TIME = 5000,
             page = null;
 
         function show() {
@@ -60,8 +63,9 @@ define({
             }
             buttonToggleTimeout = setTimeout(function() {
             	skipButtonEl.classList.toggle('hidden', false);
-            }, 3000);
+            }, MIN_MEASURE_TIME + 2000);
             
+            var measureStart = Date.now();
             if(pregameCheckInterval) {
             	clearInterval(pregameCheckInterval);
             }
@@ -69,7 +73,7 @@ define({
             	if(hrm.isFunctioning()) {
                     e.fire(game.getCurrentGame()+'.show');
                 }
-            	if (hrm.isStarted() && !hrm.isFunctioning()) {
+            	if (hrm.isStarted() && !hrm.isFunctioning() && Date.now() > measureStart + MIN_MEASURE_TIME) {
                     hrmStatusImg.src = 'images/hrm_none.png';
             	}
             	if (!hrm.isStarted() || hrm.getError()) {
@@ -91,7 +95,6 @@ define({
 					// Availability will change if start fails
 					console.log('No-HRM: Starting HRM in Normal Mode');
 				} 
-				// Don't attempt to use mock
             } else {
                 e.fire(game.getCurrentGame()+'.show');
             }
@@ -109,8 +112,8 @@ define({
 					// Availability will change if start fails
 					console.log('No-HRM: Starting HRM in Normal Mode');
 				} 
-				// Allow mock fallback when skipping
-				if (!hrm.isAvailable()) {
+				// Allow mock fallback when on device
+				if (!hrm.isAvailable() && !app.onDevice()) {
 	            	hrmMock.start();
 					console.log('No-HRM: HRM not available. Starting mock HRM in Random Mode');
 				}

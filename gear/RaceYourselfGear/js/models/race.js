@@ -362,17 +362,11 @@ define({
         }
         
         function onGpsLocation(event) {
-            console.log('gps');
             var message = event.detail;
-            console.log(message);
             var distance = message.GPS_DISTANCE;  // cumulative distance covered whilst tracking
-            console.log(distance);
             var time = message.GPS_TIME;    // cumulative time spent tracking in milliseconds
-            console.log(time);
             var speed = message.GPS_SPEED;  // current speed in metres per second
-            console.log(speed);
             var state = message.GPS_STATE;  // string describing stopped / accelerating / steady speed etc
-            console.log(state);
             
             if (ongoingRace == null || !ongoingRace.isRunning()) return;
 

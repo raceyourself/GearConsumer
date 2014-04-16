@@ -37,6 +37,7 @@ define({
         'models/settings',
         'models/config',
 		'models/game',
+		'models/application',
 		'views/page/sweatpoint_rising',
     ],
     def: function viewsPageHeartRateZombiesGame(req) {
@@ -44,6 +45,7 @@ define({
 
         var e = req.core.event,
             race = req.models.race,
+            app = req.models.application,
             hrm = req.models.hrm,
             hrmMock = req.models.mocks.hrm,
             game = req.models.game,
@@ -377,7 +379,26 @@ define({
                 orientation: "horizontal",
                 scrollbar: "bar"                	
             });
-
+            
+            if (hrm.isStarted() && !hrm.isFunctioning()) {
+            	console.warn("RaceGame: Restarting HRM!");
+            	hrm.stop();
+            }
+            
+            if(!config.getIsDemoMode())
+            {
+				if (hrm.isAvailable() && !hrm.isStarted()) {
+					hrm.start();
+					// Availability will change if start fails
+					console.log('HRZGame: Starting HRM in Normal Mode');
+				} 
+				// Allow mock fallback when on device
+				if (!hrm.isAvailable() && !app.onDevice()) {
+	            	hrmMock.start();
+					console.log('No-HRM: HRM not available. Starting mock HRM in Random Mode');
+				}
+            }                                   
+            
 			//start the canned hrm sequence if in demo mode
 			if (config.getIsDemoMode()) {
 				hrmMock.startCanned();
@@ -2553,15 +2574,6 @@ define({
             changer = document.getElementById("race-game-sectionchanger");
             canvas = document.getElementById('race-canvas');
             context = canvas.getContext('2d');
-            
-            if(!config.getIsDemoMode())
-            {
-				if (hrm.isAvailable()) {
-					hrm.start();
-					// Availability will change if start fails
-					console.log('HRZGame: Starting HRM in Normal Mode');
-				} 
-            }                       
             
             bindEvents();
         }

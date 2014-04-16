@@ -120,6 +120,10 @@ define({
 
         function noop() {}
 
+        function onDevice() {
+            return (typeof tizen !== 'undefined' && typeof tizen.application !== 'undefined');        	
+        }
+        
         e.listeners({
             'models.application.launchAppControl': launchAppControl,
             'models.application.exit': closeApplication
@@ -159,7 +163,8 @@ define({
             getAppControlUri: getAppControlUri,
             createApplicationControl: createApplicationControl,
             closeApplication: closeApplication,
-            setScreenState: setScreenState
+            setScreenState: setScreenState,
+            onDevice: onDevice
         };
     }
 

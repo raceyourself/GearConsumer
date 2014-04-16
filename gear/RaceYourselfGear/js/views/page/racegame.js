@@ -37,6 +37,7 @@ define({
         'models/settings',
         'models/config',
 		'models/game',
+		'models/application',
 		'views/page/sweatpoint_rising',
     ],
     def: function viewsRaceGame(req) {
@@ -44,6 +45,7 @@ define({
 
         var e = req.core.event,
             race = req.models.race,
+            app = req.models.application,
             hrm = req.models.hrm,
             hrmMock = req.models.mocks.hrm,
             game = req.models.game,
@@ -347,6 +349,26 @@ define({
         	}
         	
         	ppm = 0;
+        	
+            if (hrm.isStarted() && !hrm.isFunctioning()) {
+            	console.warn("RaceGame: Restarting HRM!");
+            	hrm.stop();
+            }
+            
+            if(!config.getIsDemoMode())
+            {
+				//leave hrm in for race game, still want it for side screen
+				if (hrm.isAvailable() && !hrm.isStarted()) {
+					  hrm.start();
+					  console.log('RaceGame: starting HRM normally');
+					  // Availability will change if start fails
+				  } 
+				// Allow mock fallback when on device
+				if (!hrm.isAvailable() && !app.onDevice()) {
+	            	hrmMock.start();
+					console.log('No-HRM: HRM not available. Starting mock HRM in Random Mode');
+				}
+             } 
         	
 			//start the canned hrm sequence if in demo mode
 			if (config.getIsDemoMode()) {
@@ -2239,16 +2261,7 @@ define({
             highscoreCanvas = document.getElementById('highscore-canvas');
             highscoreContext = highscoreCanvas.getContext('2d');
             
-            if(!config.getIsDemoMode())
-            {
-				//leave hrm in for race game, still want it for side screen
-				if (hrm.isAvailable()) {
-					  hrm.start();
-					  console.log('RaceGame: starting HRM normally');
-					  // Availability will change if start fails
-				  } 
-             } 
-              bindEvents();
+            bindEvents();
         }
         
         function loadAssets() {
