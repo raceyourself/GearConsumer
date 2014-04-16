@@ -381,7 +381,7 @@ define({
             });
             
             if (hrm.isStarted() && !hrm.isFunctioning()) {
-            	console.warn("RaceGame: Restarting HRM!");
+            	console.warn("HRZGame: Restarting HRM!");
             	hrm.stop();
             }
             
@@ -395,7 +395,7 @@ define({
 				// Allow mock fallback when on device
 				if (!hrm.isAvailable() && !app.onDevice()) {
 	            	hrmMock.start();
-					console.log('No-HRM: HRM not available. Starting mock HRM in Random Mode');
+					console.log('HRZGame: HRM not available. Starting mock HRM in Random Mode');
 				}
             }                                   
             
