@@ -37,6 +37,7 @@ define({
         'models/settings',
         'models/config',
 		'models/game',
+		'models/application',
 		'views/page/sweatpoint_rising',
     ],
     def: function viewsRaceGame(req) {
@@ -47,6 +48,7 @@ define({
             hrm = req.models.hrm,
             hrmMock = req.models.mocks.hrm,
             game = req.models.game,
+            app = req.models.application,
             settings = req.models.settings,
             config = req.models.config,
             Sprite = req.models.sprite.Sprite,
@@ -243,6 +245,7 @@ define({
 			{
 				notificationTimeout = setTimeout(clearNotification, duration);
 			}
+			app.setScreenState('SCREEN_NORMAL');
 		}
 		
 		function clearNotification()

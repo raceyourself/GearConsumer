@@ -40,6 +40,7 @@ define({
         'models/config',
 		'models/game',
 		'views/page/sweatpoint_rising',
+		'models/application',
     ],
     def: function viewsPageHeartRateZombiesGame(req) {
         'use strict';
@@ -55,6 +56,7 @@ define({
             config = req.models.config,
             Sprite = req.models.sprite.Sprite,
             SweatPoint = req.views.page.sweatpoint_rising.SweatPoint,
+            app = req.models.application,
             page = null,
             canvas,
             context,
@@ -301,6 +303,7 @@ define({
 			{
 				notificationTimeout = setTimeout(clearNotification, duration);
 			}
+			app.setScreenState('SCREEN_NORMAL');
 		}
 		
 		function clearNotification()
