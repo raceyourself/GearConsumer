@@ -99,6 +99,7 @@ define({
             notificationTimeout = false,            	
             animatedSprites = [],
             zombies = [],
+            idleZombies = [],
             zombieIdle = null,
             dino = null,
             meteor = null,
@@ -876,11 +877,14 @@ define({
             //4 zombies, we just don't show them all
             while (zombies.length < 4) {
                 zombies.push(zombies[0].clone());
+                idleZombies.push(idleZombies[0].clone());
             };
             for (var i=0;i<zombies.length;i++) {
                 zombies[i].reset();
                 var animDelay = Math.random() * zombies[i].getPeriod();
+                var idleAnimDelay = Math.random() * idleZombies[i].getPeriod();
                 zombies[i].time = animDelay;
+                idleZombies[i].time = idleAnimDelay;
             }
             zombieOffset = zombieStartOffset;
 //            int intervalTime = Math.min(350, 750-(wave*50));
@@ -1904,11 +1908,8 @@ define({
 								}
 								else
 								{
-									//update zombie animation timer
-									zombie.time += dt;
-									//apply non-idle time to idle anim
-									zombieIdle.time = zombie.time;
-									zombieIdle.drawscaled(context, zombiePos, canvas.height - zombie.height * scale - trackHeight + y_offset, dt, scale);
+									var idleZombie = idleZombies[i];
+									idleZombie.drawscaled(context, zombiePos, canvas.height - zombie.height * scale - trackHeight + y_offset, dt, scale);
 								}
 							} else {
 							    // Just update the animation time
@@ -2620,7 +2621,7 @@ define({
 
 			//zombie idle
             loadImage('images/animation_zombie_stationary.png', function() {
-                zombieIdle = new Sprite(this, this.width/14, 2000);
+                idleZombies.push(new Sprite(this, this.width/14, 2000));
             });
             
             
