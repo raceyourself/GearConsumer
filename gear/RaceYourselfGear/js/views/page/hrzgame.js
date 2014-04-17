@@ -41,6 +41,7 @@ define({
 		'models/game',
 		'views/page/sweatpoint_rising',
 		'models/application',
+		'models/zoneSequence',
     ],
     def: function viewsPageHeartRateZombiesGame(req) {
         'use strict';
@@ -57,6 +58,7 @@ define({
             Sprite = req.models.sprite.Sprite,
             SweatPoint = req.views.page.sweatpoint_rising.SweatPoint,
             app = req.models.application,
+            Sequence = req.models.zoneSequence.Sequence,
             page = null,
             canvas,
             context,
@@ -284,11 +286,47 @@ define({
         	unregister : function () {
 					e.die('cadence.change', onCadenceChange);
 				}
-			}
+			},
+		zoneSequence = null;
 
         function show() {
             gear.ui.changePage('#race-game');
         }
+
+		function initZoneSequence() {
+			//ultimately we'll redo this to retrieve the sequence from the race, where it will have been pre-built somewhere in the menu.
+			//for now we'll just build it on the fly
+			var r = race.getOngoingRace();
+			zoneSequence = new Sequence();
+			switch(r.getGoal())
+			{
+			     case "WeightLoss":
+			     	zoneSequence.addZone( { intensity: 'Light', duration: 10 } );
+			     	zoneSequence.setLooping(false);
+        			break;
+        		case "Endurance":
+        			zoneSequence.addZone( { intensity: 'Aerobic', duration: 10 } );
+        			zoneSequence.setLooping(false);
+        			break;
+				case "Strength":
+					zoneSequence.addZone( { intensity: 'Aerobic', duration: 30 } );
+					zoneSequence.addZone( { intensity: 'Anaerobic', duration: 30 } );
+					zoneSequence.setLooping(true);
+					break;
+				case "SprintSets":
+					var subSequence = new Sequence();
+					subSequence.addZone( { intensity: 'Performance', duration: 5 } );
+					subSequence.addZone( { intensity: 'Aerobic', duration: 20 } );
+					zoneSequence.addSubSequence(subSequence, 10);
+					//recovery between sets
+					zoneSequence.addZone( { intensity: 'Recovery', duration: 60 } );
+					zoneSequence.setLooping(true);
+					break;
+				default:
+					console.error("Unrecognised goal type");
+					break;
+			}
+		}
 
 		function setNotification(colour, textColour, text, text2, duration)
 		{
@@ -465,6 +503,8 @@ define({
 //                startCountdown();
             }
 
+            initZoneSequence();
+
 			//reset any existing animations
 			for(var i=0; i<animatedSprites.length; i++)
 			{
@@ -523,7 +563,9 @@ define({
         function startRun()
         {
 			//end warmup - now misnamed, actually sets the initial hr zone we want, based on goal type
-            endWarmup();
+//            endWarmup();
+			zoneSequence.restart();
+			nextHRZone();
 			race.getOngoingRace().start();
             startZombies();
 			lastRender = Date.now();
@@ -718,7 +760,7 @@ define({
         	        	console.log("Warmup over. Goal is: " + r.getGoal());
 //        	setNotification(green, '#fff', 'Warmup Over', null, 5*1000);
 
-        	switch(r.getGoal())
+/*        	switch(r.getGoal())
         	{
         	
         		case "WeightLoss":
@@ -740,6 +782,9 @@ define({
 					break;
         	}
         	console.log("Ended warmup. Now in zone " + currentHRZone);
+*/
+
+        	
         }
         
 
@@ -750,7 +795,7 @@ define({
 
 			var r = race.getOngoingRace();
         	console.log("Next HR Zone. Goal is: " + r.getGoal());
-			switch(r.getGoal())
+/*			switch(r.getGoal())
 			{
 				case "Endurance":
 					break;
@@ -787,7 +832,28 @@ define({
 							console.log("shouldn't be in this zone in Strength training: " + currentHRzone);
 					}
 				}
-				console.log("Interval Complete. Now in zone: " + currentHRZone);
+*/
+				var zone = zoneSequence.nextZone();
+				if(zone != null)
+				{
+					currentGameType.setIntensityZoneFn(zone.intensity);
+					intervalTimeout = setTimeout(nextHRZone, zone.duration * 1000 * timeMultiplier);
+					console.log("Interval Complete. Now in zone: " + zone.intensity + " for duration: " + zone.duration);
+				}
+				else
+				{
+					//final zone, staying in it
+					console.log("Reached end of zone sequence")
+				}
+				
+				if(settings.getVibrateActive()) {
+					console.log('vibrate: switched intensity zone');
+					navigator.vibrate([100, 10, 100, 10, 100]);
+				}
+				if(settings.getAudioActive() && chime!=null)
+				{
+					chime.play();
+				}
         }
 
         function setCurrentCadenceZone(zone)
