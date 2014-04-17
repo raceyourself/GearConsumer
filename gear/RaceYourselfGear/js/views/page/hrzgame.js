@@ -1280,6 +1280,7 @@ define({
                 // Hide sectionchanger scrollbar. Optionally rewrite finish screen to be a html overlay with z-index > 1
                 if (sectionChanger && sectionChanger.scrollbar && sectionChanger.scrollbar.element) {
                 	sectionChanger.scrollbar.element.classList.toggle('hidden', true);
+                	sectionChanger.disable();
                 }
                 
                 runnerAnimations.meteorDead.sprite.reset();

@@ -66,7 +66,7 @@ extend(SectionChanger, Scroller, {
 		this.previousIndex = 0;
 		this.lastDirection = 0;
 		this.direction = 0;
-
+		this.enabled = true;
 		this._super( elem, options );
 	},
 
@@ -313,27 +313,31 @@ extend(SectionChanger, Scroller, {
 	},
 
 	_move: function( e, pos ) {
-		var beforeMoved = this.moved;
+		if(this.enabled) {
+			var beforeMoved = this.moved;
 
-		if ( this.orientation === Scroller.Orientation.HORIZONTAL ) {
-			this.lastDirection = pos.x - this.lastTouchPointX;
-		} else {
-			this.lastDirection = pos.y - this.lastTouchPointY;
-		}
-
-		this._super( e, pos );
-
-		if ( beforeMoved !== this.moved) {
 			if ( this.orientation === Scroller.Orientation.HORIZONTAL ) {
-				this.direction = pos.x - this.startTouchPointX;
+				this.lastDirection = pos.x - this.lastTouchPointX;
 			} else {
-				this.direction = pos.y - this.startTouchPointY;
+				this.lastDirection = pos.y - this.lastTouchPointY;
+			}
+
+			this._super( e, pos );
+
+			if ( beforeMoved !== this.moved) {
+				if ( this.orientation === Scroller.Orientation.HORIZONTAL ) {
+					this.direction = pos.x - this.startTouchPointX;
+				} else {
+					this.direction = pos.y - this.startTouchPointY;
+				}
 			}
 		}
+		
 	},
 
 	_end: function( e ) {
-		var lastX = Math.round(this.lastTouchPointX),
+		if(this.enabled) {
+			var lastX = Math.round(this.lastTouchPointX),
 			lastY = Math.round(this.lastTouchPointX),
 			distX = this.lastTouchPointX - this.startTouchPointX,
 			distY = this.lastTouchPointX - this.startTouchPointY,
@@ -375,6 +379,12 @@ extend(SectionChanger, Scroller, {
 		}
 
 		this.setActiveSection( newIndex, this.options.animateDuration );
+		}
+		
+	},
+	
+	disable: function() {
+		this.enabled = false;
 	},
 
 	_endScroll: function() {

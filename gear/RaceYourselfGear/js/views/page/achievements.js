@@ -50,10 +50,13 @@ define({
             var items = [];
             for (var key in as) {
                 var a = as[key];
-                var text = 'Awarded ';
-                if (!isFinite(a.uses)) text = text + a.achieved.length
-                else text = text + a.achieved.length + '/' + a.uses
-                text = text + ' times';
+                var text;
+                if(a.achieved.length > 0) {
+                	text = 'Awarded';
+                } else {
+                	text = 'Not Awarded'
+                }
+               
                 var clazzez = [];
                 if (a.achieved.length > 0) clazzez.push('awarded');
                 if (isFinite(a.uses) && a.achieved.length >= a.uses) clazzez.push('completed');
