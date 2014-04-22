@@ -363,7 +363,7 @@ define({
 					  console.log('RaceGame: starting HRM normally');
 					  // Availability will change if start fails
 				  } 
-				// Allow mock fallback when on device
+				// Allow mock fallback when not on device
 				if (!hrm.isAvailable() && !app.onDevice()) {
 	            	hrmMock.start();
 					console.log('RaceGame: HRM not available. Starting mock HRM in Random Mode');
