@@ -224,7 +224,7 @@ define({
         function onHeatrateChanged(data) {
             var message = data.detail.message;
             var configuration = message.HEART_RATE_BPM;
-            e.fire('configuration.update', configuration);
+            e.fire('ble.heartrate_bpm', configuration);
         }
         
         /**
@@ -233,7 +233,7 @@ define({
         function onCadenceChanged(data) {
             var message = data.detail.message;
             var configuration = message.CYCLE_CADENCE_RPM;
-            e.fire('configuration.update', configuration);
+            e.fire('ble.cycle_cadence_rpm', configuration);
         }
         
         /**
@@ -242,7 +242,7 @@ define({
         function onCycleSpeedChange(data) {
             var message = data.detail.message;
             var configuration = message.CYCLE_SPEED_BPM;
-            e.fire('configuration.update', configuration);
+            e.fire('ble.cycle_wheel_rpm', configuration);
         }
         
         function isAvailable() {
