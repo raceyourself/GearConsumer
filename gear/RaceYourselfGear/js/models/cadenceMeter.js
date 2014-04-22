@@ -26,7 +26,7 @@ define({
         'core/event',
         'models/config'
     ],
-    def: function modelsHeartRateMonitor(req) {
+    def: function modelsCadenceMeter(req) {
         'use strict';
 
         var e = req.core.event,
@@ -37,10 +37,13 @@ define({
             available = true,
             error,
             lastData = {
-        		heartRate: 60,
-        		rRInterval: 0
+        		cadence: 0,
+        		distance: 0,
+        		speed: 0,
         	},
-
+        	cumulativeDistance = 0,
+        	lastInfoTime = false,
+			rpmToMps = 0.1,			//conversino factor for cadence as mock speedo. Use rpm * 0.1, equates to mid-gear?
             CONTEXT_TYPE = 'CADENCE';
 
         /**
@@ -57,6 +60,24 @@ define({
             var info = {
             		cadence: ~~(smoothing*lastData.cadence + (1-smoothing)*cadenceInfo.cadence),
             };
+            
+            //estimated speed
+            var speedmps = rpmToMps * info.cadence;
+            
+            //estimated distance
+            if(lastInfoTime == false)
+            {
+            	lastInfoTime = Date.now();
+            }
+            var dt = Date.now() - lastInfoTime;
+            lastInfoTime = Date.now();
+            
+            cumulativeDistance += speedmps * dt / 1000;
+            
+            //send out speed in kph
+            info.speed = speedmps * 60 * 60 / 1000;
+            info.distance = cumulativeDistance;
+            
             lastData = cadenceInfo;
             e.fire(eventName, info);
         	if (cadenceInfo.cadence > 50 && cadenceInfo.cadence < 180 && !cadenceInfo.mock) functioning = true;
@@ -76,6 +97,7 @@ define({
 				
 				//TODO start the sensor
 				
+				lastInfoTime = Date.now();
 	            started = true;
         	} catch(e) {
         		available = false;

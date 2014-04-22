@@ -31,7 +31,9 @@ define({
         'models/mocks/pedometer',
         'models/pedometer',
         'models/sapRaceYourself',
-        'helpers/units'
+        'helpers/units',
+        'models/cadenceMeter',
+        'models/mocks/cadenceMeter'
     ],
     def: function modelsRace(req) {
         'use strict';
@@ -45,14 +47,14 @@ define({
             provider = req.models.sapRaceYourself,
             settings = req.models.settings,
             units = req.helpers.units,
+            cm = req.models.cadenceMeter,
+            cmMock = req.models.mocks.cadenceMeter,
             _goal = "",
             lastThousand = 0,
             ongoingRace = null,
             history = [],
             STORAGE_KEY = 'history',
             isCyclingMode = false;
-        
-       
         
         function newRace() {
             if (!!ongoingRace) history.unshift(ongoingRace);
@@ -122,7 +124,24 @@ define({
 						this.initialSteps = ld.totalStep();
 					}
 				}
-             
+				else
+				{
+					//add fallback for cadence meter
+					e.listen('cadence.change', onCadenceInfoChange);
+					if (cm.isAvailable()) {
+						cm.start();
+					} else {
+						//Mock
+						console.log('Using mock cadence meter');
+						//TODO start mock cadenceMeter
+					}
+					if (provider.isAvailable()) provider.sendStartTrackingReq();
+					var ld = cm.getLastData();
+					if (ld != null && ld.length > 0) {
+						this.initialDistance = ld.distance;
+					}
+				}
+             	
                 this.startDate = Date.now();
                 this.running = true;
                 e.fire('race.start');
@@ -372,6 +391,35 @@ define({
                }
             }
             ongoingRace.lastPedometerDistance = pedometerInfo.distance; // update for next loop
+        }
+        
+        function onCadenceInfoChange(param) {
+        	if (ongoingRace == null || !ongoingRace.isRunning()) return;
+        	var cadenceInfo = param.detail;
+        	
+        	if(ongoingRace.initialDistance === null) ongoingRace.initialDistance = cadenceInfo.totalDistance;
+        
+        	//If no GPS, fall back on cadence meter
+        	if (ongoingRace.lastGpsTimestamp == null || (new Date().getTime() - ongoingRace.lastGpsTimestamp) > 2000) {
+        		ongoingRace.speed = cadenceInfo.speed;
+        		
+        		var positionDelta = (cadenceInfo.distance - ongoingRace.lastPedometerDistance);
+
+				//don't go backwards
+        		if(positionDelta < 0) positionDelta = 0;
+        		
+        		ongoingRace.distance += positionDelta;
+        		
+        		if(ongoingRace.distance - ongoingRace.progressSnapshot.distance > 100) ongoingRace.triggerProgress();
+        		
+				//log an entry in the track history
+				ongoingRace.track.push({distance: ongoingRace.getMetricDistance(), time: ongoingRace.getDuration()});
+				
+				//fire event that gps updates are off
+				e.fire('gpsUpdateOff');
+								
+			}
+			ongoingRace.lastPedometerDistance = param.detail.distance;
         }
         
         function onGpsLocation(event) {

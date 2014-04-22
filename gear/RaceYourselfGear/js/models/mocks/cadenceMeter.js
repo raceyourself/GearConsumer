@@ -11,7 +11,7 @@ define({
         'core/event',
         'models/cadenceMeter'
     ],
-    def: function heartRateMock(req) {
+    def: function modelsCadenceMeterMock(req) {
         'use strict';
 
         var e = req.core.event,
