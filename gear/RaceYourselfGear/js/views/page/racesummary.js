@@ -119,9 +119,9 @@ define({
             document.getElementById('duration-final').innerHTML = hmm(r.duration/1000);
             distance(r.distance, r.distanceunits);
             document.getElementById('kcal-final').innerHTML = ~~(r.calories);
-            document.getElementById('current-sweat-final').innerHTML = ~~(r.pointsgained);
-            document.getElementById('sweat-lost-final').innerHTML = ~~(r.pointslost);
-            document.getElementById('total-sweat-final').innerHTML = ~~(r.totalpoints);
+//            document.getElementById('current-sweat-final').innerHTML = ~~(r.pointsgained);
+//            document.getElementById('sweat-lost-final').innerHTML = ~~(r.pointslost);
+//            document.getElementById('total-sweat-final').innerHTML = ~~(r.totalpoints);
             var steps = r.steps;
             if(steps === undefined) {
             	steps = 0;
@@ -129,7 +129,8 @@ define({
             document.getElementById('steps-final').innerHTML = steps;
             var ideal = 'N/A';
             if (isFinite(r.hrtime)) ideal = ~~(r.hrtime_in_zone*100/r.duration) + '%';
-            document.getElementById('ideal-hr-final').innerHTML = ideal;
+//            document.getElementById('ideal-hr-final').innerHTML = ideal;
+			document.getElementById('points-final').innerHTML = ~~(r.pointsgained);
            
             generateAwards(r.achievements);
             

@@ -26,7 +26,7 @@ define({
         'models/sapRaceYourself',
         'models/game',
         'models/sap',
-        'models/hrm',
+//        'models/hrm',
         'views/page/pregame',
         'views/page/hrzgame'
     ],
@@ -36,7 +36,7 @@ define({
         var e = req.core.event,
             provider = req.models.sapRaceYourself,
             game = req.models.game,
-            hrm = req.models.hrm,
+//            hrm = req.models.hrm,
             sap = req.models.sap,
             pregameCheckInterval = false,
             sapConnectInterval = false,
@@ -77,11 +77,11 @@ define({
         }
 
         function onSkipClick(ev) {
-            if (game.getCurrentGame() == 'hrzgame' && !hrm.isFunctioning()) {
-            	e.fire('no-hrm.show');
-            } else {
-            	e.fire(game.getCurrentGame()+'.show');
-            }
+//            if (game.getCurrentGame() == 'hrzgame' && !hrm.isFunctioning()) {
+//            	e.fire('no-hrm.show');
+//            } else {
+//            	e.fire(game.getCurrentGame()+'.show');
+//            }
             ev.preventDefault();
         }
         

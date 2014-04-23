@@ -25,11 +25,11 @@ define({
         'core/event',
         'views/page/racegame',
         'views/page/hrzgame',
-        'views/page/no-hrm',
+//        'views/page/no-hrm',
         'models/settings',
         'models/game',
         'models/sapRaceYourself',
-        'models/hrm'
+//        'models/hrm'
     ],
     def: function viewsPagePregame(req) {
         'use strict';
@@ -40,8 +40,8 @@ define({
             interval = false,
             timeout = false,
             resultTimeout = false,
-            provider = req.models.sapRaceYourself,
-            hrm = req.models.hrm;
+            provider = req.models.sapRaceYourself;
+//            hrm = req.models.hrm;
 
         function show() {
             gear.ui.changePage('#pregame');
@@ -112,24 +112,26 @@ define({
             	clearTimeout(timeout);
             }
             
-            if (status === 'ready' || status === 'disabled') {
-                timeout = setTimeout(function() {
-                    if (game.getCurrentGame() == 'hrzgame' && !hrm.isFunctioning()) {
-                    	e.fire('no-hrm.show');
-                    } else {
-                    	e.fire(game.getCurrentGame()+'.show');
-                    }
-                }, 1500);
-            }
+//            if (status === 'ready' || status === 'disabled') {
+//                timeout = setTimeout(function() {
+//                    if (game.getCurrentGame() == 'hrzgame' && !hrm.isFunctioning()) {
+//                    	e.fire('no-hrm.show');
+//                    } else {
+//                    	e.fire(game.getCurrentGame()+'.show');
+//                    }
+//                }, 1500);
+//            }
         }
         
         function onRace(ev) {
             clearTimeout(timeout);
-            if (game.getCurrentGame() == 'hrzgame' && !hrm.isFunctioning()) {
-            	e.fire('no-hrm.show');
-            } else {
-            	e.fire(game.getCurrentGame()+'.show');
-            }
+//            if (game.getCurrentGame() == 'hrzgame' && !hrm.isFunctioning()) {
+//            	e.fire('no-hrm.show');
+//            } else {
+//            	e.fire(game.getCurrentGame()+'.show');
+//            }
+
+			e.fire(game.getCurrentGame()+'.show');
             ev.preventDefault();
         }
         

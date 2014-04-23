@@ -79,6 +79,8 @@ define({
                         return '0%';
                     }
                 }, */
+                
+                /*
                 'run_in_zone' : {
                     title: 'Trainer',
                     description: 'Complete a run without leaving the target heart rate zone',
@@ -111,6 +113,8 @@ define({
                         return 'Not yet achieved';
                     }
                 },
+                */
+                /*
                 // Fitness
                 '1km_run' : {
                     title: '1k',
@@ -160,6 +164,8 @@ define({
                         return '0%';
                     }
                 },
+                */
+                /*
                 'half_marathon' : {
                     title: 'Half marathon',
                     description: 'Complete a half marathon',
@@ -192,6 +198,7 @@ define({
                         return '0%';
                     }
                 },
+                */
                 // Grind
 /*                'boulder' : {
                     title: 'Boulder dash',
@@ -228,6 +235,7 @@ define({
                         return Number(Math.min(unlockDist, progress.total.distance)*100/unlockDist).toFixed(1).replace('.0', '') + '%';
                     }
                 }, */
+                /*
                 'Endurance' : {
                     title: 'Race Yourself Fitter',
                     description: 'Unlock <b>Race Yourself Fitter</b> by playing one game of Eliminator',
@@ -247,6 +255,7 @@ define({
                         return '0%';
                     }
                 },
+                */
                 '5_laps' : {
                 	title: '5 Laps',
                 	description: 'Complete 5 laps in Eliminator mode',
@@ -298,16 +307,17 @@ define({
                 		return '0%';
                 	}
         		},
-                'WeightLoss' : {
-                    title: 'Race Yourself Slimmer',
-                    description: 'Unlock <b>Race Yourself Slimmer</b> by running 5km',
+        		
+                '5km Total' : {
+                    title: 'Run 5km',
+                    description: 'Run a cumulative total of 5km in Race Yourself',
                     points: 0,
                     uses: 1,
                     init: function() {
                         e.listen('race.progress', function(event) {
                         	if (progress.total.distance >= config.getWeightUnlockDist() * 1000) {
                                 achieve('WeightLoss');
-                                game.unlock('WeightLoss');
+//                                game.unlock('WeightLoss');
                             }
                         });
                     },
@@ -316,16 +326,16 @@ define({
                         return Number(Math.min(unlockDist, progress.total.distance)*100/unlockDist).toFixed(1).replace('.0', '') + '%';
                     }
                 },
-                'Strength' : {
-                    title: 'Race Yourself Faster',
-                    description: 'Unlock <b>Race Yourself Faster</b> by running 10km',
+                '10km Total' : {
+                    title: 'Run 10km',
+                    description: 'Run a cumulative total of 5km in Race Yourself',
                     points: 0,
                     uses: 1,
                     init: function() {
                         e.listen('race.progress', function(event) {
                         	if (progress.total.distance >= config.getStrengthUnlockDist() * 1000) {
                                 achieve('Strength');
-                                game.unlock('Strength');
+//                                game.unlock('Strength');
                             }
                         });
                     },
@@ -334,16 +344,16 @@ define({
                         return Number(Math.min(unlockDist, progress.total.distance)*100/unlockDist).toFixed(1).replace('.0', '') + '%';
                     }
                 },
-                'Meteor' : {
-                	title: 'Meteor Opponent',
-                	description: 'Unlock the meteors as an opponent for heart rate training by earning 50,000SP',
+                '50,000SP' : {
+                	title: '50K Sweat Points',
+                	description: 'Earn a career total of 50,000 sweat points',
                 	points: 0,
                 	uses: 1,
                 	init: function() {
                 		e.listen('race.progress', function(event) {
                 			if(progress.total.points >= config.getMeteorUnlockPoints()) {
                 				achieve('Meteor');
-                				game.unlock('meteor');
+//                				game.unlock('meteor');
                 			}
                 		});
                 	},
