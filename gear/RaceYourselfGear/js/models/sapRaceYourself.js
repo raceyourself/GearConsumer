@@ -216,7 +216,7 @@ define({
         /**
          * Fired on incoming GPS position data
          */
-        function onGpsPositionChanged(data) {
+        function onGpsPositionChange(data) {
             var message = data.detail.message;
             var distance = message.GPS_DISTANCE;  // cumulative distance covered whilst tracking
             var time = message.GPS_TIME;    // cumulative time spent tracking in milliseconds
@@ -228,7 +228,7 @@ define({
         /**
          * Fired on incoming GPS status
          */
-        function onGpsStatusChanged(data) {
+        function onGpsStatusChange(data) {
             var message = data.detail.message;            
             var status = message.GPS_STATUS_KEY;  // String ["enabled","disabled","ready"]
             e.fire('gps.status', status);
@@ -246,7 +246,7 @@ define({
         /**
          * Fired on incoming heartrate
          */
-        function onHeatrateChanged(data) {
+        function onHeartRateChange(data) {
             var message = data.detail.message;
             var configuration = message.HEART_RATE_BPM;
             e.fire('ble.heartrate_bpm', configuration);
@@ -255,7 +255,7 @@ define({
         /**
          * Fired on incoming cadence
          */
-        function onCadenceChanged(data) {
+        function onCadenceChange(data) {
             var message = data.detail.message;
             var configuration = message.CYCLE_CADENCE_RPM;
             e.fire('ble.cycle_cadence_rpm', configuration);
@@ -276,8 +276,8 @@ define({
 
         e.listeners({
             'models.sap.init': onConnection,
-            'models.sap.gps-position-data': onGpsPositionChanged,
-            'models.sap.gps-status-resp': onGpsStatusChanged,
+            'models.sap.gps-position-data': onGpsPositionChange,
+            'models.sap.gps-status-resp': onGpsStatusChange,
             'models.sap.remote-configuration-resp': onRemoteConfiguration,
             'models.sap.heart-rate-data': onHeartRateChange,
             'models.sap.cycle-speed-data': onCycleSpeedChange,

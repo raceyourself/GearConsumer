@@ -54,6 +54,7 @@ define({
 	            ); 
 	    	} catch(e) {
 	    		available = false;
+        		console.error('Exception starting WRIST_UP handler:');
 	    		console.error(e);
 	    	}
         }

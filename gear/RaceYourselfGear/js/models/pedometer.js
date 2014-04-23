@@ -74,6 +74,7 @@ define({
 	            );
 	    	} catch(e) {
 	    		available = false;
+        		console.error('Exception starting pedometer:');
 	    		console.error(e);
 	    	}
         }

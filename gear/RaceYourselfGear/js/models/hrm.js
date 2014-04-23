@@ -82,6 +82,7 @@ define({
         		available = false;
         		started = false;
         		functioning = false;
+        		console.error('Exception starting HRM:');
         		console.error(e);
         		error = e;
         	}

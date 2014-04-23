@@ -122,7 +122,7 @@ define({
                 return false;
             }
 
-            if (window.navigator.platform.indexOf('emulated') !== -1) {
+            if (!isAvailable()) {
                 console.error('SAP works only on Target. Please run this on Target.');
                 //document.getElementById('debug-log').innerHTML = 'SAP works only on Target. Please run this on Target.';
                 //tizen.application.getCurrentApplication().exit();
@@ -138,7 +138,7 @@ define({
         }
         
         function isAvailable() {
-            return (window.navigator.platform.indexOf('emulated') === -1 && !!webapis.sa);
+            return (window.navigator.platform.indexOf('emulated') === -1 && window.webapis != undefined && !!webapis.sa);
         }
 
         return {
