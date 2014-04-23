@@ -41,7 +41,7 @@ define({
 	    	WEB_LINK_REQ = "web-link-req",
 	    	REMOTE_CONFIGURATION_REQ = "remote-configuration-req",
 	    	REMOTE_CONFIGURATION_RESP = "remote-configuration-resp",
-	    	SHARE_HIGHSCORE_REQ = "share-highscore-req";
+	    	SHARE_HIGHSCORE_REQ = "share-score-req";
 
         /**
          * Send request to get the status of the GPS (enabled/disabled/ready)
