@@ -43,7 +43,7 @@ define({
 			}
 			nextCanned();
 
-        	interval = setInterval(sendHRupdate, hrUpdatePeriod);
+        	interval = setInterval(sendCadenceupdate, hrUpdatePeriod);
         }
         
         function nextCanned() {

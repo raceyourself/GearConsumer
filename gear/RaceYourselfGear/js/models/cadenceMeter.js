@@ -54,11 +54,11 @@ define({
             return lastData;
         }
 
-		function onBLECadence() {
-		
+		function onBLECadence(data) {
+        	handleCadenceInfo({cadence: data, mock: false});
 		}
 		
-		function onBLESpeed() {
+		function onBLESpeed(data) {
 		
 		}
 
@@ -127,6 +127,7 @@ define({
         function isAvailable() {
 //            return !!hrm && available;
 			//TODO
+			return (typeof tizen !== 'undefined');
         }
         
         function isStarted() {
