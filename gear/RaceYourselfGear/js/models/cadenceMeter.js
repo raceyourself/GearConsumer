@@ -54,6 +54,14 @@ define({
             return lastData;
         }
 
+		function onBLECadence() {
+		
+		}
+		
+		function onBLESpeed() {
+		
+		}
+
         function handleCadenceInfo(cadenceInfo) {
             var eventName = 'cadence.change';
             var smoothing = config.getHrSmoothing();      //just use Hr smoothing for now
@@ -90,13 +98,8 @@ define({
         function start() {
         	if (started === true) return;
         	try {
-//	            hrm.start(
-//	                CONTEXT_TYPE,
-//	                handleHrmInfo
-//	            );
-				
-				//TODO start the sensor
-				
+				e.listen('ble.cycle_cadence_rpm', onBLECadence);
+				e.listen('ble.cycle_wheel_rpm', onBLECadence);
 				lastInfoTime = Date.now();
 	            started = true;
         	} catch(e) {
@@ -117,7 +120,8 @@ define({
 //            started = false;
 
 			//TODO stop the sensor
-
+			e.die('ble.cycle_cadence_rpm', onBLECadence);
+			e.die('ble.cycle_wheel_rpm', onBLECadence);
         }
 
         function isAvailable() {

@@ -417,6 +417,7 @@ define({
 				
 				//fire event that gps updates are off
 				e.fire('gpsUpdateOff');
+				e.fire('pedometer.step');
 								
 			}
 			ongoingRace.lastPedometerDistance = param.detail.distance;
