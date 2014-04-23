@@ -221,7 +221,7 @@ define({
         /**
          * Fired on incoming heartrate
          */
-        function onHeatrateChanged(data) {
+        function onHeartRateChanged(data) {
             var message = data.detail.message;
             var configuration = message.HEART_RATE_BPM;
             e.fire('ble.heartrate_bpm', configuration);
@@ -239,7 +239,7 @@ define({
         /**
          * Fired on incoming cycle wheel speed
          */
-        function onCycleSpeedChange(data) {
+        function onCycleSpeedChanged(data) {
             var message = data.detail.message;
             var configuration = message.CYCLE_SPEED_BPM;
             e.fire('ble.cycle_wheel_rpm', configuration);
@@ -254,9 +254,9 @@ define({
             'models.sap.gps-position-data': onGpsPositionChanged,
             'models.sap.gps-status-resp': onGpsStatusChanged,
             'models.sap.remote-configuration-resp': onRemoteConfiguration,
-            'models.sap.heart-rate-data': onHeartRateChange,
-            'models.sap.cycle-speed-data': onCycleSpeedChange,
-            'models.sap.cycle-cadence-data': onCadenceChange
+            'models.sap.heart-rate-data': onHeartRateChanged,
+            'models.sap.cycle-speed-data': onCycleSpeedChanged,
+            'models.sap.cycle-cadence-data': onCadenceChanged
         });
 
         return {
