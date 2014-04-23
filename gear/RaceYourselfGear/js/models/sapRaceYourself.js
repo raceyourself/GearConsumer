@@ -40,7 +40,8 @@ define({
 	    	LOG_ANALYTICS = "log-analytics",
 	    	WEB_LINK_REQ = "web-link-req",
 	    	REMOTE_CONFIGURATION_REQ = "remote-configuration-req",
-	    	REMOTE_CONFIGURATION_RESP = "remote-configuration-resp";
+	    	REMOTE_CONFIGURATION_RESP = "remote-configuration-resp",
+	    	SHARE_HIGHSCORE_REQ = "share-highscore-req";
 
         /**
          * Send request to get the status of the GPS (enabled/disabled/ready)
@@ -162,6 +163,21 @@ define({
             );
         }
 
+		function sendShareHighscoreReq(value, service, highscore) {
+			sap.sendData(
+				SAP_CHANNEL,
+				{
+					messageType: SHARE_HIGHSCORE_REQ,
+					service: service,
+					score: value,
+					highscore: higscore
+				},
+				{
+					silent: true
+				}
+			);
+		}
+
         /**
          * Connect to SAP
          */
@@ -237,6 +253,7 @@ define({
             sendAuthenticationReq: sendAuthenticationReq,
             sendWebLinkReq: sendWebLinkReq,
             sendAnalytics: sendAnalytics,
+            sendShareHighscoreReq: sendShareHighscoreReq,
             isAvailable: isAvailable,
             connect: connect
         };
