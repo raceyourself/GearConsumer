@@ -25,9 +25,11 @@ define({
         'core/event',
         'views/page/racegame',
         'views/page/hrzgame',
+        'views/page/no-hrm',
         'models/settings',
         'models/game',
-        'models/sapRaceYourself'
+        'models/sapRaceYourself',
+        'models/hrm'
     ],
     def: function viewsPagePregame(req) {
         'use strict';
@@ -38,7 +40,8 @@ define({
             interval = false,
             timeout = false,
             resultTimeout = false,
-            provider = req.models.sapRaceYourself;
+            provider = req.models.sapRaceYourself,
+            hrm = req.models.hrm;
 
         function show() {
             gear.ui.changePage('#pregame');
@@ -111,14 +114,22 @@ define({
             
             if (status === 'ready' || status === 'disabled') {
                 timeout = setTimeout(function() {
-                    e.fire(game.getCurrentGame()+'.show');                    
+                    if (game.getCurrentGame() == 'hrzgame' && !hrm.isFunctioning()) {
+                    	e.fire('no-hrm.show');
+                    } else {
+                    	e.fire(game.getCurrentGame()+'.show');
+                    }
                 }, 1500);
             }
         }
         
         function onRace(ev) {
             clearTimeout(timeout);
-            e.fire(game.getCurrentGame()+'.show');
+            if (game.getCurrentGame() == 'hrzgame' && !hrm.isFunctioning()) {
+            	e.fire('no-hrm.show');
+            } else {
+            	e.fire(game.getCurrentGame()+'.show');
+            }
             ev.preventDefault();
         }
         

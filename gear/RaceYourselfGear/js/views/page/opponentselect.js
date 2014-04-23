@@ -87,8 +87,8 @@ define({
         }
         
         function render() {
-        	dinoContext.fillRect(0, 0, dinoCanvas.width, dinoCanvas.height);
-        	zombieContext.fillRect(0, 0, zombieCanvas.width, zombieCanvas.height);
+//        	dinoContext.fillRect(0, 0, dinoCanvas.width, dinoCanvas.height);
+//        	zombieContext.fillRect(0, 0, zombieCanvas.width, zombieCanvas.height);
         	
         	var dt = Date.now() - lastRenderTime;
         	lastRenderTime = Date.now();
@@ -155,11 +155,11 @@ define({
         	page.addEventListener('pageshow', onPageShow);
             page.addEventListener('pagehide', onPageHide);
             
-            loadImage('images/animation_dino_small_running.png', function() {
+            loadImage('images/animation_dino_small_running_blackBG.png', function() {
 				dinoSprite = new Sprite(this, this.width/5, 500);
 			});
             
-            loadImage('images/animation_zombie_stationary.png', function() {
+            loadImage('images/animation_zombie_stationary_blackBG.png', function() {
 				zombieSprite = new Sprite(this, this.width/14, 2000);
 			});
             

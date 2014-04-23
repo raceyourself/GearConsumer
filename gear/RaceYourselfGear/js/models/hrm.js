@@ -32,7 +32,10 @@ define({
         var e = req.core.event,
         	config = req.models.config,
             hrm = null,
+            started = false,
+            functioning = false,
             available = true,
+            error,
             lastData = {
         		heartRate: 60,
         		rRInterval: 0
@@ -60,6 +63,7 @@ define({
             };
             lastData = hrmInfo;
             e.fire(eventName, info);
+        	if (hrmInfo.heartRate > 40 && hrmInfo.heartRate < 210 && !hrmInfo.mock) functioning = true;
         }
 
         /**
@@ -67,14 +71,19 @@ define({
          * @public
          */
         function start() {
+        	if (started === true) return;
         	try {
 	            hrm.start(
 	                CONTEXT_TYPE,
 	                handleHrmInfo
 	            );
+	            started = true;
         	} catch(e) {
         		available = false;
+        		started = false;
+        		functioning = false;
         		console.error(e);
+        		error = e;
         	}
         }
 
@@ -83,11 +92,29 @@ define({
          * @public
          */
         function stop() {
-            hrm.stop(CONTEXT_TYPE);
+        	try {
+        		hrm.stop(CONTEXT_TYPE);
+                started = false;
+        	} catch(e) {
+        		console.error(e);
+        		error = e;
+        	}
         }
 
         function isAvailable() {
             return !!hrm && available;
+        }
+        
+        function isStarted() {
+        	return started;
+        }
+        
+        function isFunctioning() {
+        	return functioning;
+        }
+        
+        function getError() {
+        	return error;
         }
         
         /**
@@ -97,14 +124,26 @@ define({
             if (window.webapis && window.webapis.motion !== undefined) {
                 hrm = window.webapis.motion;
             }
+            if (isAvailable()) {
+            	// Attempt to reset bad state
+            	start();
+            	stop();
+            }
         }
 
+        e.listeners({
+            'application.exit': stop
+        });
+        
         return {
             init: init,
             start: start,
             stop: stop,
             getLastData: getLastData,
             isAvailable: isAvailable,
+            isStarted: isStarted,
+            isFunctioning: isFunctioning,
+            getError: getError,
             _handleHrmInfo: handleHrmInfo // private, used by mock
         };
     }

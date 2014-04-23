@@ -37,6 +37,7 @@ define({
         'models/settings',
         'models/config',
 		'models/game',
+		'models/application',
 		'views/page/sweatpoint_rising',
     ],
     def: function viewsPageHeartRateZombiesGame(req) {
@@ -44,6 +45,7 @@ define({
 
         var e = req.core.event,
             race = req.models.race,
+            app = req.models.application,
             hrm = req.models.hrm,
             hrmMock = req.models.mocks.hrm,
             game = req.models.game,
@@ -97,6 +99,7 @@ define({
             notificationTimeout = false,            	
             animatedSprites = [],
             zombies = [],
+            idleZombies = [],
             zombieIdle = null,
             dino = null,
             meteor = null,
@@ -377,11 +380,31 @@ define({
                 orientation: "horizontal",
                 scrollbar: "bar"                	
             });
-
+            
+            if (hrm.isStarted() && !hrm.isFunctioning()) {
+            	console.warn("HRZGame: Restarting HRM!");
+            	hrm.stop();
+            }
+            
+            if(!config.getIsDemoMode())
+            {
+				if (hrm.isAvailable() && !hrm.isStarted()) {
+					hrm.start();
+					// Availability will change if start fails
+					console.log('HRZGame: Starting HRM in Normal Mode');
+				} 
+				// Allow mock fallback when not on device
+				if (!hrm.isAvailable() && !app.onDevice()) {
+	            	hrmMock.start();
+					console.log('HRZGame: HRM not available. Starting mock HRM in Random Mode');
+				}
+            }                                   
+            
 			//start the canned hrm sequence if in demo mode
 			if (config.getIsDemoMode()) {
 				hrmMock.startCanned();
-            }                       
+				console.log('HRZGame: mock HRM started in Demo mode');
+            }
             
             sectionChanger.setActiveSection(0, 0);
             
@@ -854,11 +877,14 @@ define({
             //4 zombies, we just don't show them all
             while (zombies.length < 4) {
                 zombies.push(zombies[0].clone());
+                idleZombies.push(idleZombies[0].clone());
             };
             for (var i=0;i<zombies.length;i++) {
                 zombies[i].reset();
                 var animDelay = Math.random() * zombies[i].getPeriod();
+                var idleAnimDelay = Math.random() * idleZombies[i].getPeriod();
                 zombies[i].time = animDelay;
+                idleZombies[i].time = idleAnimDelay;
             }
             zombieOffset = zombieStartOffset;
 //            int intervalTime = Math.min(350, 750-(wave*50));
@@ -1111,7 +1137,7 @@ define({
 				{
 					clearNotification();
 				}
-				setNotification( '#fff', '#000', 'No heart rate', null, 0);
+//				setNotification( '#fff', '#000', 'No heart rate', null, 0);
 //				clearInterval(heartBeatInterval);
         	}
         	else
@@ -1887,11 +1913,8 @@ define({
 								}
 								else
 								{
-									//update zombie animation timer
-									zombie.time += dt;
-									//apply non-idle time to idle anim
-									zombieIdle.time = zombie.time;
-									zombieIdle.drawscaled(context, zombiePos, canvas.height - zombie.height * scale - trackHeight + y_offset, dt, scale);
+									var idleZombie = idleZombies[i];
+									idleZombie.drawscaled(context, zombiePos, canvas.height - zombie.height * scale - trackHeight + y_offset, dt, scale);
 								}
 							} else {
 							    // Just update the animation time
@@ -2198,6 +2221,20 @@ define({
             context.fillText('fps: '+fps, canvas.width/2, 0);
             }
             /// DEBUG
+            
+            /// DEMO MODE
+            if(config.getIsDemoMode() || hrmMock.isStarted())
+            {
+            	var msg = 'MOCK MODE';
+            	if (config.getIsDemoMode()) msg = 'DEMO MODE';
+            	context.font = '8px Samsung Sans';
+            	context.fillStyle = '#fff';
+            	context.textBaseline = 'bottom';
+            	context.textAlign = 'right';
+            	context.globalAlpha = 0.5;
+            	context.fillText(msg, canvas.width, canvas.height);
+            	context.globalAlpha = 1;
+            }
             
         	// Self
             //temp hack - make player bigger in death 'cloud' form
@@ -2544,17 +2581,6 @@ define({
             canvas = document.getElementById('race-canvas');
             context = canvas.getContext('2d');
             
-            if(!config.getIsDemoMode())
-            {
-				if (hrm.isAvailable()) {
-					hrm.start();
-					// Availability will change if start fails
-				} 
-				if (!hrm.isAvailable()) {
-	            	hrmMock.start();
-				}
-            }                       
-            
             bindEvents();
         }
         
@@ -2600,7 +2626,7 @@ define({
 
 			//zombie idle
             loadImage('images/animation_zombie_stationary.png', function() {
-                zombieIdle = new Sprite(this, this.width/14, 2000);
+                idleZombies.push(new Sprite(this, this.width/14, 2000));
             });
             
             

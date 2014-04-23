@@ -243,6 +243,33 @@ define({
             e.fire('configuration.update', configuration);
         }
         
+        /**
+         * Fired on incoming heartrate
+         */
+        function onHeatrateChanged(data) {
+            var message = data.detail.message;
+            var configuration = message.HEART_RATE_BPM;
+            e.fire('ble.heartrate_bpm', configuration);
+        }
+        
+        /**
+         * Fired on incoming cadence
+         */
+        function onCadenceChanged(data) {
+            var message = data.detail.message;
+            var configuration = message.CYCLE_CADENCE_RPM;
+            e.fire('ble.cycle_cadence_rpm', configuration);
+        }
+        
+        /**
+         * Fired on incoming cycle wheel speed
+         */
+        function onCycleSpeedChange(data) {
+            var message = data.detail.message;
+            var configuration = message.CYCLE_SPEED_BPM;
+            e.fire('ble.cycle_wheel_rpm', configuration);
+        }
+        
         function isAvailable() {
             return sap.isAvailable();
         }
@@ -251,7 +278,10 @@ define({
             'models.sap.init': onConnection,
             'models.sap.gps-position-data': onGpsPositionChanged,
             'models.sap.gps-status-resp': onGpsStatusChanged,
-            'models.sap.remote-configuration-resp': onRemoteConfiguration
+            'models.sap.remote-configuration-resp': onRemoteConfiguration,
+            'models.sap.heart-rate-data': onHeartRateChange,
+            'models.sap.cycle-speed-data': onCycleSpeedChange,
+            'models.sap.cycle-cadence-data': onCadenceChange
         });
 
         return {

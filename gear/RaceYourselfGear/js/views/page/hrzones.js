@@ -68,7 +68,7 @@ define({
             dir = 1,
             heartBeatOnFrames = 0,
             heartBeatOn = false,
-            heartRateNotFound = false,
+            heartRateNotFound = true,
             textRotation = { phase: 0, period: 2 , lastUpdateTime: 0},
             hrDrift = { target: 50, current: 50 },
 			
@@ -178,7 +178,6 @@ define({
         function onPageHide() {
             e.die('hrm.change', onHeartRateChange);
             e.die('hrzone.change', onZoneChange);
-			e.die('hrzone.change', onZoneChange);
 			e.die('heartrate.lost', onHeartRateLost);
         }
         
@@ -198,6 +197,7 @@ define({
 				hr = Math.floor(hrmInfo.detail.heartRate);
 				rToRTime = hrmInfo.detail.rInterval;
 				hrDrift.target = hr;
+	        	heartRateNotFound = false;        	
 			}
         }
         
@@ -233,8 +233,7 @@ define({
         }
 
         
-        function render() {
-        	
+        function render() {        	
 			context.clearRect(0, 0, canvas.width, canvas.height);            
 
 			//change hr

@@ -37,6 +37,7 @@ define({
         'models/settings',
         'models/config',
 		'models/game',
+		'models/application',
 		'views/page/sweatpoint_rising',
     ],
     def: function viewsRaceGame(req) {
@@ -44,6 +45,7 @@ define({
 
         var e = req.core.event,
             race = req.models.race,
+            app = req.models.application,
             hrm = req.models.hrm,
             hrmMock = req.models.mocks.hrm,
             game = req.models.game,
@@ -348,9 +350,30 @@ define({
         	
         	ppm = 0;
         	
+            if (hrm.isStarted() && !hrm.isFunctioning()) {
+            	console.warn("RaceGame: Restarting HRM!");
+            	hrm.stop();
+            }
+            
+            if(!config.getIsDemoMode())
+            {
+				//leave hrm in for race game, still want it for side screen
+				if (hrm.isAvailable() && !hrm.isStarted()) {
+					  hrm.start();
+					  console.log('RaceGame: starting HRM normally');
+					  // Availability will change if start fails
+				  } 
+				// Allow mock fallback when not on device
+				if (!hrm.isAvailable() && !app.onDevice()) {
+	            	hrmMock.start();
+					console.log('RaceGame: HRM not available. Starting mock HRM in Random Mode');
+				}
+             } 
+        	
 			//start the canned hrm sequence if in demo mode
 			if (config.getIsDemoMode()) {
 				hrmMock.startCanned();
+				console.log('RaceGame: starting mock HRM in Demo Mode');
 				//set an initial run speed of 1.5 m per stride
 				mockPedometer.setRunSpeed(1.6);
             }  
@@ -2018,6 +2041,22 @@ define({
             }
             /// DEBUG
             
+            
+            /// DEMO MODE
+            if(config.getIsDemoMode() || hrmMock.isStarted())
+            {
+            	var msg = 'MOCK MODE';
+            	if (config.getIsDemoMode()) msg = 'DEMO MODE';
+            	context.font = '8px Samsung Sans';
+            	context.fillStyle = '#fff';
+            	context.textBaseline = 'bottom';
+            	context.textAlign = 'right';
+            	context.globalAlpha = 0.5;
+            	context.fillText(msg, canvas.width, canvas.height);
+            	context.globalAlpha = 1;
+            }
+            
+            
             //countdown        
             if(countingdown && banner!=false)
             {
@@ -2228,20 +2267,7 @@ define({
             highscoreCanvas = document.getElementById('highscore-canvas');
             highscoreContext = highscoreCanvas.getContext('2d');
             
-            if(!config.getIsDemoMode())
-            {
-				//leave hrm in for race game, still want it for side screen
-				if (hrm.isAvailable()) {
-					  hrm.start();
-					  // Availability will change if start fails
-				  } 
-				  if (!hrm.isAvailable()) {
-					hrmMock.start();
-	//              	hrmMock.startCanned();
-						//start this in onpageshow
-				  }                       
-             } 
-              bindEvents();
+            bindEvents();
         }
         
         function loadAssets() {
