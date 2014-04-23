@@ -24,14 +24,14 @@ define({
     requires: [
         'core/event',
         'views/page/gameachievements',
-		'views/page/hrzones',
+//		'views/page/hrzones',
         'views/page/gamestats1',
         'views/page/gamestats2',
         'views/page/gamestats3',
         'views/page/gamestats4',
         'models/race',
-        'models/hrm',
-        'models/mocks/hrm',
+//        'models/hrm',
+//        'models/mocks/hrm',
         'models/mocks/pedometer',
         'models/sprite',
         'models/settings',
@@ -46,8 +46,8 @@ define({
         var e = req.core.event,
             race = req.models.race,
             app = req.models.application,
-            hrm = req.models.hrm,
-            hrmMock = req.models.mocks.hrm,
+//            hrm = req.models.hrm,
+//            hrmMock = req.models.mocks.hrm,
             game = req.models.game,
             settings = req.models.settings,
             config = req.models.config,
@@ -350,30 +350,30 @@ define({
         	
         	ppm = 0;
         	
-            if (hrm.isStarted() && !hrm.isFunctioning()) {
-            	console.warn("RaceGame: Restarting HRM!");
-            	hrm.stop();
-            }
+//            if (hrm.isStarted() && !hrm.isFunctioning()) {
+//            	console.warn("RaceGame: Restarting HRM!");
+//            	hrm.stop();
+//            }
             
-            if(!config.getIsDemoMode())
-            {
-				//leave hrm in for race game, still want it for side screen
-				if (hrm.isAvailable() && !hrm.isStarted()) {
-					  hrm.start();
-					  console.log('RaceGame: starting HRM normally');
-					  // Availability will change if start fails
-				  } 
-				// Allow mock fallback when on device
-				if (!hrm.isAvailable() && !app.onDevice()) {
-	            	hrmMock.start();
-					console.log('RaceGame: HRM not available. Starting mock HRM in Random Mode');
-				}
-             } 
+//            if(!config.getIsDemoMode())
+//            {
+//				//leave hrm in for race game, still want it for side screen
+//				if (hrm.isAvailable() && !hrm.isStarted()) {
+//					  hrm.start();
+//					  console.log('RaceGame: starting HRM normally');
+//					  // Availability will change if start fails
+//				  } 
+//				// Allow mock fallback when on device
+//				if (!hrm.isAvailable() && !app.onDevice()) {
+//	            	hrmMock.start();
+//					console.log('RaceGame: HRM not available. Starting mock HRM in Random Mode');
+//				}
+//             } 
         	
 			//start the canned hrm sequence if in demo mode
 			if (config.getIsDemoMode()) {
-				hrmMock.startCanned();
-				console.log('RaceGame: starting mock HRM in Demo Mode');
+//				hrmMock.startCanned();
+//				console.log('RaceGame: starting mock HRM in Demo Mode');
 				//set an initial run speed of 1.5 m per stride
 				mockPedometer.setRunSpeed(1.6);
             }  
@@ -402,7 +402,7 @@ define({
                 startCountdown();
             }
 
-			sectionChanger.setActiveSection(1, 0);
+			sectionChanger.setActiveSection(0, 0);
 
 			//reset any existing animations
 			for(var i=0; i<animatedSprites.length; i++)
@@ -879,7 +879,7 @@ define({
         function progressToGame()
         {
         	setNotification(green, '#fff', 'Race Starting', null, 2000);
-			sectionChanger.setActiveSection(1, 1000);
+			sectionChanger.setActiveSection(0, 1000);
 			setTimeout(startCountdown, 1000);
         }
 
@@ -2037,7 +2037,7 @@ define({
             
             
             /// DEMO MODE
-            if(config.getIsDemoMode() || hrmMock.isStarted())
+            if(config.getIsDemoMode())
             {
             	var msg = 'MOCK MODE';
             	if (config.getIsDemoMode()) msg = 'DEMO MODE';

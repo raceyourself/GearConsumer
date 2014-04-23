@@ -37,8 +37,9 @@ define({
             page = null,
             timer = null,
             ongoing = null,
-            bpm = 'N/A',
-            bpmEl,
+//            bpm = 'N/A',
+//            bpmEl,
+			earnedEl,
             kcalEl,
             stepsEl;
 
@@ -48,7 +49,9 @@ define({
         function onPageShow() {
             e.listen('race.new', reloadRace);
             e.listen('pedometer.step', tick);
-            e.listen('hrm.change', hrmChange);
+//            e.listen('hrm.change', hrmChange);
+            e.listen('points.change', tick);
+
             
             ongoing = race.getOngoingRace();
             tick();
@@ -58,26 +61,33 @@ define({
         function onPageHide() {
             e.die('race.new', reloadRace);
             e.die('pedometer.step', tick);
-            e.die('hrm.change', hrmChange);
+//            e.die('hrm.change', hrmChange);
+            e.die('points.change', tick);
+
             timer.reset();
         }
+            
+        function numberWithCommas(x) {
+            return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+        }   
         
         function reloadRace() {
             ongoing = race.getOngoingRace();            
         }
         
-        function hrmChange(hrmInfo) {
-            bpm = hrmInfo.detail.heartRate;
-            if(bpm < 30)
-            {
-            	bpm = '--';
-            }
-            tick();
-        }
+//        function hrmChange(hrmInfo) {
+//            bpm = hrmInfo.detail.heartRate;
+//            if(bpm < 30)
+//            {
+//            	bpm = '--';
+//            }
+//            tick();
+//        }
         
         function tick() {
             if (!ongoing) return;
-            bpmEl.innerHTML = bpm;
+//            bpmEl.innerHTML = bpm;
+            earnedEl.innerHTML = numberWithCommas(~~ongoing.getPointsEarned());
             kcalEl.innerHTML = ~~(ongoing.getCalories());
             stepsEl.innerHTML = ongoing.getSteps();
         }
@@ -89,7 +99,8 @@ define({
 
         function init() {
             page = document.getElementById('race-game');
-            bpmEl = document.getElementById('bpm-stat');
+//            bpmEl = document.getElementById('bpm-stat');
+			earnedEl = document.getElementById('points-stat');
             kcalEl = document.getElementById('kcal-stat');
             stepsEl = document.getElementById('steps-stat');
             timer = new Timer(1000, 'views.page.gamestats2.tick');
