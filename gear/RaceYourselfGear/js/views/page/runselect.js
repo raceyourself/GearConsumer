@@ -50,18 +50,18 @@ define({
          	provider = req.models.sapRaceYourself,
             changer,
             lastRenderTime,
-            fitterContext,
-            fitterCanvas,
-            fitterLockedSprite,
-            fitterUnlockedSprite,
-            slimmerContext,
-            slimmerCanvas,
-            slimmerLockedSprite,
-            slimmerUnlockedSprite,
-            fasterContext,
-            fasterCanvas,
-            fasterLockedSprite,
-            fasterUnlockedSprite,
+//            fitterContext,
+//            fitterCanvas,
+//            fitterLockedSprite,
+//            fitterUnlockedSprite,
+//            slimmerContext,
+//            slimmerCanvas,
+//            slimmerLockedSprite,
+//            slimmerUnlockedSprite,
+//            fasterContext,
+//            fasterCanvas,
+//            fasterLockedSprite,
+//            fasterUnlockedSprite,
             elimContext,
             elimCanvas,
             elimGameSprite,
@@ -80,14 +80,14 @@ define({
             });
             
             e.listen('tizen.back', onBack);
-            sectionChanger.setActiveSection(3, 0);
+            sectionChanger.setActiveSection(1, 0);
 
             lastRenderTime = Date.now();
             animate();
             
 //            if(settings.getFirstTimeSelect()) {
             	setTimeout(function() {
-            		sectionChanger.setActiveSection(0, 1000);
+            		sectionChanger.setActiveSection(0, 500);
             	}, 1);
 //            	settings.setFirstTimeSelect(false);
 //            } else {
@@ -105,35 +105,35 @@ define({
         	var dt = Date.now() - lastRenderTime;
         	lastRenderTime = Date.now();
         	
-        	if(game.isLocked('Endurance')) {
-        		if(fitterLockedSprite !== undefined) {
-        			fitterLockedSprite.draw(fitterContext, fitterCanvas.width / 2 - fitterLockedSprite.width /2, fitterCanvas.height /2 - fitterLockedSprite.height /2, 0);
-        		}
-        	} else {
-        		if(fitterUnlockedSprite !== undefined) {
-        			fitterUnlockedSprite.draw(fitterContext, fitterCanvas.width / 2 - fitterUnlockedSprite.width /2, fitterCanvas.height /2 - fitterUnlockedSprite.height /2, dt);
-        		}
-        	}
-        	
-        	if(game.isLocked('WeightLoss')) {
-        		if(slimmerLockedSprite !== undefined) {
-        			slimmerLockedSprite.draw(slimmerContext, slimmerCanvas.width / 2 - slimmerLockedSprite.width /2, slimmerCanvas.height /2 - slimmerLockedSprite.height /2, 0);
-        		}
-        	} else {
-        		if(slimmerUnlockedSprite !== undefined) {
-        			slimmerUnlockedSprite.draw(slimmerContext, slimmerCanvas.width / 2 - slimmerUnlockedSprite.width /2, slimmerCanvas.height /2 - slimmerUnlockedSprite.height /2, dt);
-        		}
-        	}
-
-        	if(game.isLocked('Strength')) {
-        		if(fasterLockedSprite !== undefined) {
-        			fasterLockedSprite.draw(fasterContext, fasterCanvas.width / 2 - fasterLockedSprite.width / 2, fasterCanvas.height / 2 - fasterLockedSprite.height / 2, 0);
-                }
-        	} else {
-        		if(fasterUnlockedSprite !== undefined) {
-        			fasterUnlockedSprite.draw(fasterContext, fasterCanvas.width / 2 - fasterUnlockedSprite.width / 2, fasterCanvas.height / 2 - fasterUnlockedSprite.height / 2, dt);
-        		}
-        	}
+//        	if(game.isLocked('Endurance')) {
+//        		if(fitterLockedSprite !== undefined) {
+//        			fitterLockedSprite.draw(fitterContext, fitterCanvas.width / 2 - fitterLockedSprite.width /2, fitterCanvas.height /2 - fitterLockedSprite.height /2, 0);
+//        		}
+//        	} else {
+//        		if(fitterUnlockedSprite !== undefined) {
+//        			fitterUnlockedSprite.draw(fitterContext, fitterCanvas.width / 2 - fitterUnlockedSprite.width /2, fitterCanvas.height /2 - fitterUnlockedSprite.height /2, dt);
+//        		}
+//        	}
+//        	
+//        	if(game.isLocked('WeightLoss')) {
+//        		if(slimmerLockedSprite !== undefined) {
+//        			slimmerLockedSprite.draw(slimmerContext, slimmerCanvas.width / 2 - slimmerLockedSprite.width /2, slimmerCanvas.height /2 - slimmerLockedSprite.height /2, 0);
+//        		}
+//        	} else {
+//        		if(slimmerUnlockedSprite !== undefined) {
+//        			slimmerUnlockedSprite.draw(slimmerContext, slimmerCanvas.width / 2 - slimmerUnlockedSprite.width /2, slimmerCanvas.height /2 - slimmerUnlockedSprite.height /2, dt);
+//        		}
+//        	}
+//
+//        	if(game.isLocked('Strength')) {
+//        		if(fasterLockedSprite !== undefined) {
+//        			fasterLockedSprite.draw(fasterContext, fasterCanvas.width / 2 - fasterLockedSprite.width / 2, fasterCanvas.height / 2 - fasterLockedSprite.height / 2, 0);
+//                }
+//        	} else {
+//        		if(fasterUnlockedSprite !== undefined) {
+//        			fasterUnlockedSprite.draw(fasterContext, fasterCanvas.width / 2 - fasterUnlockedSprite.width / 2, fasterCanvas.height / 2 - fasterUnlockedSprite.height / 2, dt);
+//        		}
+//        	}
         	
         	if(elimGameSprite !== undefined) {
         		elimGameSprite.draw(elimContext, elimCanvas.width / 2 - elimGameSprite.width / 2, elimCanvas.height / 2 - elimGameSprite.height / 2, dt);
@@ -165,22 +165,22 @@ define({
         
         function bindEvents() {
         	var moreGamesEl = document.getElementById('more-games-btn'),
-        		elimBtnEl = document.getElementById('elim-mode-btn'),
-        		fitnessBtnEl = document.getElementById('fitness-mode-btn'),
-        		weightBtnEl = document.getElementById('weight-mode-btn'),
-        		strengthBtnEl = document.getElementById('strength-mode-btn');
+        		elimBtnEl = document.getElementById('elim-mode-btn');
+//        		fitnessBtnEl = document.getElementById('fitness-mode-btn'),
+//        		weightBtnEl = document.getElementById('weight-mode-btn'),
+//        		strengthBtnEl = document.getElementById('strength-mode-btn');
         	
         	 page.addEventListener('pageshow', onPageShow);
              page.addEventListener('pagehide', onPageHide);
              
-            fitterCanvas = document.getElementById('fitter-canvas');
-         	fitterContext = fitterCanvas.getContext('2d');
-             
-         	slimmerCanvas = document.getElementById('slimmer-canvas');
-         	slimmerContext = slimmerCanvas.getContext('2d');
-         	
-         	fasterCanvas = document.getElementById('faster-canvas');
-         	fasterContext = fasterCanvas.getContext('2d');
+//            fitterCanvas = document.getElementById('fitter-canvas');
+//         	fitterContext = fitterCanvas.getContext('2d');
+//             
+//         	slimmerCanvas = document.getElementById('slimmer-canvas');
+//         	slimmerContext = slimmerCanvas.getContext('2d');
+//         	
+//         	fasterCanvas = document.getElementById('faster-canvas');
+//         	fasterContext = fasterCanvas.getContext('2d');
          	
          	elimCanvas = document.getElementById('elim-canvas');
          	elimContext = elimCanvas.getContext('2d');
@@ -189,71 +189,71 @@ define({
          		elimGameSprite = new Sprite(this, this.width/6, 400);
          	});
          	
-         	loadImage('images/New_Games/ry_slimmer_locked.png', function() {
-				slimmerLockedSprite = new Sprite(this, this.width, 1000);
-			});
-         	
-         	loadImage('images/animation_RY_Slimmer_game_tile2.png', function() {
-				slimmerUnlockedSprite = new Sprite(this, this.width/6, 600);
-			});
-         	
-         	loadImage('images/New_Games/ry_fitter_locked.png', function() {
-				fitterLockedSprite = new Sprite(this, this.width, 1000);
-			});
-         	
-         	loadImage('images/animation_RY_Fitter_game_tile2.png', function() {
-				fitterUnlockedSprite = new Sprite(this, this.width/6, 600);
-			});
-         	
-         	loadImage('images/New_Games/ry_faster_locked.png', function() {
-         		fasterLockedSprite = new Sprite(this, this.width, 1000);
-         	});
-         	
-         	loadImage('images/animation_RY_Faster_game_tile2.png', function() {
-         		fasterUnlockedSprite = new Sprite(this, this.width / 6, 600);
-         	});
+//         	loadImage('images/New_Games/ry_slimmer_locked.png', function() {
+//				slimmerLockedSprite = new Sprite(this, this.width, 1000);
+//			});
+//         	
+//         	loadImage('images/animation_RY_Slimmer_game_tile2.png', function() {
+//				slimmerUnlockedSprite = new Sprite(this, this.width/6, 600);
+//			});
+//         	
+//         	loadImage('images/New_Games/ry_fitter_locked.png', function() {
+//				fitterLockedSprite = new Sprite(this, this.width, 1000);
+//			});
+//         	
+//         	loadImage('images/animation_RY_Fitter_game_tile2.png', function() {
+//				fitterUnlockedSprite = new Sprite(this, this.width/6, 600);
+//			});
+//         	
+//         	loadImage('images/New_Games/ry_faster_locked.png', function() {
+//         		fasterLockedSprite = new Sprite(this, this.width, 1000);
+//         	});
+//         	
+//         	loadImage('images/animation_RY_Faster_game_tile2.png', function() {
+//         		fasterUnlockedSprite = new Sprite(this, this.width / 6, 600);
+//         	});
          	 
              moreGamesEl.addEventListener('click', onMoreGames);
              elimBtnEl.addEventListener('click', onElimBtnClick);
-             fitnessBtnEl.addEventListener('click', onHRRaceClick);
-             weightBtnEl.addEventListener('click', onHRRaceClick);
-             strengthBtnEl.addEventListener('click', onHRRaceClick);
+//             fitnessBtnEl.addEventListener('click', onHRRaceClick);
+//             weightBtnEl.addEventListener('click', onHRRaceClick);
+//             strengthBtnEl.addEventListener('click', onHRRaceClick);
         }
         
-        function onHRRaceClick(event) {
-        	if(isScrolling()) return;
-        	switch(this.id) {
-        	case 'fitness-mode-btn':
-        		if (game.isLocked('Endurance')) {
-        			//e.fire('lockedgame.show', 'Endurance');
-        			return;
-        		} 
-        		race.setGoal('Endurance');
-        		break;
-        		
-        	case 'weight-mode-btn':
-        		if (game.isLocked('WeightLoss')) {
-        			//e.fire('lockedgame.show', 'WeightLoss');
-        			return;
-        		} 
-        		race.setGoal('WeightLoss');
-        		break;
-        		
-        	case 'strength-mode-btn':
-        		if (game.isLocked('Strength')) {
-        			//e.fire('lockedgame.show', 'Strength');
-        			return;
-        		}
-        		race.setGoal('Strength');
-        		break;
-        		
-        	default:
-        		console.log('Button not found - ' + this.id);
-        		break;
-        	}
-        	
-        	e.fire('opponentselect.show');
-        }
+//        function onHRRaceClick(event) {
+//        	if(isScrolling()) return;
+//        	switch(this.id) {
+//        	case 'fitness-mode-btn':
+//        		if (game.isLocked('Endurance')) {
+//        			//e.fire('lockedgame.show', 'Endurance');
+//        			return;
+//        		} 
+//        		race.setGoal('Endurance');
+//        		break;
+//        		
+//        	case 'weight-mode-btn':
+//        		if (game.isLocked('WeightLoss')) {
+//        			//e.fire('lockedgame.show', 'WeightLoss');
+//        			return;
+//        		} 
+//        		race.setGoal('WeightLoss');
+//        		break;
+//        		
+//        	case 'strength-mode-btn':
+//        		if (game.isLocked('Strength')) {
+//        			//e.fire('lockedgame.show', 'Strength');
+//        			return;
+//        		}
+//        		race.setGoal('Strength');
+//        		break;
+//        		
+//        	default:
+//        		console.log('Button not found - ' + this.id);
+//        		break;
+//        	}
+//        	
+//        	e.fire('opponentselect.show');
+//        }
 
         function isScrolling() {
             if (!sectionChanger) return false;
