@@ -494,10 +494,51 @@ img {
 	border-left: 1px solid rgba(0,0,0,0.1);
 }
 
+.right-twitter-btn {
+	width: 50%;
+	color: #5DB5DE;
+	background-color: #5DB5DE;
+	position: absolute;
+	right: 0px;
+	bottom: 0px;
+	font-size: 32px;
+	font-weight: bold;	
+	padding: 15px 15px;
+	border-left: 1px solid rgba(0,0,0,0.1);
+}
+
+.left-fb-btn {
+	width: 50%;
+	color: #335795;
+	background-color: white;
+	position: absolute;
+	right: 0px;
+	bottom: 0px;
+	font-size: 32px;
+	font-weight: bold;	
+	padding: 15px 15px;
+	border-left: 1px solid rgba(0,0,0,0.1);
+}
+
 .left-btn:active,.right-btn:active {
 	background-color: #3db44a;		
 }
 
+.twitter-img {
+	position: absolute;
+	top: 26px;
+	left: 58px;
+}
+
+.ry-top-bar {
+	position: absolute;
+}
+
+.fb-img {
+	position: absolute;
+	top: 23px;
+	left: 69px;
+}
 
 .overlay {
 	position: fixed;
@@ -509,6 +550,17 @@ img {
 	text-align: center;
 	background-color: rgba(0, 0, 0, 0.6);
 	padding: 10px 30px;
+	font-size: 24px;
+}
+
+.is-highscore {
+	text-align: center;
+	padding: 10px 30px;
+}
+
+.endhighscore {
+	height: 320px;
+	text-align: center;
 	font-size: 24px;
 }
 
@@ -575,11 +627,21 @@ img {
 .eliminator .left-btn {
 	min-height: 90px;
 	padding: 5px 15px;
+	background-color: #335795;
 }
 
 .eliminator .right-btn {
 	min-height: 90px;
 	line-height: 60px;
+	background-color: #5DB5DE;
+}
+
+.eliminator .left-btn:active {
+	background-color: #17293F;
+}
+
+.eliminator .right-btn:active {
+	background-color: #1B353F;
 }
 
 #about {

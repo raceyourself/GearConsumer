@@ -222,8 +222,8 @@ define({
             started = false,
 			timeOfLastOvertakeWarning = 0,
 			minTimeBetweenOvertakeWarnings = 5000,
-			highscoreCanvas,
-			highscoreContext,
+//			highscoreCanvas,
+//			highscoreContext,
         	drawHighscoreText = false;
         
 			
@@ -338,8 +338,8 @@ define({
         	eliminatedEndImage.loop = false;
         	eliminatedEndImage.reset();
         	gameOver = false;
-            document.getElementById('eliminator-end').classList.toggle('hidden', true);
-            document.getElementById('eliminator-highscore').classList.toggle('hidden', true);
+//            document.getElementById('eliminator-end').classList.toggle('hidden', true);
+//            document.getElementById('eliminator-highscore').classList.toggle('hidden', true);
             isHighscore = false;
             drawHighscoreText = false;
         	if (!loaded) {
@@ -476,8 +476,6 @@ define({
 			
 ////////////	/Eliminator
             
-            
-            
         }
         
         function addGhost(time)
@@ -537,8 +535,8 @@ define({
             e.die('motion.wristup', onWristUp);
             
             visible = false;
-            document.getElementById('eliminator-end').classList.toggle('hidden', true);
-            document.getElementById('eliminator-highscore').classList.toggle('hidden', true);
+//            document.getElementById('eliminator-end').classList.toggle('hidden', true);
+//            document.getElementById('eliminator-highscore').classList.toggle('hidden', true);
             clearInterval(fpsInterval);
 			clearTimeout(warmupTimeout);
 ////            clearTimeout(intervalTimeout);
@@ -587,8 +585,8 @@ define({
         function onAgain() {
         	numLaps = 0;
 			ghostRunners = [];
-            document.getElementById('eliminator-end').classList.toggle('hidden', true);
-            document.getElementById('eliminator-highscore').classList.toggle('hidden', true);
+//            document.getElementById('eliminator-end').classList.toggle('hidden', true);
+//            document.getElementById('eliminator-highscore').classList.toggle('hidden', true);
             gameOver = false;
             ppm = config.getPpmGood();
             playerIsAhead = true;
@@ -598,6 +596,12 @@ define({
         
         function onQuit() {
 			var r = race.getOngoingRace();
+			if(numLaps <= settings.getEliminatorHighScore()) {
+				r.setIsHighscore(false);
+			} else {
+				r.setIsHighscore(true);
+				settings.setEliminatorHighScore(numLaps);
+			}
 			e.fire('race.end', r);
 			r.stop();
 
@@ -851,20 +855,22 @@ define({
 				}
 				
 				setTimeout( function() {
-					if (numLaps <= settings.getEliminatorHighScore()) {
-						document.getElementById('eliminator-score-value').innerHTML = numLaps;
-						document.getElementById('eliminator-best-value').innerHTML = settings.getEliminatorHighScore();
-						document.getElementById('eliminator-end').classList.toggle('hidden');
-					} else {
-						settings.setEliminatorHighScore(numLaps);
+					if (numLaps >= settings.getEliminatorHighScore()) {
+//						document.getElementById('eliminator-score-value').innerHTML = numLaps;
+//						document.getElementById('eliminator-best-value').innerHTML = settings.getEliminatorHighScore();
+//						document.getElementById('eliminator-end').classList.toggle('hidden');
+//					} else {
+//						settings.setEliminatorHighScore(numLaps);
 						isHighscore = true;
-						setTimeout(function() {
-							drawHighscoreText = true;
-						}, 1200);
-						//document.getElementById('eliminator-new-hs-value').innerHTML = numLaps;
-						document.getElementById('eliminator-highscore').classList.toggle('hidden');
+//						setTimeout(function() {
+//							drawHighscoreText = true;
+//						}, 1200);
+//						//document.getElementById('eliminator-new-hs-value').innerHTML = numLaps;
+//						document.getElementById('eliminator-highscore').classList.toggle('hidden');
 					}
-					}, 2000);
+					race.getOngoingRace().setIsHighscore(isHighscore);
+					onQuit();
+				}, 2000);
 				finished = true;
 				started = false;
 //				var r = race.getOngoingRace();
@@ -959,8 +965,8 @@ define({
 					}
 				}
 */
+				race.getOngoingRace().setScore(numLaps);
             	
-
             	e.fire('racegame.lapcomplete', numLaps);
             	if(playerIsAhead)
             	{
@@ -2155,16 +2161,16 @@ define({
             	eliminatedEndImage.draw(context, 0, 0, dt);
             }
             
-            if(isHighscore) {
-            	highscoreImage.draw(highscoreContext, 0, 0, dt);
-            	highscoreContext.font = 'bold 50px Samsung Sans';
-            	highscoreContext.textAlign = 'center';
-            	highscoreContext.textBaseline = 'middle';
-            	highscoreContext.fillStyle = '#000';
-            	if(drawHighscoreText) {
-            	 	highscoreContext.fillText(numLaps, highscoreCanvas.width/2, highscoreCanvas.height/2 - 30);
-                }
-           }
+//            if(isHighscore) {
+//            	highscoreImage.draw(highscoreContext, 0, 0, dt);
+//            	highscoreContext.font = 'bold 50px Samsung Sans';
+//            	highscoreContext.textAlign = 'center';
+//            	highscoreContext.textBaseline = 'middle';
+//            	highscoreContext.fillStyle = '#000';
+//            	if(drawHighscoreText) {
+//            	 	highscoreContext.fillText(numLaps, highscoreCanvas.width/2, highscoreCanvas.height/2 - 30);
+//                }
+//           }
             
             context.save();
             frames++;
@@ -2227,10 +2233,10 @@ define({
             page.addEventListener('pagehide', onPageHide);
             document.getElementById('game-yesquit-btn').addEventListener('click', onQuit);
             document.getElementById('game-noquit-btn').addEventListener('click', onBack);
-            document.getElementById('eliminator-hs-again-btn').addEventListener('click', onAgain);
-            document.getElementById('eliminator-hs-quit-btn').addEventListener('click', onQuit);
-            document.getElementById('eliminator-end-again-btn').addEventListener('click', onAgain);
-            document.getElementById('eliminator-end-quit-btn').addEventListener('click', onQuit);
+//            document.getElementById('eliminator-hs-again-btn').addEventListener('click', onAgain);
+//            document.getElementById('eliminator-hs-quit-btn').addEventListener('click', onQuit);
+//            document.getElementById('eliminator-end-again-btn').addEventListener('click', onAgain);
+//            document.getElementById('eliminator-end-quit-btn').addEventListener('click', onQuit);
         }
         function detachGame() {
         	console.log('Detaching racegame');
@@ -2238,10 +2244,10 @@ define({
             page.removeEventListener('pagehide', onPageHide);
             document.getElementById('game-yesquit-btn').removeEventListener('click', onQuit);
             document.getElementById('game-noquit-btn').removeEventListener('click', onBack);
-            document.getElementById('eliminator-hs-again-btn').removeEventListener('click', onAgain);
-            document.getElementById('eliminator-hs-quit-btn').removeEventListener('click', onQuit);
-            document.getElementById('eliminator-end-again-btn').removeEventListener('click', onAgain);
-            document.getElementById('eliminator-end-quit-btn').removeEventListener('click', onQuit);
+//            document.getElementById('eliminator-hs-again-btn').removeEventListener('click', onAgain);
+//            document.getElementById('eliminator-hs-quit-btn').removeEventListener('click', onQuit);
+//            document.getElementById('eliminator-end-again-btn').removeEventListener('click', onAgain);
+//            document.getElementById('eliminator-end-quit-btn').removeEventListener('click', onQuit);
         }
                 
         function onGpsStatus(event) {
@@ -2258,9 +2264,9 @@ define({
             canvas = document.getElementById('race-canvas');
             context = canvas.getContext('2d');
             
-            highscoreCanvas = document.getElementById('highscore-canvas');
-            highscoreContext = highscoreCanvas.getContext('2d');
-            
+//            highscoreCanvas = document.getElementById('highscore-canvas');
+//            highscoreContext = highscoreCanvas.getContext('2d');
+//            
             bindEvents();
         }
         

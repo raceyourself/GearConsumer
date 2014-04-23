@@ -85,6 +85,8 @@ define({
             this.steps = 0;
             this.initialCalories = null;
             this.calories = 0;
+            this.score = null;
+            this.ishighscore = false;
             this.track = [];
             this.raceType = game.getCurrentGame();
             this.opponentType = game.getCurrentOpponentType();
@@ -160,6 +162,22 @@ define({
                 } else {
                     return "meters";
                 }
+            },
+            
+            getIsHighscore: function getIsHighscore() {
+            	return this.ishighscore;
+            },
+            
+            getScore: function getScore() {
+            	return this.score;
+            },
+            
+            setScore: function setScore(s) {
+            	this.score = s;
+            },
+            
+            setIsHighscore: function setIsHighscore(s) {
+            	this.ishighscore = s;
             },
 
             getShortDistanceUnits: function getShortDistanceUnits() {

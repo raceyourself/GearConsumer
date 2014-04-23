@@ -654,6 +654,7 @@
 				NO
 			</div>
 		</div>
+		<!-- 
 		<div id="eliminator-end" class="eliminator overlay hidden">
 			<div id="eliminator-score">SCORE</div>
 			<div id="eliminator-score-value">0</div>
@@ -665,17 +666,9 @@
 		    <div class="right-btn" id="eliminator-end-quit-btn">
 				QUIT
 			</div>
-		</div>
-		<div id="eliminator-highscore" class="eliminator overlay hidden">
-			<canvas id="highscore-canvas" height="320" width = "320" style="margin-left:-30px; margin-top: -10px;"></canvas>
-			
-			<div class="left-btn" id="eliminator-hs-again-btn">
-				RACE AGAIN
-			</div>
-		    <div class="right-btn" id="eliminator-hs-quit-btn">
-				QUIT
-			</div>
-		</div>
+		</div> 
+		-->
+		
 		<div id="race-game-sectionchanger" class="ui-content">
 			<!-- section changer has only one child. -->
 			<div>
@@ -781,8 +774,29 @@
     	<div id="race-summary-sectionchanger" class="ui-content" style="z-index:0;">
     		<div>
     			<section id="summary-unlocks" class="hidden" style="z-index:1;">
-	    			<canvas id="summary-canvas" width="320" height="320" >
-	    			</canvas>
+    			<img src="images/icon_RaceYourself_name_top_bar.png" class="ry-top-bar" />
+	    			<div id="eliminator-end" class="eliminator endhighscore hidden">
+						<div id="eliminator-score">SCORE</div>
+						<div id="eliminator-score-value">0</div>
+						<div id="eliminator-best">BEST</div>
+						<div id="eliminator-best-value">0</div>
+					    <div class="left-btn" id="eliminator-end-fb-btn">
+							<img src="images/icon_facebook.png" class="fb-img" />
+						</div>
+					    <div class="right-btn" id="eliminator-end-twitter-btn">
+							<img src="images/icon_twitter.png" class="twitter-img" />
+						</div>
+					</div>
+					<canvas id="summary-canvas" height="320" width = "320"></canvas>
+	    			<div id="eliminator-highscore" class="eliminator is-highscore hidden">
+						
+						<div class="left-btn" id="eliminator-hs-fb-btn">
+							<img src="images/icon_facebook.png" class="fb-img" />
+						</div>
+					    <div class="right-btn" id="eliminator-hs-twitter-btn">
+							<img src="images/icon_twitter.png" class="twitter-img" />
+						</div>
+					</div>
     			</section>
     			<section>
 	    			<header class="ui-header" data-position="fixed">

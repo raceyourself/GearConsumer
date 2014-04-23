@@ -26,7 +26,9 @@ define({
         'models/race',
         'models/game',
         'models/race',
+        'models/sprite',
         'models/racedata',
+        'models/sapRaceYourself',
         'models/settings',
         'models/achievements',
         'helpers/units',
@@ -44,9 +46,11 @@ define({
          	list = null,
          	game = req.models.game,
          	race = req.models.race,
+         	sapProvider = req.models.sapRaceYourself,
          	racedata = req.models.racedata,
          	achievements = req.models.achievements,
          	settings = req.models.settings,
+         	Sprite = req.models.sprite.Sprite,
          	units = req.helpers.units,
             changer,
             sectionChanger,
@@ -57,9 +61,22 @@ define({
             summaryCanvas,
             summaryContext,
             achievementSprites = [],
-            isHistory = false;
+            isHistory = false,
+            shareComplete = false,
+            isHighscore = false,
+            score = 0,
+            highscoreSprite,
+            normalScoreSprite,
+            sharedImage,
+			facebookIcon,
+			drawHighscoreText = false,
+			twitterIcon;
 
         function show(event) {
+//
+//        	document.getElementById('eliminator-end').classList.toggle('hidden', true);
+//            document.getElementById('eliminator-highscore').classList.toggle('hidden', true);
+            
             gear.ui.changePage('#racesummary');
             
             var r;
@@ -74,12 +91,35 @@ define({
               
             if (!!r) {
                	// Build sections
-               	var as = r.achievements;
-               	buildAchievements(as);
+               	//var as = r.achievements;
+               //	buildAchievements(as);
+            	createScoreScreen(r);
             } 
                 
             renderPrevious(r);
             
+        }
+        
+        function createScoreScreen(r) {
+        	var unlocksEl = document.getElementById('summary-unlocks');
+        	unlocksEl.classList.toggle('hidden', false);
+        	isHighscore = r.ishighscore;
+        	if(!isHighscore) {
+        		if(r.score !== null) {
+        			document.getElementById('eliminator-score-value').innerHTML = r.score;
+        			score = r.score;
+        		} else {
+        			document.getElementById('eliminator-score-value').innerHTML = 0;
+        		}
+        		document.getElementById('eliminator-best-value').innerHTML = settings.getEliminatorHighScore();
+				document.getElementById('eliminator-end').classList.toggle('hidden');
+        	} else {
+        		setTimeout(function() {
+					drawHighscoreText = true;
+				}, 1200);
+        		document.getElementById('eliminator-highscore').classList.toggle('hidden');
+        	}
+        	
         }
         
         function buildAchievements(as) {
@@ -99,13 +139,16 @@ define({
 
         function onPageShow() {
             //r = race.getOngoingRace();
+        	shareComplete = false;
         	sectionChanger = new SectionChanger(changer, {
             	items: 'section:not(.hidden)',
                 circular: true,
                 orientation: "horizontal",
                 scrollbar: "bar"
             });
-
+        	
+        	drawHighscoreText = false;
+        	
         	sectionChanger.setActiveSection(0, 0);
         	
             e.listen('tizen.back', onBack);
@@ -147,10 +190,25 @@ define({
         	var dt = Date.now() - lastRenderTime;
         	lastRenderTime = Date.now();
         	//console.log(dt);
-        	for(var i=0; i<achievementSprites.length; i++) {
-            	achievementSprites[i].draw(summaryContext, summaryCanvas.width / 2 - achievementSprites[i].width / 2, summaryCanvas.height / 2 - achievementSprites[i].height / 2, dt);
-            }
+//        	for(var i=0; i<achievementSprites.length; i++) {
+//            	achievementSprites[i].draw(summaryContext, summaryCanvas.width / 2 - achievementSprites[i].width / 2, summaryCanvas.height / 2 - achievementSprites[i].height / 2, dt);
+//            }
+        	if(!shareComplete) {
+        		if(isHighscore) {
+	            	highscoreSprite.draw(summaryContext, summaryCanvas.width / 2 - highscoreSprite.width / 2, summaryCanvas.height / 2 - highscoreSprite.height / 2, dt);
+	            	summaryContext.font = 'bold 50px Samsung Sans';
+	            	summaryContext.textAlign = 'center';
+	            	summaryContext.textBaseline = 'middle';
+	            	summaryContext.fillStyle = '#000';
+	                if(drawHighscoreText) {
+	                	summaryContext.fillText(score, summaryCanvas.width/2, summaryCanvas.height/2 - 30);
+	                }
+	            } 
+        	} else {
+        		sharedImage.draw(summaryContext, summaryCanvas.width / 2 - sharedImage.width / 2, summaryCanvas.height / 2 - sharedImage.height / 2, dt);
+        	}
             
+        	
         }
         
         function generateAwards(as) {
@@ -188,6 +246,8 @@ define({
             sectionChanger.destroy();
         	document.getElementById('summary-unlocks').classList.toggle('hidden', true);
         	cancelAnimationFrame(raf);
+        	document.getElementById('eliminator-end').classList.toggle('hidden', true);
+            document.getElementById('eliminator-highscore').classList.toggle('hidden', true);
             e.die('tizen.back', onBack);
         }        
         
@@ -197,8 +257,28 @@ define({
              
              page.addEventListener('click', onSummaryEndClick);
              
+             document.getElementById('eliminator-hs-twitter-btn').addEventListener('click', shareScore);
+           	 document.getElementById('eliminator-hs-fb-btn').addEventListener('click', shareScore);
+           	 document.getElementById('eliminator-end-twitter-btn').addEventListener('click', shareScore);
+           	 document.getElementById('eliminator-end-fb-btn').addEventListener('click', shareScore);
+             
              list.addEventListener('click', onItemTap);
              document.getElementById('end-game-btn').addEventListener('click', onBack);
+        }
+        
+        function shareScore(event) {
+        	event.stopPropagation();
+        	if(this.id == 'eliminator-hs-twitter-btn' || this.id == 'eliminator-end-twitter-btn' ) {
+        		sapProvider.sendShareHighscoreReq(score, 'twitter', isHighscore);
+        	} else if(this.id == 'eliminator-hs-fb-btn' || this.id == 'eliminator-end-fb-btn') {
+        		sapProvider.sendShareHighscoreReq(score, 'facebook', isHighscore);
+        	}
+        	
+        	document.getElementById('eliminator-end').classList.toggle('hidden', true);
+        	shareComplete = true;
+        	
+            document.getElementById('eliminator-highscore').classList.toggle('hidden', true);
+            summaryContext.clearRect(0, 0, summaryCanvas.width, summaryCanvas.height);
         }
 
         function onSummaryEndClick() {
@@ -232,6 +312,23 @@ define({
             changer = document.getElementById("race-summary-sectionchanger");
             summaryCanvas = document.getElementById('summary-canvas');
             summaryContext = summaryCanvas.getContext('2d');
+            
+			loadImage('images/facebook_icon.jpg', function() {
+				facebookIcon = new Sprite(this, this.width, 1000);
+			});
+			
+			loadImage('images/twitter_icon.jpg', function() {
+				twitterIcon = new Sprite(this, this.width, 1000);
+			});
+            
+			loadImage('images/animation_latest_high_score_all_together.png', function() {
+				highscoreSprite = new Sprite(this, this.width / 11, 1800, {loop: true, loopstart: 8});
+			});
+			
+			loadImage('images/icon_social_media_connection.png', function() {
+				sharedImage = new Sprite(this, this.width, 1000);
+			});
+			
             bindEvents();
         }
 
@@ -246,6 +343,17 @@ define({
             if (mins < 10) mins = '0' + mins;
             
             return hours + ' ' + mins;
+        }
+        
+        function loadImage(url, onload) {
+        	var image = new Image();
+        	image.onerror = function() {
+        		throw 'could not load' + this.src;      	
+        	}
+        	image.onload = function() {
+        		onload.call(this);
+        	};
+        	image.src = url;
         }
         
         function distance(value, u) {

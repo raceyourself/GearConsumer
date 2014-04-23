@@ -170,7 +170,7 @@ define({
 					messageType: SHARE_HIGHSCORE_REQ,
 					service: service,
 					score: value,
-					highscore: higscore
+					highscore: highscore
 				},
 				{
 					silent: true
