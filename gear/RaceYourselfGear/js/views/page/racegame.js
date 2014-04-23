@@ -224,7 +224,8 @@ define({
 			minTimeBetweenOvertakeWarnings = 5000,
 //			highscoreCanvas,
 //			highscoreContext,
-        	drawHighscoreText = false;
+        	drawHighscoreText = false,
+        	logoHeader = null;
         
 			
 //// in common with zombie game <---
@@ -1149,8 +1150,12 @@ define({
 			}
 */
 
+
+
+	
+
 ////////// Eliminator
-			screenWidthDistance = 13;
+			screenWidthDistance = 15;
 			var playerLapDistance = r.getMetricDistance() - lapStartDist;
 			//drift from left to right as we get further through the lap
 			//go from 0.2 to 0.8 of the way across the screen.
@@ -1186,7 +1191,7 @@ define({
 				screenWidthDistance = Math.abs(playerAheadAmount) +2;
 				//clamp
 				screenWidthDistance = Math.min(screenWidthDistance, 25);
-				screenWidthDistance = Math.max(screenWidthDistance,13);
+				screenWidthDistance = Math.max(screenWidthDistance, 15);
 
 				screenLeftDistance = screenMidDistanceLap - screenWidthDistance/2;
 				
@@ -1280,13 +1285,18 @@ define({
 			context.fillStyle = playerIsAhead? green : red;
 			context.fill();
 
+
+			//logo header
+			logoHeader.draw(context, 0, 0, 1);
+
+
 			//Header
 			//sweat points
 			if(true)
 			{
 
 				var xpos = 1;
-				var ypos = 1;
+				var ypos = 1 + logoHeader.height;
 				var img = ppm > 0 ? sweat : sweat_red;
 				img.draw(context, xpos,ypos,0);
 				context.font = '24px Samsung Sans';
@@ -1312,7 +1322,7 @@ define({
 			//GPS
 				var GPSscale = 0.65;
 				context.save();
-				context.translate(canvas.width - gpsRing.width/2 * GPSscale, gpsRing.height/2 * GPSscale);
+				context.translate(canvas.width - gpsRing.width/2 * GPSscale, logoHeader.height + gpsRing.height/2 * GPSscale);
 				gpsRing.drawscaled(context, - gpsRing.width/2*GPSscale, -gpsRing.height/2 * GPSscale, 0, GPSscale);
 				if(gpsAvailable && hasGPSUpdate)
 				{
@@ -1740,9 +1750,9 @@ define({
         	
         	
         	//Lap counter / lap complete notice
-			var counterHeight = 100;
+			var counterHeight = 115;
 			var counterXPos = canvas.width/2;
-			var counterRadius = 135/2;
+			var counterRadius = 125/2;
 
         	if(!showLapCompleteBox)
         	{
@@ -2369,6 +2379,10 @@ define({
 
 			loadImage('images/icon-time_black.png', function() {
 				timeIcon = new Sprite(this, this.width, 1000);
+			});
+			
+			loadImage('images/Game_Eliminator/icon_RaceYourself_name_top_bar.png', function() {
+				logoHeader = new Sprite(this, this.width, 1000);
 			});
 			
 			loading = true;
