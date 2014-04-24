@@ -86,7 +86,7 @@ define({
             this.initialCalories = null;
             this.calories = 0;
             this.score = 0;
-            this.ishighscore = false;
+            this.highscore = settings.getEliminatorHighScore(); // Store highscore for historical reason
             this.track = [];
             this.raceType = game.getCurrentGame();
             this.opponentType = game.getCurrentOpponentType();
@@ -164,8 +164,8 @@ define({
                 }
             },
             
-            getIsHighscore: function getIsHighscore() {
-            	return this.ishighscore;
+            getHighscore: function getHighscore() {
+            	return this.highscore;
             },
             
             getScore: function getScore() {
@@ -176,10 +176,6 @@ define({
             	this.score = s;
             },
             
-            setIsHighscore: function setIsHighscore(s) {
-            	this.ishighscore = s;
-            },
-
             getShortDistanceUnits: function getShortDistanceUnits() {
                 if(settings.getDistanceUnits() == 'Miles') {
                     return "mi";

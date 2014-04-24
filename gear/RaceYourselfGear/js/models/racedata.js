@@ -145,9 +145,9 @@ define({
             
             var score = r.getScore();
             
-            var ishighscore = r.getIsHighscore();
+            var highscore = r.getHighscore();
             
-            racedata = {distance: distance, distanceunits: distanceunits, duration: duration, calories: calories, pointsgained: pointsgained, overallpoints: overallpoints, pointslost: pointslost, totalpoints: totalpoints, steps: steps, hrtime: hrtime, achievements: achievements, type: type, date: date, timeofrace: timeofrace, ishighscore: ishighscore, score: score};
+            racedata = {distance: distance, distanceunits: distanceunits, duration: duration, calories: calories, pointsgained: pointsgained, overallpoints: overallpoints, pointslost: pointslost, totalpoints: totalpoints, steps: steps, hrtime: hrtime, achievements: achievements, type: type, date: date, timeofrace: timeofrace, highscore: highscore, score: score};
             
             saveHistory();
         }
