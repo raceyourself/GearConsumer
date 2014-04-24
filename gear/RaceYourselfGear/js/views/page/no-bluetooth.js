@@ -82,6 +82,8 @@ define({
 //            } else {
 //            	e.fire(game.getCurrentGame()+'.show');
 //            }
+        	
+        	e.fire(game.getCurrentGame()+'.show');
             ev.preventDefault();
         }
         
