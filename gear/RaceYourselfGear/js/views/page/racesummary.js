@@ -65,6 +65,7 @@ define({
             shareComplete = false,
             isHighscore = false,
             score = 0,
+            highscore = 0,
             highscoreSprite,
             normalScoreSprite,
             sharedImage,
@@ -103,11 +104,12 @@ define({
         function createScoreScreen(r) {
         	var unlocksEl = document.getElementById('summary-unlocks');
         	unlocksEl.classList.toggle('hidden', false);
-        	isHighscore = r.ishighscore;
+        	highscore = r.highscore;
         	score = r.score;
+        	isHighscore = (score > highscore);
         	if(!isHighscore) {
         		document.getElementById('eliminator-score-value').innerHTML = r.score;
-        		document.getElementById('eliminator-best-value').innerHTML = settings.getEliminatorHighScore();
+        		document.getElementById('eliminator-best-value').innerHTML = r.highscore;
 				document.getElementById('eliminator-end').classList.toggle('hidden');
         	} else {
         		setTimeout(function() {
@@ -265,9 +267,9 @@ define({
         function shareScore(event) {
         	event.stopPropagation();
         	if(this.id == 'eliminator-hs-twitter-btn' || this.id == 'eliminator-end-twitter-btn' ) {
-        		sapProvider.sendShareHighscoreReq(score, 'twitter', isHighscore);
+        		sapProvider.sendShareHighscoreReq(score, 'twitter', highscore);
         	} else if(this.id == 'eliminator-hs-fb-btn' || this.id == 'eliminator-end-fb-btn') {
-        		sapProvider.sendShareHighscoreReq(score, 'facebook', isHighscore);
+        		sapProvider.sendShareHighscoreReq(score, 'facebook', highscore);
         	}
         	
         	document.getElementById('eliminator-end').classList.toggle('hidden', true);

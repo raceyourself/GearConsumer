@@ -598,9 +598,7 @@ define({
         function onQuit() {
 			var r = race.getOngoingRace();
 			if(numLaps <= settings.getEliminatorHighScore()) {
-				r.setIsHighscore(false);
 			} else {
-				r.setIsHighscore(true);
 				settings.setEliminatorHighScore(numLaps);
 			}
 			r.setScore(numLaps);
@@ -870,7 +868,6 @@ define({
 //						//document.getElementById('eliminator-new-hs-value').innerHTML = numLaps;
 //						document.getElementById('eliminator-highscore').classList.toggle('hidden');
 					}
-					race.getOngoingRace().setIsHighscore(isHighscore);
 					onQuit();
 				}, 2000);
 				finished = true;
