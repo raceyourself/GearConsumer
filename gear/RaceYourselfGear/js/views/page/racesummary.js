@@ -104,13 +104,9 @@ define({
         	var unlocksEl = document.getElementById('summary-unlocks');
         	unlocksEl.classList.toggle('hidden', false);
         	isHighscore = r.ishighscore;
+        	score = r.score;
         	if(!isHighscore) {
-        		if(r.score !== null) {
-        			document.getElementById('eliminator-score-value').innerHTML = r.score;
-        			score = r.score;
-        		} else {
-        			document.getElementById('eliminator-score-value').innerHTML = 0;
-        		}
+        		document.getElementById('eliminator-score-value').innerHTML = r.score;
         		document.getElementById('eliminator-best-value').innerHTML = settings.getEliminatorHighScore();
 				document.getElementById('eliminator-end').classList.toggle('hidden');
         	} else {

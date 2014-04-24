@@ -85,7 +85,7 @@ define({
             this.steps = 0;
             this.initialCalories = null;
             this.calories = 0;
-            this.score = null;
+            this.score = 0;
             this.ishighscore = false;
             this.track = [];
             this.raceType = game.getCurrentGame();
