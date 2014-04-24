@@ -603,6 +603,7 @@ define({
 				r.setIsHighscore(true);
 				settings.setEliminatorHighScore(numLaps);
 			}
+			r.setScore(numLaps);
 			e.fire('race.end', r);
 			r.stop();
 
