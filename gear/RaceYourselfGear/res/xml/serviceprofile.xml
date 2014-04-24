@@ -11,6 +11,7 @@
 		<serviceChannel
 			id="104"
 			dataRate = "high"
+			reliability = "enable"
 			priority = "low" />
 	</serviceProfile>
 	</application>
