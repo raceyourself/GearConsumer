@@ -258,7 +258,7 @@ define({
                 */
                 '5_laps' : {
                 	title: '5 Laps',
-                	description: 'Complete 5 laps in Eliminator mode',
+                	description: 'Complete 5 laps',
                 	points: 0,
                 	uses: 1,
                 	init: function() {
@@ -275,7 +275,7 @@ define({
                 },
                 '10_laps': {
                 	title: '10 Laps',
-                	description: 'Complete 10 laps in Eliminator mode',
+                	description: 'Complete 10 laps',
                 	points: 0,
                 	uses: 1,
                 	init: function() {
@@ -292,7 +292,7 @@ define({
         		},
         		'15_laps': {
         			title: '15 Laps',
-                	description: 'Complete 15 laps in Eliminator mode',
+                	description: 'Complete 15 laps',
                 	points: 0,
                 	uses: 1,
                 	init: function() {
@@ -310,7 +310,7 @@ define({
         		
                 '5kmTotal' : {
                     title: 'Run 5km',
-                    description: 'Run a cumulative total of 5km in Race Yourself',
+                    description: 'Run a cumulative total of 5km',
                     points: 0,
                     uses: 1,
                     init: function() {
@@ -328,13 +328,13 @@ define({
                 },
                 '10kmTotal' : {
                     title: 'Run 10km',
-                    description: 'Run a cumulative total of 5km in Race Yourself',
+                    description: 'Run a cumulative total of 10km',
                     points: 0,
                     uses: 1,
                     init: function() {
                         e.listen('race.progress', function(event) {
                         	if (progress.total.distance >= config.getStrengthUnlockDist() * 1000) {
-                                achieve('5kmTotal');
+                                achieve('10kmTotal');
 //                                game.unlock('Strength');
                             }
                         });
@@ -344,15 +344,15 @@ define({
                         return Number(Math.min(unlockDist, progress.total.distance)*100/unlockDist).toFixed(1).replace('.0', '') + '%';
                     }
                 },
-                '50000SP' : {
-                	title: '50K Sweat Points',
-                	description: 'Earn a career total of 50,000 sweat points',
+                '100000SP' : {
+                	title: '100K Sweat Points',
+                	description: 'Earn a career total of 100,000 sweat points',
                 	points: 0,
                 	uses: 1,
                 	init: function() {
                 		e.listen('race.progress', function(event) {
                 			if(progress.total.points >= config.getMeteorUnlockPoints()) {
-                				achieve('50000SP');
+                				achieve('100000SP');
 //                				game.unlock('meteor');
                 			}
                 		});

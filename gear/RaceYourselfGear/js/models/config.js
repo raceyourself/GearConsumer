@@ -48,7 +48,7 @@ define({
                 weightUnlockDist: 5,
                 strengthUnlockDist: 10,
                 demoMode: 0,
-                meteorUnlockPoints: 50000,
+                meteorUnlockPoints: 100000,
                 ppmGood: 5,
                 ppmBad: -1,
                 pointsPenaltyDeath: -100,
