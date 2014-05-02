@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <widget xmlns="http://www.w3.org/ns/widgets" xmlns:tizen="http://tizen.org/ns/widgets" id="http://raceyourself.com/RaceYourselfGear" version="1.0.0" viewmodes="fullscreen">
-    <tizen:application id="BztU7SgYyv.RaceYourself" package="BztU7SgYyv" required_version="1.0"/>
+    <tizen:application id="SLJzkJQ0HU.RaceYourself" package="SLJzkJQ0HU" required_version="1.0"/>
     <content src="index.html"/>
     <feature name="http://tizen.org/feature/screen.size.normal.320.320"/>
     <icon src="icon.png"/>

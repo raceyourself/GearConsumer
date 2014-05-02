@@ -10,6 +10,7 @@
 		</supportedTransports>
 		<serviceChannel
 			id="104"
+			reliability = "enable"
 			dataRate = "high"
 			priority = "low" />
 	</serviceProfile>
