@@ -112,15 +112,17 @@ define({
             	clearTimeout(timeout);
             }
             
-//            if (status === 'ready' || status === 'disabled') {
-//                timeout = setTimeout(function() {
+            if (status === 'ready' || status === 'disabled') {
+                timeout = setTimeout(function() {
+//eliminator-only branch
+
 //                    if (game.getCurrentGame() == 'hrzgame' && !hrm.isFunctioning()) {
 //                    	e.fire('no-hrm.show');
 //                    } else {
-//                    	e.fire(game.getCurrentGame()+'.show');
+                    	e.fire(game.getCurrentGame()+'.show');
 //                    }
-//                }, 1500);
-//            }
+                }, 1500);
+            }
         }
         
         function onRace(ev) {
