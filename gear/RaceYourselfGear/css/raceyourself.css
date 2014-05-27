@@ -436,6 +436,10 @@ img {
     padding:0px;
     }
 
+.center-horisontal > p,pre {
+	margin: 15px 0px;
+}
+
 #debug-log {
 	font-size: 15px;
 }
