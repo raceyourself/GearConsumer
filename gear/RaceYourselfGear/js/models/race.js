@@ -311,7 +311,7 @@ define({
             	this.raceType = type;
             },
             
-            getGpsPercentage: function getGpsPercentag() {
+            getGpsPercentage: function getGpsPercentage() {
             	if (this.gps_updates == 0 && this.pedometer_updates == 0) return 100;
             	return (this.gps_update*100/(this.gps_updates+this.pedometer_updates));
             },

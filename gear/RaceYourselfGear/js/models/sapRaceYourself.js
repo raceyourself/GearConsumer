@@ -163,14 +163,15 @@ define({
             );
         }
 
-		function sendShareHighscoreReq(score, service, highscore) {
+		function sendShareHighscoreReq(score, service, highscore, subtext) {
 			sap.sendData(
 				SAP_CHANNEL,
 				{
 					messageType: SHARE_HIGHSCORE_REQ,
 					service: service,
 					score: score,
-					highscore: highscore
+					highscore: highscore,
+					subtext: subtext
 				},
 				{
 					silent: true

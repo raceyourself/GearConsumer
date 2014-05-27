@@ -66,6 +66,7 @@ define({
             isHighscore = false,
             score = 0,
             highscore = 0,
+            subtext = 'Pedometer',
             highscoreSprite,
             normalScoreSprite,
             sharedImage,
@@ -104,12 +105,17 @@ define({
         function createScoreScreen(r) {
         	var unlocksEl = document.getElementById('summary-unlocks');
         	unlocksEl.classList.toggle('hidden', false);
-        	highscore = r.highscore;
-        	score = r.score;
+        	highscore = r.highscore || 0;
+        	score = r.score || 0;
+        	if (r.gpspercentage >= 20) {
+        		subtext = 'GPS';
+        	} else {
+        		subtext = 'Pedometer';
+        	}
         	isHighscore = (score > highscore);
         	if(!isHighscore) {
-        		document.getElementById('eliminator-score-value').innerHTML = r.score;
-        		document.getElementById('eliminator-best-value').innerHTML = r.highscore;
+        		document.getElementById('eliminator-score-value').innerHTML = score;
+        		document.getElementById('eliminator-best-value').innerHTML = highscore;
 				document.getElementById('eliminator-end').classList.toggle('hidden');
         	} else {
         		setTimeout(function() {
@@ -203,7 +209,8 @@ define({
 	                }
 	            } 
         	} else {
-        		sharedImage.draw(summaryContext, summaryCanvas.width / 2 - sharedImage.width / 2, summaryCanvas.height / 2 - sharedImage.height / 2, dt);
+        		var bottomMargin = 90;
+        		sharedImage.draw(summaryContext, summaryCanvas.width / 2 - sharedImage.width / 2, summaryCanvas.height / 2 - sharedImage.height / 2 - bottomMargin / 2, dt);
         	}
             
         	
@@ -255,10 +262,8 @@ define({
              
              page.addEventListener('click', onSummaryEndClick);
              
-             document.getElementById('eliminator-hs-twitter-btn').addEventListener('click', shareScore);
-           	 document.getElementById('eliminator-hs-fb-btn').addEventListener('click', shareScore);
-           	 document.getElementById('eliminator-end-twitter-btn').addEventListener('click', shareScore);
-           	 document.getElementById('eliminator-end-fb-btn').addEventListener('click', shareScore);
+             document.getElementById('eliminator-twitter-btn').addEventListener('click', shareScore);
+           	 document.getElementById('eliminator-fb-btn').addEventListener('click', shareScore);
              
              list.addEventListener('click', onItemTap);
              document.getElementById('end-game-btn').addEventListener('click', onBack);
@@ -266,10 +271,10 @@ define({
         
         function shareScore(event) {
         	event.stopPropagation();
-        	if(this.id == 'eliminator-hs-twitter-btn' || this.id == 'eliminator-end-twitter-btn' ) {
-        		sapProvider.sendShareHighscoreReq(score, 'twitter', highscore);
-        	} else if(this.id == 'eliminator-hs-fb-btn' || this.id == 'eliminator-end-fb-btn') {
-        		sapProvider.sendShareHighscoreReq(score, 'facebook', highscore);
+        	if(this.id == 'eliminator-twitter-btn') {
+        		sapProvider.sendShareHighscoreReq(score, 'twitter', highscore, subtext);
+        	} else if(this.id == 'eliminator-fb-btn') {
+        		sapProvider.sendShareHighscoreReq(score, 'facebook', highscore, subtext);
         	}
         	
         	document.getElementById('eliminator-end').classList.toggle('hidden', true);

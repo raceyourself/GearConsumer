@@ -147,7 +147,25 @@ define({
             
             var highscore = r.getHighscore();
             
-            racedata = {distance: distance, distanceunits: distanceunits, duration: duration, calories: calories, pointsgained: pointsgained, overallpoints: overallpoints, pointslost: pointslost, totalpoints: totalpoints, steps: steps, hrtime: hrtime, achievements: achievements, type: type, date: date, timeofrace: timeofrace, highscore: highscore, score: score};
+            var gpspercentage = r.getGpsPercentage();
+            
+            racedata = {distance: distance, 
+            		    distanceunits: distanceunits, 
+            		    duration: duration, 
+            		    calories: calories, 
+            		    pointsgained: pointsgained, 
+            		    overallpoints: overallpoints, 
+            		    pointslost: pointslost, 
+            		    totalpoints: totalpoints, 
+            		    steps: steps, 
+            		    hrtime: hrtime, 
+            		    achievements: achievements, 
+            		    type: type, 
+            		    date: date, 
+            		    timeofrace: timeofrace, 
+            		    highscore: highscore, 
+            		    score: score,
+            		    gpspercentage: gpspercentage};
             
             saveHistory();
         }
