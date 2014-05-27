@@ -105,14 +105,21 @@ define({
             	
                 resultTimeout = setTimeout(function() {
                     provider.sendGpsStatusReq(); 
-                }, 5000);
+                }, 1000);
             }
             
             if(timeout) {
             	clearTimeout(timeout);
             }
             
-            if (status === 'ready' || status === 'disabled') {
+            if (status === 'disabled') {
+            	//poll again, to see if user has enabled on phone.
+            	resultTimeout = setTimeout(function() {
+            		provider.sendGpsStatusReq();
+            	}, 1000);
+            }
+            
+            if (status === 'ready') {
                 timeout = setTimeout(function() {
 //eliminator-only branch
 
