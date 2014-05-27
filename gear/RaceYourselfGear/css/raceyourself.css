@@ -9,6 +9,11 @@
 	text-align: center;
 }
 
+.center-horisontal {
+	display: table-cell;
+	text-align: center;
+}
+
 .noautooverflow {
 	overflow: initial;
 }
@@ -460,13 +465,14 @@ img {
 	position: absolute;
 	left: 0px;
 	bottom: 0px;
-	padding: 10px;
+	padding: 5px 0px;
+	font-size: 28px;
 }
 
 .skip-btn p {
 	font-size: 32px;
 	font-weight: bold;	
-	margin: 5px 5px;
+	margin: 0px 0px;
 }
 
 .left-btn {

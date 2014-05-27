@@ -50,13 +50,16 @@ define({
         function onPageShow() {
             var waitingEl = document.getElementById('pregame-waiting-gps'),
             gpsButtonEl = document.getElementById('pregame-skip-gps-btn'),
+            gpsDisButtonEl = document.getElementById('disabled-skip-gps-btn'),
             lockedEl = document.getElementById('pregame-locked-gps'),
             disabledEl = document.getElementById('pregame-disabled-gps');
                         
             gpsButtonEl.classList.toggle('hidden', true);
+            gpsDisButtonEl.classList.toggle('hidden', true);
         
             setTimeout(function() {
             	gpsButtonEl.classList.toggle('hidden', false);
+            	gpsDisButtonEl.classList.toggle('hidden', false);
             }, 3000);
             
             e.listen('tizen.back', onBack);
